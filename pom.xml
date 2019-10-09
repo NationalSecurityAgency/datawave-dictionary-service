@@ -5,53 +5,24 @@
         <artifactId>datawave-microservice-parent</artifactId>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <version>1.5</version>
-        <relativePath />
     </parent>
-    <artifactId>dictionary-api</artifactId>
+    <artifactId>dictionary-service-parent</artifactId>
     <version>1.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
+    <modules>
+        <module>api</module>
+        <module>service</module>
+    </modules>
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-dictionary-service.git</connection>
         <developerConnection>scm:git:git@github.com:NationalSecurityAgency/datawave-dictionary-service.git</developerConnection>
         <url>https://github.com/NationalSecurityAgency/datawave-dictionary-service</url>
     </scm>
-    <properties>
-        <version.base-responses>1.0</version.base-responses>
-        <version.guava>25.1-jre</version.guava>
-    </properties>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${version.guava}</version>
-            </dependency>
-            <dependency>
-                <groupId>gov.nsa.datawave.microservice</groupId>
-                <artifactId>base-rest-responses</artifactId>
-                <version>${version.base-responses}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>base-rest-responses</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
     <repositories>
         <repository>
             <!--
-                This repository is a temporary work-around until we can public artifacts to maven central.
+                This repository is a temporary work-around until we can publish artifacts to maven central.
                 This allows us to retrieve released microservice artifacts from our github repository.
             -->
             <releases>
@@ -65,3 +36,4 @@
         </repository>
     </repositories>
 </project>
+
