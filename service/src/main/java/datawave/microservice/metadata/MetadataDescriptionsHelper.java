@@ -35,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Helper class to handle get/set of descriptions on the metadata table.
  */
@@ -123,7 +125,7 @@ public class MetadataDescriptionsHelper<DESC extends DescriptionBase<DESC>> {
             Mutation m = new Mutation(entry.getFieldName());
             for (DescriptionBase desc : descs) {
                 m.put(ColumnFamilyConstants.COLF_DESC, new Text(entry.getDatatype()), markingFunctions.translateToColumnVisibility(desc.getMarkings()),
-                                new Value(desc.getDescription().getBytes()));
+                                new Value(desc.getDescription().getBytes(UTF_8)));
             }
             bw.addMutation(m);
         } finally {
