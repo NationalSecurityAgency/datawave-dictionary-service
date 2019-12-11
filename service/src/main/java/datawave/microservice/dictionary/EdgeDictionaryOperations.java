@@ -8,7 +8,7 @@ import datawave.microservice.dictionary.edge.DatawaveEdgeDictionary;
 import datawave.security.authorization.DatawaveUser;
 import datawave.webservice.results.edgedictionary.EdgeDictionaryBase;
 import datawave.webservice.results.edgedictionary.MetadataBase;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -38,14 +38,14 @@ public class EdgeDictionaryOperations<EDGE extends EdgeDictionaryBase<EDGE,META>
     private final EdgeDictionaryProperties edgeDictionaryProperties;
     private final DatawaveEdgeDictionary<EDGE,META> edgeDictionary;
     private final UserAuthFunctions userAuthFunctions;
-    private final Connector accumuloConnector;
+    private final AccumuloClient accumuloClient;
     
     public EdgeDictionaryOperations(EdgeDictionaryProperties edgeDictionaryProperties, DatawaveEdgeDictionary<EDGE,META> edgeDictionary,
-                    UserAuthFunctions userAuthFunctions, @Qualifier("warehouse") Connector accumuloConnector) {
+                    UserAuthFunctions userAuthFunctions, @Qualifier("warehouse") AccumuloClient accumuloClient) {
         this.edgeDictionaryProperties = edgeDictionaryProperties;
         this.edgeDictionary = edgeDictionary;
         this.userAuthFunctions = userAuthFunctions;
-        this.accumuloConnector = accumuloConnector;
+        this.accumuloClient = accumuloClient;
     }
     
     /**
@@ -73,7 +73,7 @@ public class EdgeDictionaryOperations<EDGE extends EdgeDictionaryBase<EDGE,META>
         // If the user provides authorizations, intersect it with their actual authorizations
         Set<Authorizations> auths = getDowngradedAuthorizations(queryAuthorizations, currentUser);
         
-        EDGE edgeDict = edgeDictionary.getEdgeDictionary(metadataTableName, accumuloConnector, auths, edgeDictionaryProperties.getNumThreads());
+        EDGE edgeDict = edgeDictionary.getEdgeDictionary(metadataTableName, accumuloClient, auths, edgeDictionaryProperties.getNumThreads());
         
         log.info("EDGEDICTIONARY: returning edge dictionary");
         return edgeDict;

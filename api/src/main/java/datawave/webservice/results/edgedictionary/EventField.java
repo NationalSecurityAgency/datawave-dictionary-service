@@ -15,7 +15,7 @@ import io.protostuff.Output;
 import io.protostuff.Schema;
 import datawave.webservice.query.result.util.protostuff.FieldAccessor;
 import datawave.webservice.query.result.util.protostuff.ProtostuffField;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = {"sourceField", "sinkField", "enrichmentField", "enrichmentIndex", "jexlPrecondition"})

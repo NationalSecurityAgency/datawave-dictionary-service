@@ -2,6 +2,7 @@ package datawave.microservice.dictionary.edge;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.data.ColumnFamilyConstants;
 import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
@@ -10,10 +11,9 @@ import datawave.webservice.results.edgedictionary.EventField;
 import datawave.webservice.results.edgedictionary.DefaultMetadata;
 import datawave.webservice.results.edgedictionary.MetadataBase;
 
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
@@ -193,8 +193,8 @@ public class DefaultDatawaveEdgeDictionaryImplTest {
     public static class DefaultDatawaveEdgeDictionaryImplTestConfiguration {
         @Bean
         @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return instance.getConnector("root", new PasswordToken(""));
+        public AccumuloClient warehouseClient() throws AccumuloSecurityException, AccumuloException {
+            return new InMemoryAccumuloClient("root", new InMemoryInstance());
         }
     }
 }

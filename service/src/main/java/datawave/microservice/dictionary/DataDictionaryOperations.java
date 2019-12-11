@@ -16,7 +16,7 @@ import datawave.webservice.results.datadictionary.DataDictionaryBase;
 import datawave.webservice.results.datadictionary.DescriptionBase;
 import datawave.webservice.results.datadictionary.DictionaryFieldBase;
 import datawave.webservice.results.datadictionary.FieldsBase;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -56,16 +56,16 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     private final DatawaveDataDictionary<META,DESC,FIELD> dataDictionary;
     private final ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory;
     private final UserAuthFunctions userAuthFunctions;
-    private final Connector accumuloConnector;
+    private final AccumuloClient accumuloClient;
     
     public DataDictionaryOperations(DataDictionaryProperties dataDictionaryConfiguration, DatawaveDataDictionary<META,DESC,FIELD> dataDictionary,
                     ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory, UserAuthFunctions userAuthFunctions,
-                    @Qualifier("warehouse") Connector accumuloConnector) {
+                    @Qualifier("warehouse") AccumuloClient accumuloClient) {
         this.dataDictionaryConfiguration = dataDictionaryConfiguration;
         this.dataDictionary = dataDictionary;
         this.responseObjectFactory = responseObjectFactory;
         this.userAuthFunctions = userAuthFunctions;
-        this.accumuloConnector = accumuloConnector;
+        this.accumuloClient = accumuloClient;
         dataDictionary.setNormalizerMapping(dataDictionaryConfiguration.getNormalizerMap());
     }
     
@@ -91,7 +91,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         
         // If the user provides authorizations, intersect it with their actual authorizations
         Set<Authorizations> auths = getDowngradedAuthorizations(queryAuthorizations, currentUser);
-        Collection<META> fields = dataDictionary.getFields(modelName, modelTableName, metadataTableName, dataTypes, accumuloConnector, auths,
+        Collection<META> fields = dataDictionary.getFields(modelName, modelTableName, metadataTableName, dataTypes, accumuloClient, auths,
                         dataDictionaryConfiguration.getNumThreads());
         DICT dataDictionary = responseObjectFactory.getDataDictionary();
         dataDictionary.setFields(fields);
@@ -128,7 +128,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         Set<Authorizations> auths = getAuths(currentUser);
         List<FIELD> list = fields.getFields();
         for (FIELD desc : list) {
-            dataDictionary.setDescription(accumuloConnector, dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, desc);
+            dataDictionary.setDescription(accumuloClient, dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, desc);
         }
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
@@ -204,7 +204,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         markings.put("columnVisibility", columnVisibility);
         desc.setMarkings(markings);
         desc.setDescription(description);
-        dataDictionary.setDescription(accumuloConnector, dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, fieldName, datatype,
+        dataDictionary.setDescription(accumuloClient, dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, fieldName, datatype,
                         desc);
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
@@ -236,7 +236,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         }
         
         Set<Authorizations> auths = getAuths(currentUser);
-        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(accumuloConnector,
+        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(accumuloClient,
                         this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable);
         FIELDS response = this.responseObjectFactory.getFields();
         response.setDescriptions(descriptions);
@@ -269,7 +269,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         }
         
         Set<Authorizations> auths = getAuths(currentUser);
-        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(accumuloConnector,
+        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(accumuloClient,
                         this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, datatype);
         FIELDS response = this.responseObjectFactory.getFields();
         response.setDescriptions(descriptions);
@@ -304,7 +304,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         }
         
         Set<Authorizations> auths = getAuths(currentUser);
-        Set<DESC> descriptions = dataDictionary.getDescriptions(accumuloConnector, this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName,
+        Set<DESC> descriptions = dataDictionary.getDescriptions(accumuloClient, this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName,
                         modelTable, fieldName, datatype);
         FIELDS response = responseObjectFactory.getFields();
         if (!descriptions.isEmpty()) {
@@ -354,7 +354,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         desc.setDescription("");
         desc.setMarkings(markings);
         
-        dataDictionary.deleteDescription(accumuloConnector, this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, fieldName,
+        dataDictionary.deleteDescription(accumuloClient, this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, fieldName,
                         datatype, desc);
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);

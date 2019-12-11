@@ -1,6 +1,7 @@
 package datawave.microservice.dictionary;
 
 import com.google.common.collect.Sets;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.microservice.authorization.jwt.JWTRestTemplate;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
@@ -8,12 +9,10 @@ import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.webservice.results.datadictionary.DefaultDataDictionary;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Instance;
 import org.apache.accumulo.core.client.TableExistsException;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,8 +46,6 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.main.allow-bean-definition-overriding=true")
 public class DataDictionaryOperationsTest {
-    private static Instance instance = new InMemoryInstance();
-    
     @LocalServerPort
     private int webServicePort;
     
@@ -57,7 +54,7 @@ public class DataDictionaryOperationsTest {
     
     @Autowired
     @Qualifier("warehouse")
-    private Connector connector;
+    private AccumuloClient accumuloClient;
     
     @Autowired
     private DataDictionaryProperties dataDictionaryProperties;
@@ -78,7 +75,7 @@ public class DataDictionaryOperationsTest {
         jwtRestTemplate = restTemplateBuilder.errorHandler(errorHandler).build(JWTRestTemplate.class);
         
         try {
-            connector.tableOperations().create(dataDictionaryProperties.getMetadataTableName());
+            accumuloClient.tableOperations().create(dataDictionaryProperties.getMetadataTableName());
         } catch (TableExistsException e) {
             // ignore
         }
@@ -155,8 +152,8 @@ public class DataDictionaryOperationsTest {
     public static class DataDictionaryImplTestConfiguration {
         @Bean
         @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return instance.getConnector("root", new PasswordToken(""));
+        public AccumuloClient warehouseClient() throws AccumuloSecurityException, AccumuloException {
+            return new InMemoryAccumuloClient("root", new InMemoryInstance());
         }
     }
 }

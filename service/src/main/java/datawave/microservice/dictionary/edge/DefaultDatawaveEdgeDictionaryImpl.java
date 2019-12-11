@@ -10,7 +10,7 @@ import datawave.util.StringUtils;
 import datawave.webservice.results.edgedictionary.DefaultEdgeDictionary;
 import datawave.webservice.results.edgedictionary.DefaultMetadata;
 import datawave.webservice.results.edgedictionary.EventField;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
@@ -34,9 +34,10 @@ public class DefaultDatawaveEdgeDictionaryImpl implements DatawaveEdgeDictionary
     }
     
     @Override
-    public DefaultEdgeDictionary getEdgeDictionary(String metadataTableName, Connector connector, Set<Authorizations> auths, int numThreads) throws Exception {
+    public DefaultEdgeDictionary getEdgeDictionary(String metadataTableName, AccumuloClient accumuloClient, Set<Authorizations> auths, int numThreads)
+                    throws Exception {
         
-        MetadataHelper metadataHelper = this.metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper metadataHelper = this.metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         
         // Convert them into a response object
         

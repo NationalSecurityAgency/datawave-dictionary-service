@@ -28,8 +28,8 @@ import datawave.webservice.results.datadictionary.DefaultDescription;
 import datawave.webservice.results.datadictionary.DefaultDictionaryField;
 
 import datawave.webservice.results.datadictionary.DefaultFields;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchScanner;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
@@ -88,9 +88,9 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
      */
     @Override
     public Collection<DefaultMetadataField> getFields(String modelName, String modelTableName, String metadataTableName, Collection<String> dataTypeFilters,
-                    Connector connector, Set<Authorizations> auths, int numThreads) throws Exception {
+                    AccumuloClient accumuloClient, Set<Authorizations> auths, int numThreads) throws Exception {
         // Get a MetadataHelper
-        MetadataHelper metadataHelper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper metadataHelper = metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         // So we can get a QueryModel
         QueryModel queryModel = metadataHelper.getQueryModel(modelTableName, modelName, metadataHelper.getIndexOnlyFields(null));
         
@@ -104,7 +104,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         }
         
         // Fetch the results from Accumulo
-        BatchScanner bs = fetchResults(connector, metadataTableName, auths, numThreads);
+        BatchScanner bs = fetchResults(accumuloClient, metadataTableName, auths, numThreads);
         
         // Convert them into a response object
         Collection<DefaultMetadataField> fields = transformResults(bs.iterator(), reverseMapping, dataTypeFilters);
@@ -116,8 +116,9 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         return fields;
     }
     
-    private BatchScanner fetchResults(Connector connector, String metadataTableName, Set<Authorizations> auths, int numThreads) throws TableNotFoundException {
-        BatchScanner bs = ScannerHelper.createBatchScanner(connector, metadataTableName, auths, numThreads);
+    private BatchScanner fetchResults(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths, int numThreads)
+                    throws TableNotFoundException {
+        BatchScanner bs = ScannerHelper.createBatchScanner(accumuloClient, metadataTableName, auths, numThreads);
         bs.addScanIterator(new IteratorSetting(21, WholeRowIterator.class));
         bs.setRanges(Collections.singletonList(new Range()));
         bs.fetchColumnFamily(ColumnFamilyConstants.COLF_E);
@@ -257,22 +258,22 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     }
     
     @Override
-    public void setDescription(Connector connector, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTableName,
+    public void setDescription(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTableName,
                     DefaultDictionaryField description) throws Exception {
-        this.setDescription(connector, metadataTableName, auths, modelName, modelTableName, description.getFieldName(), description.getDatatype(),
+        this.setDescription(accumuloClient, metadataTableName, auths, modelName, modelTableName, description.getFieldName(), description.getDatatype(),
                         description.getDescriptions());
     }
     
     @Override
-    public void setDescription(Connector connector, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTable, String fieldName,
-                    String datatype, DefaultDescription desc) throws Exception {
-        setDescription(connector, metadataTableName, auths, modelName, modelTable, fieldName, datatype, Collections.singleton(desc));
+    public void setDescription(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTable,
+                    String fieldName, String datatype, DefaultDescription desc) throws Exception {
+        setDescription(accumuloClient, metadataTableName, auths, modelName, modelTable, fieldName, datatype, Collections.singleton(desc));
     }
     
     @Override
-    public void setDescription(Connector connector, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTable, String fieldName,
-                    String datatype, Set<DefaultDescription> descs) throws Exception {
-        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+    public void setDescription(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTable,
+                    String fieldName, String datatype, Set<DefaultDescription> descs) throws Exception {
+        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         
         QueryModel model = helper.getQueryModel(modelTable, modelName);
         Map<String,String> mapping = reverseReverseMapping(model);
@@ -285,18 +286,18 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         // TODO The query model is effectively busted because it doesn't uniquely reference field+datatype
         MetadataEntry mentry = new MetadataEntry(fieldName, datatype);
         
-        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(connector, metadataTableName, auths);
+        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(accumuloClient, metadataTableName, auths);
         descriptionsHelper.setDescriptions(mentry, descs);
     }
     
     @Override
-    public Multimap<Entry<String,String>,DefaultDescription> getDescriptions(Connector connector, String metadataTableName, Set<Authorizations> auths,
+    public Multimap<Entry<String,String>,DefaultDescription> getDescriptions(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths,
                     String modelName, String modelTable) throws Exception {
-        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         QueryModel model = helper.getQueryModel(modelTable, modelName);
         Map<String,String> mapping = model.getReverseQueryMapping();
         
-        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(connector, metadataTableName, auths);
+        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(accumuloClient, metadataTableName, auths);
         Multimap<MetadataEntry,DefaultDescription> descriptions = descriptionsHelper.getDescriptions((Set<String>) null);
         Multimap<Entry<String,String>,DefaultDescription> tformDescriptions = HashMultimap.create();
         
@@ -317,13 +318,13 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     }
     
     @Override
-    public Multimap<Entry<String,String>,DefaultDescription> getDescriptions(Connector connector, String metadataTableName, Set<Authorizations> auths,
+    public Multimap<Entry<String,String>,DefaultDescription> getDescriptions(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths,
                     String modelName, String modelTable, String datatype) throws Exception {
-        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         QueryModel model = helper.getQueryModel(modelTable, modelName);
         Map<String,String> mapping = model.getReverseQueryMapping();
         
-        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(connector, metadataTableName, auths);
+        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(accumuloClient, metadataTableName, auths);
         Multimap<MetadataEntry,DefaultDescription> descriptions = descriptionsHelper.getDescriptions(datatype);
         Multimap<Entry<String,String>,DefaultDescription> tformDescriptions = HashMultimap.create();
         
@@ -344,15 +345,15 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     }
     
     @Override
-    public Set<DefaultDescription> getDescriptions(Connector connector, String metadataTableName, Set<Authorizations> auths, String modelName,
+    public Set<DefaultDescription> getDescriptions(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths, String modelName,
                     String modelTable, String fieldName, String datatype) throws Exception {
-        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         QueryModel model = helper.getQueryModel(modelTable, modelName);
         Map<String,String> mapping = reverseReverseMapping(model);
         
         String alias = mapping.get(fieldName);
         
-        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(connector, metadataTableName, auths);
+        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(accumuloClient, metadataTableName, auths);
         if (null == alias) {
             return descriptionsHelper.getDescriptions(fieldName, datatype);
         } else {
@@ -361,15 +362,15 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     }
     
     @Override
-    public void deleteDescription(Connector connector, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTable,
+    public void deleteDescription(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> auths, String modelName, String modelTable,
                     String fieldName, String datatype, DefaultDescription desc) throws Exception {
-        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         QueryModel model = helper.getQueryModel(modelTable, modelName);
         Map<String,String> mapping = reverseReverseMapping(model);
         
         String alias = mapping.get(fieldName);
         
-        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(connector, metadataTableName, auths);
+        MetadataDescriptionsHelper<DefaultDescription> descriptionsHelper = getInitializedDescriptionsHelper(accumuloClient, metadataTableName, auths);
         if (null == alias) {
             descriptionsHelper.removeDescription(new MetadataEntry(fieldName, datatype), desc);
         } else {
@@ -377,10 +378,10 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         }
     }
     
-    private MetadataDescriptionsHelper<DefaultDescription> getInitializedDescriptionsHelper(Connector connector, String metadataTableName,
+    private MetadataDescriptionsHelper<DefaultDescription> getInitializedDescriptionsHelper(AccumuloClient accumuloClient, String metadataTableName,
                     Set<Authorizations> auths) {
         MetadataDescriptionsHelper<DefaultDescription> helper = metadataDescriptionsHelperFactory.createMetadataDescriptionsHelper();
-        helper.initialize(connector, metadataTableName, auths);
+        helper.initialize(accumuloClient, metadataTableName, auths);
         return helper;
     }
     

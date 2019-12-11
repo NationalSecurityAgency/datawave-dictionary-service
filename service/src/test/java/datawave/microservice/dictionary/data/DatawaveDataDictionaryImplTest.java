@@ -1,13 +1,14 @@
 package datawave.microservice.dictionary.data;
 
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.webservice.query.result.metadata.DefaultMetadataField;
 import datawave.webservice.results.datadictionary.DefaultDescription;
 import datawave.webservice.results.datadictionary.DefaultDictionaryField;
 import datawave.webservice.results.datadictionary.DefaultFields;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
@@ -51,16 +52,16 @@ public class DatawaveDataDictionaryImplTest {
     
     @Autowired
     @Qualifier("warehouse")
-    private Connector connector;
+    private AccumuloClient accumuloClient;
     
     @Autowired
     private DatawaveDataDictionary<DefaultMetadataField,DefaultDescription,DefaultDictionaryField> impl;
     
     @Before
     public void setup() throws AccumuloException, AccumuloSecurityException, TableExistsException {
-        connector.securityOperations().changeUserAuthorizations("root", new Authorizations(auths));
-        connector.tableOperations().create(metaTable);
-        connector.tableOperations().create(modelTable);
+        accumuloClient.securityOperations().changeUserAuthorizations("root", new Authorizations(auths));
+        accumuloClient.tableOperations().create(metaTable);
+        accumuloClient.tableOperations().create(modelTable);
     }
     
     @Test
@@ -87,9 +88,9 @@ public class DatawaveDataDictionaryImplTest {
         DefaultFields fields = new DefaultFields();
         fields.setFields(dicFields);
         
-        impl.setDescription(connector, metaTable, setOfAuthObjs, model, modelTable, dicField);
+        impl.setDescription(accumuloClient, metaTable, setOfAuthObjs, model, modelTable, dicField);
         
-        Scanner s = connector.createScanner(metaTable, new Authorizations(auths));
+        Scanner s = accumuloClient.createScanner(metaTable, new Authorizations(auths));
         
         for (Map.Entry<Key,Value> entry : s) {
             assertEquals("PRIVATE", entry.getKey().getColumnVisibility().toString());
@@ -101,8 +102,8 @@ public class DatawaveDataDictionaryImplTest {
     public static class DataDictionaryImplTestConfiguration {
         @Bean
         @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return instance.getConnector("root", new PasswordToken(""));
+        public AccumuloClient warehouseClient() throws AccumuloSecurityException, AccumuloException {
+            return new InMemoryAccumuloClient("root", new InMemoryInstance());
         }
     }
 }

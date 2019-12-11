@@ -9,9 +9,9 @@ import datawave.microservice.dictionary.config.ResponseObjectFactory;
 import datawave.query.util.MetadataEntry;
 import datawave.security.util.ScannerHelper;
 import datawave.webservice.results.datadictionary.DescriptionBase;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
@@ -50,7 +50,7 @@ public class MetadataDescriptionsHelper<DESC extends DescriptionBase<DESC>> {
     private final ResponseObjectFactory<DESC,?,?,?,?> responseObjectFactory;
     
     private String metadataTableName;
-    private Connector connector;
+    private AccumuloClient accumuloClient;
     private Set<Authorizations> fullUserAuths;
     
     public MetadataDescriptionsHelper(MarkingFunctions markingFunctions, ResponseObjectFactory<DESC,?,?,?,?> responseObjectFactory) {
@@ -58,8 +58,8 @@ public class MetadataDescriptionsHelper<DESC extends DescriptionBase<DESC>> {
         this.responseObjectFactory = responseObjectFactory;
     }
     
-    public void initialize(Connector connector, String metadataTableName, Set<Authorizations> fullUserAuths) {
-        this.connector = connector;
+    public void initialize(AccumuloClient accumuloClient, String metadataTableName, Set<Authorizations> fullUserAuths) {
+        this.accumuloClient = accumuloClient;
         this.metadataTableName = metadataTableName;
         this.fullUserAuths = fullUserAuths;
     }
@@ -121,7 +121,7 @@ public class MetadataDescriptionsHelper<DESC extends DescriptionBase<DESC>> {
         BatchWriter bw = null;
         try {
             BatchWriterConfig bwConfig = new BatchWriterConfig().setMaxMemory(10000L).setMaxLatency(100L, TimeUnit.MILLISECONDS).setMaxWriteThreads(1);
-            bw = connector.createBatchWriter(metadataTableName, bwConfig);
+            bw = accumuloClient.createBatchWriter(metadataTableName, bwConfig);
             Mutation m = new Mutation(entry.getFieldName());
             for (DescriptionBase desc : descs) {
                 m.put(ColumnFamilyConstants.COLF_DESC, new Text(entry.getDatatype()), markingFunctions.translateToColumnVisibility(desc.getMarkings()),
@@ -156,7 +156,7 @@ public class MetadataDescriptionsHelper<DESC extends DescriptionBase<DESC>> {
         BatchWriter bw = null;
         try {
             BatchWriterConfig bwConfig = new BatchWriterConfig().setMaxMemory(10000L).setMaxLatency(100L, TimeUnit.MILLISECONDS).setMaxWriteThreads(1);
-            bw = connector.createBatchWriter(metadataTableName, bwConfig);
+            bw = accumuloClient.createBatchWriter(metadataTableName, bwConfig);
             Mutation m = new Mutation(entry.getFieldName());
             m.putDelete(ColumnFamilyConstants.COLF_DESC, new Text(entry.getDatatype()), this.markingFunctions.translateToColumnVisibility(desc.getMarkings()));
             bw.addMutation(m);
@@ -177,7 +177,7 @@ public class MetadataDescriptionsHelper<DESC extends DescriptionBase<DESC>> {
             log.trace("loadDescriptions from table: " + metadataTableName);
         // unlike other entries, the desc colf entries have many auths set. We'll use the fullUserAuths in the scanner instead
         // of the minimal set in this.auths
-        Scanner scanner = ScannerHelper.createScanner(connector, metadataTableName, fullUserAuths);
+        Scanner scanner = ScannerHelper.createScanner(accumuloClient, metadataTableName, fullUserAuths);
         
         SetMultimap<MetadataEntry,DESC> descriptions = HashMultimap.create();
         
