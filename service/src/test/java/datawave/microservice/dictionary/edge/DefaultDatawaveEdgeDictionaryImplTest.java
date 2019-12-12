@@ -7,27 +7,23 @@ import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.data.ColumnFamilyConstants;
 import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
 import datawave.webservice.results.edgedictionary.DefaultEdgeDictionary;
-import datawave.webservice.results.edgedictionary.EventField;
 import datawave.webservice.results.edgedictionary.DefaultMetadata;
+import datawave.webservice.results.edgedictionary.EventField;
 import datawave.webservice.results.edgedictionary.MetadataBase;
-
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,9 +35,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "spring.main.allow-bean-definition-overriding=true")
 public class DefaultDatawaveEdgeDictionaryImplTest {
     
@@ -68,7 +65,7 @@ public class DefaultDatawaveEdgeDictionaryImplTest {
     @Autowired
     private DatawaveEdgeDictionary<DefaultEdgeDictionary,DefaultMetadata> impl;
     
-    @Before
+    @BeforeEach
     public void setUp() {
         edgeMetadataRows = HashMultimap.create();
         for (Map.Entry<Key,Value> entry : permuteKeysAndEdges(EDGE_KEYS, EDGE_VALUE)) {
@@ -92,18 +89,18 @@ public class DefaultDatawaveEdgeDictionaryImplTest {
         if (null == transformResultsMethod)
             fail();
         DefaultEdgeDictionary dictionary = (DefaultEdgeDictionary) transformResultsMethod.invoke(impl, HashMultimap.create());
-        Assert.assertEquals("Should be empty", dictionary.getTotalResults(), 0L);
+        assertEquals(dictionary.getTotalResults(), 0L, "Should be empty");
     }
     
     @Test
     public void testWorked() throws InvocationTargetException, IllegalAccessException {
         if (null == transformResultsMethod)
             fail();
-        Assert.assertEquals("data to be inserted contains as many rows as keys", edgeMetadataRows.keySet().size(), EDGE_KEYS.size());
+        assertEquals(edgeMetadataRows.keySet().size(), EDGE_KEYS.size(), "data to be inserted contains as many rows as keys");
         DefaultEdgeDictionary dictionary = (DefaultEdgeDictionary) transformResultsMethod.invoke(impl, edgeMetadataRows);
-        Assert.assertEquals("Dictionary should now have some entries", dictionary.getTotalResults(), EDGE_KEYS.size());
-        Assert.assertTrue("METADATA not in list.  returned list: " + dictionary.getMetadataList() + " expected: " + METADATA,
-                        dictionary.getMetadataList().containsAll(METADATA));
+        assertEquals(dictionary.getTotalResults(), EDGE_KEYS.size(), "Dictionary should now have some entries");
+        assertTrue(dictionary.getMetadataList().containsAll(METADATA),
+                        "METADATA not in list.  returned list: " + dictionary.getMetadataList() + " expected: " + METADATA);
     }
     
     @Test
@@ -117,8 +114,7 @@ public class DefaultDatawaveEdgeDictionaryImplTest {
         
         // Make sure that all Metadata in EdgeDictionary have the start date set to the EARLY_DATE_FIELD
         for (MetadataBase<DefaultMetadata> meta : metadata) {
-            Assert.assertEquals("Incorrect start date. Expected: " + EARLY_DATE_FIELD + " Found: " + meta.getStartDate(), EARLY_DATE_FIELD,
-                            meta.getStartDate());
+            assertEquals(EARLY_DATE_FIELD, meta.getStartDate(), "Incorrect start date. Expected: " + EARLY_DATE_FIELD + " Found: " + meta.getStartDate());
             
         }
     }

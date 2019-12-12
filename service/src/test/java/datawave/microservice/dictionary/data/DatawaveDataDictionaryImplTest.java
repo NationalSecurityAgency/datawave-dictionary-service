@@ -11,20 +11,17 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableExistsException;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,9 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "spring.main.allow-bean-definition-overriding=true")
 public class DatawaveDataDictionaryImplTest {
     
@@ -48,8 +44,6 @@ public class DatawaveDataDictionaryImplTest {
     
     private Set<Authorizations> setOfAuthObjs = Collections.singleton(new Authorizations(auths));
     
-    private static InMemoryInstance instance = new InMemoryInstance();
-    
     @Autowired
     @Qualifier("warehouse")
     private AccumuloClient accumuloClient;
@@ -57,7 +51,7 @@ public class DatawaveDataDictionaryImplTest {
     @Autowired
     private DatawaveDataDictionary<DefaultMetadataField,DefaultDescription,DefaultDictionaryField> impl;
     
-    @Before
+    @BeforeEach
     public void setup() throws AccumuloException, AccumuloSecurityException, TableExistsException {
         accumuloClient.securityOperations().changeUserAuthorizations("root", new Authorizations(auths));
         accumuloClient.tableOperations().create(metaTable);
