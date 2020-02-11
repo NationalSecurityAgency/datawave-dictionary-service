@@ -1,5 +1,7 @@
 ## Dictionary Service
 
+[![Apache License][li]][ll] ![Build Status](https://github.com/NationalSecurityAgency/datawave-dictionary-service/workflows/Tests/badge.svg)
+
 The Dictionary service provides access to the data dictionary and edge
 dictionary. These services provide metadata about fields that are stored
 in Accumulo.
@@ -72,3 +74,6 @@ The root context for all edge dictionary operations is
 [DefaultFields]:api/src/main/java/datawave/webservice/results/datadictionary/DefaultFields.java
 [testUser]:https://github.com/NationalSecurityAgency/datawave-spring-boot-starter/blob/master/src/main/resources/testUser.p12
 [dictionary-dev-yml]:https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/master/sample_configuration/dictionary-dev.yml.example
+
+[li]: http://img.shields.io/badge/license-ASL-blue.svg
+[ll]: https://www.apache.org/licenses/LICENSE-2.0
