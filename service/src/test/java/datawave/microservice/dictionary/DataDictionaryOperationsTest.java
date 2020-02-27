@@ -1,13 +1,19 @@
 package datawave.microservice.dictionary;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import datawave.accumulo.inmemory.InMemoryInstance;
+import datawave.marking.MarkingFunctions;
 import datawave.microservice.authorization.jwt.JWTRestTemplate;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.SubjectIssuerDNPair;
+import datawave.webservice.result.VoidResponse;
 import datawave.webservice.results.datadictionary.DefaultDataDictionary;
+import datawave.webservice.results.datadictionary.DefaultDescription;
+import datawave.webservice.results.datadictionary.DefaultFields;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
@@ -39,8 +45,11 @@ import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -148,6 +157,28 @@ public class DataDictionaryOperationsTest {
         
         response = jwtRestTemplate.exchange(regularUser, HttpMethod.DELETE, uri, String.class);
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+    
+    @Test
+    public void testPostDescriptions() {
+        // @formatter:off
+        UriComponents uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/data/v1/Descriptions")
+                .build();
+        // @formatter:on
+        
+        HashMap<String,String> markings = new HashMap<>();
+        markings.put(MarkingFunctions.Default.COLUMN_VISIBILITY, "USER|ADMIN");
+        Multimap<Map.Entry<String,String>,DefaultDescription> descriptions = HashMultimap.create();
+        descriptions.put(new AbstractMap.SimpleEntry<>("fooField", "fooType"), new DefaultDescription("my foo field", markings));
+        descriptions.put(new AbstractMap.SimpleEntry<>("barField", "barType"), new DefaultDescription("my bar field", markings));
+        DefaultFields postBody = new DefaultFields(descriptions);
+        MultiValueMap<String,String> additionalHeaders = new LinkedMultiValueMap<>();
+        additionalHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        RequestEntity<DefaultFields> postEntity = jwtRestTemplate.createRequestEntity(adminUser, postBody, additionalHeaders, HttpMethod.POST, uri);
+        ResponseEntity<VoidResponse> response = jwtRestTemplate.exchange(postEntity, VoidResponse.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     
     @ComponentScan(basePackages = "datawave.microservice")

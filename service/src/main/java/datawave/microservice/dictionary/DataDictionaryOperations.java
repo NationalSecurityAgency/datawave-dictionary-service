@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -115,8 +116,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     @ResponseBody
     @PostMapping(path = "/Descriptions", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Timed(name = "dw.dictionary.data.uploadDescriptions", absolute = true)
-    public VoidResponse uploadDescriptions(FIELDS fields, @RequestParam String modelName, @RequestParam String modelTable,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+    public VoidResponse uploadDescriptions(@RequestBody FIELDS fields, @RequestParam(required = false) String modelName,
+                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
         if (StringUtils.isBlank(modelName)) {
             modelName = this.dataDictionaryConfiguration.getModelName();
         }
@@ -258,7 +259,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
      */
     @RequestMapping(path = "/Descriptions/{datatype}")
     @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
-    public FieldsBase datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
+    public FIELDS datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
         if (StringUtils.isBlank(modelName)) {
             modelName = this.dataDictionaryConfiguration.getModelName();
@@ -293,7 +294,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
      */
     @RequestMapping(path = "/Descriptions/{datatype}/{fieldName}")
     @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
-    public FieldsBase fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
+    public FIELDS fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
         if (StringUtils.isBlank(modelName)) {
             modelName = this.dataDictionaryConfiguration.getModelName();
