@@ -18,6 +18,7 @@
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-dictionary-service.git</connection>
         <developerConnection>scm:git:git@github.com:NationalSecurityAgency/datawave-dictionary-service.git</developerConnection>
+        <tag>HEAD</tag>
         <url>https://github.com/NationalSecurityAgency/datawave-dictionary-service</url>
     </scm>
     <repositories>
