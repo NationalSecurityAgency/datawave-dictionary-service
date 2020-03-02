@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>dictionary-service-parent</artifactId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
     <modules>
@@ -18,7 +18,7 @@
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-dictionary-service.git</connection>
         <developerConnection>scm:git:git@github.com:NationalSecurityAgency/datawave-dictionary-service.git</developerConnection>
-        <tag>1.1</tag>
+        <tag>HEAD</tag>
         <url>https://github.com/NationalSecurityAgency/datawave-dictionary-service</url>
     </scm>
     <repositories>
