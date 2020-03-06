@@ -17,7 +17,7 @@
         <url>https://github.com/NationalSecurityAgency/datawave-dictionary-service</url>
     </scm>
     <properties>
-        <version.base-responses>2.0.0-SNAPSHOT</version.base-responses>
+        <version.base-responses>2.0.0</version.base-responses>
         <version.guava>28.1-jre</version.guava>
     </properties>
     <dependencyManagement>
