@@ -199,13 +199,17 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
                         // Handle index-only fields, which have no "e" entry
                         if (field.getFieldName() == null) {
                             String fieldName = key.getRow().toString();
-                            field.setLastUpdated(parseTimestamp(key.getTimestamp()));
                             if (reverseMapping.containsKey(fieldName)) {
                                 field.setFieldName(reverseMapping.get(fieldName));
                                 field.setInternalFieldName(fieldName);
                             } else {
                                 field.setFieldName(fieldName);
                             }
+                        }
+                        
+                        // Determine the lastUpdated value for index-only fields without including timestamps from description rows.
+                        if (field.isIndexOnly() && field.getLastUpdated() == null && !ColumnFamilyConstants.COLF_DESC.equals(holder)) {
+                            field.setLastUpdated(parseTimestamp(key.getTimestamp()));
                         }
                     }
                     
