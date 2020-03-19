@@ -75,7 +75,9 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.get", absolute = true)
     public DataDictionaryBase<DICT,META> get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
                     @RequestParam(required = false) String metadataTableName, @RequestParam(name = "auths", required = false) String queryAuthorizations,
-                    @RequestParam(defaultValue = "") String dataTypeFilters, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @RequestParam(defaultValue = "") String dataTypeFilters, @RequestParam(name = "limit", required = false, defaultValue = "-1") int limit,
+                    @RequestParam(name = "offset", required = false, defaultValue = "0") int offset, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    throws Exception {
         if (null == modelName || StringUtils.isBlank(modelName)) {
             modelName = this.dataDictionaryConfiguration.getModelName();
         }
@@ -93,7 +95,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         // If the user provides authorizations, intersect it with their actual authorizations
         Set<Authorizations> auths = getDowngradedAuthorizations(queryAuthorizations, currentUser);
         Collection<META> fields = dataDictionary.getFields(modelName, modelTableName, metadataTableName, dataTypes, accumuloConnector, auths,
-                        dataDictionaryConfiguration.getNumThreads());
+                        dataDictionaryConfiguration.getNumThreads(), limit, offset);
+        
         DICT dataDictionary = responseObjectFactory.getDataDictionary();
         dataDictionary.setFields(fields);
         return dataDictionary;

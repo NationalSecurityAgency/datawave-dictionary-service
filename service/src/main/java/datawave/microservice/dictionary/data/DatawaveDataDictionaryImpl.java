@@ -88,7 +88,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
      */
     @Override
     public Collection<DefaultMetadataField> getFields(String modelName, String modelTableName, String metadataTableName, Collection<String> dataTypeFilters,
-                    Connector connector, Set<Authorizations> auths, int numThreads) throws Exception {
+                    Connector connector, Set<Authorizations> auths, int numThreads, int limit, int offset) throws Exception {
         // Get a MetadataHelper
         MetadataHelper metadataHelper = metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
         // So we can get a QueryModel
@@ -107,7 +107,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         BatchScanner bs = fetchResults(connector, metadataTableName, auths, numThreads);
         
         // Convert them into a response object
-        Collection<DefaultMetadataField> fields = transformResults(bs.iterator(), reverseMapping, dataTypeFilters);
+        Collection<DefaultMetadataField> fields = transformResults(bs.iterator(), reverseMapping, dataTypeFilters, limit, offset);
         
         // Close the BatchScanner and return the Accumulo connector
         bs.close();
@@ -132,14 +132,23 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     }
     
     private Collection<DefaultMetadataField> transformResults(Iterator<Entry<Key,Value>> iterator, Map<String,String> reverseMapping,
-                    Collection<String> dataTypeFilters) {
+                    Collection<String> dataTypeFilters, int limit, int offset) {
         HashMap<String,Map<String,DefaultMetadataField>> fieldMap = Maps.newHashMap();
         boolean shouldNotFilterDataTypes = CollectionUtils.isEmpty(dataTypeFilters);
         
         final Text holder = new Text(), row = new Text();
         
+        // Skip the number of rows specified in the query offset.
+        for (int skippedFields = 0; skippedFields < offset; skippedFields++) {
+            if (iterator.hasNext()) {
+                iterator.next();
+            }
+        }
+        
         // Each Entry is the entire row
-        while (iterator.hasNext()) {
+        // Decode only the number of rows specified in the query limit.
+        int totalFields = 0;
+        while (iterator.hasNext() && (limit < 0 || totalFields < limit)) {
             Entry<Key,Value> entry = iterator.next();
             
             try {
@@ -210,6 +219,8 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
                     }
                     
                 }
+                
+                totalFields++;
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to decode row " + entry.getKey());
             } catch (MarkingFunctions.Exception e) {

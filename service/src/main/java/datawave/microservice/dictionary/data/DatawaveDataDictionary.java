@@ -14,7 +14,7 @@ import java.util.Set;
 
 public interface DatawaveDataDictionary<META extends MetadataFieldBase<META,DESC>,DESC extends DescriptionBase<DESC>,FIELD extends DictionaryFieldBase<FIELD,DESC>> {
     Collection<META> getFields(String modelName, String modelTableName, String metadataTableName, Collection<String> dataTypeFilters, Connector connector,
-                    Set<Authorizations> auths, int numThreads) throws Exception;
+                    Set<Authorizations> auths, int numThreads, int limit, int offset) throws Exception;
     
     Map<String,String> getNormalizerMapping();
     
