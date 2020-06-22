@@ -1,108 +1,353 @@
 package datawave.microservice.dictionary.data;
 
-import datawave.accumulo.inmemory.InMemoryInstance;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
+import datawave.marking.MarkingFunctions;
+import datawave.microservice.dictionary.config.ResponseObjectFactory;
+import datawave.microservice.metadata.MetadataDescriptionsHelper;
+import datawave.microservice.metadata.MetadataDescriptionsHelperFactory;
+import datawave.query.model.QueryModel;
+import datawave.query.util.MetadataEntry;
+import datawave.query.util.MetadataHelper;
+import datawave.query.util.MetadataHelperFactory;
 import datawave.webservice.query.result.metadata.DefaultMetadataField;
+import datawave.webservice.results.datadictionary.DefaultDataDictionary;
 import datawave.webservice.results.datadictionary.DefaultDescription;
 import datawave.webservice.results.datadictionary.DefaultDictionaryField;
 import datawave.webservice.results.datadictionary.DefaultFields;
-import org.apache.accumulo.core.client.AccumuloException;
-import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.Scanner;
-import org.apache.accumulo.core.client.TableExistsException;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.security.Authorizations;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "spring.main.allow-bean-definition-overriding=true")
+@RunWith(MockitoJUnitRunner.class)
 public class DatawaveDataDictionaryImplTest {
     
-    private static final String model = "model";
-    private static final String modelTable = "modelTable";
-    private static final String metaTable = "metaTable";
+    private static final String METADATA_TABLE = "metadataTable";
+    private static final String MODEL_TABLE = "modelTable";
+    private static final String FIELD_NAME = "field";
+    private static final String MODEL_NAME = "model";
+    private static final String DATATYPE = "csv";
+    private static final Set<Authorizations> AUTHS = Collections.singleton(new Authorizations("PRIVATE"));
     
-    private final String[] auths = {"PRIVATE"};
+    private ConnectionConfig connectionConfig;
     
-    private Set<Authorizations> setOfAuthObjs = Collections.singleton(new Authorizations(auths));
-    
-    private static InMemoryInstance instance = new InMemoryInstance();
-    
-    @Autowired
-    @Qualifier("warehouse")
+    @Mock
     private Connector connector;
     
-    @Autowired
-    private DatawaveDataDictionary<DefaultMetadataField,DefaultDescription,DefaultDictionaryField> impl;
+    @Mock
+    private MarkingFunctions markingFunctions;
+    
+    @Mock
+    private ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields> responseObjectFactory;
+    
+    @Mock
+    private MetadataHelperFactory metadataHelperFactory;
+    
+    @Mock
+    private MetadataDescriptionsHelperFactory<DefaultDescription> metadataDescriptionsHelperFactory;
+    
+    @Mock
+    private MetadataDescriptionsHelper<DefaultDescription> metadataDescriptionsHelper;
+    
+    private DatawaveDataDictionaryImpl dataDictionary;
     
     @Before
-    public void setup() throws AccumuloException, AccumuloSecurityException, TableExistsException {
-        connector.securityOperations().changeUserAuthorizations("root", new Authorizations(auths));
-        connector.tableOperations().create(metaTable);
-        connector.tableOperations().create(modelTable);
+    public void setUp() {
+        connectionConfig = new ConnectionConfig();
+        connectionConfig.setConnector(connector);
+        connectionConfig.setAuths(AUTHS);
+        connectionConfig.setMetadataTable(METADATA_TABLE);
+        connectionConfig.setModelTable(MODEL_TABLE);
+        connectionConfig.setModelName(MODEL_NAME);
+        dataDictionary = new DatawaveDataDictionaryImpl(markingFunctions, responseObjectFactory, metadataHelperFactory, metadataDescriptionsHelperFactory);
     }
     
     @Test
-    public void testSetDescription() throws Exception {
-        
+    public void whenSettingDescription_givenSingleDefaultDescription_shouldSetDescription() throws Exception {
         Map<String,String> markings = new HashMap<>();
         markings.put("columnVisibility", "PRIVATE");
         
-        DefaultDescription desc = new DefaultDescription();
-        desc.setMarkings(markings);
-        desc.setDescription("my ultra cool description");
+        DefaultDescription description = new DefaultDescription();
+        description.setMarkings(markings);
+        description.setDescription("my ultra cool description");
         
-        Set<DefaultDescription> descs = new HashSet<>();
-        descs.add(desc);
+        // Ensure no alias will be found.
+        givenQueryModelReverseMapping(FIELD_NAME, "noalias");
+        givenInitializedMetadataDescriptionsHelper();
         
-        DefaultDictionaryField dicField = new DefaultDictionaryField();
-        dicField.setDatatype("myType");
-        dicField.setFieldName("myField");
-        dicField.setDescriptions(descs);
+        // Execute function under test.
+        dataDictionary.addDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
         
-        List<DefaultDictionaryField> dicFields = new ArrayList<>();
-        dicFields.add(dicField);
-        
-        DefaultFields fields = new DefaultFields();
-        fields.setFields(dicFields);
-        
-        impl.setDescription(connector, metaTable, setOfAuthObjs, model, modelTable, dicField);
-        
-        Scanner s = connector.createScanner(metaTable, new Authorizations(auths));
-        
-        for (Map.Entry<Key,Value> entry : s) {
-            assertEquals("PRIVATE", entry.getKey().getColumnVisibility().toString());
-        }
+        // Verify expected calls.
+        Set<DefaultDescription> descriptions = Collections.singleton(description);
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry(FIELD_NAME, DATATYPE), descriptions);
     }
     
-    @ComponentScan(basePackages = "datawave.microservice")
-    @Configuration
-    public static class DataDictionaryImplTestConfiguration {
-        @Bean
-        @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return instance.getConnector("root", new PasswordToken(""));
-        }
+    @Test
+    public void whenSettingDescription_givenDefaultDictionaryField_shouldSetDescriptionFromProperties() throws Exception {
+        Map<String,String> markings = new HashMap<>();
+        markings.put("columnVisibility", "PRIVATE");
+        
+        DefaultDescription description = new DefaultDescription();
+        description.setMarkings(markings);
+        description.setDescription("my ultra cool description");
+        
+        Set<DefaultDescription> descriptions = Collections.singleton(description);
+        
+        DefaultDictionaryField dictionaryField = new DefaultDictionaryField();
+        dictionaryField.setFieldName(FIELD_NAME);
+        dictionaryField.setDatatype(DATATYPE);
+        dictionaryField.setDescriptions(descriptions);
+        
+        // Ensure no alias will be found.
+        givenQueryModelReverseMapping(FIELD_NAME, "noalias");
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Execute function under test.
+        dataDictionary.addDescription(connectionConfig, dictionaryField);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry(FIELD_NAME, DATATYPE), descriptions);
+    }
+    
+    @Test
+    public void whenSettingDescription_givenNoAlias_shouldSetDescriptionWithOriginalFieldName() throws Exception {
+        Map<String,String> markings = new HashMap<>();
+        markings.put("columnVisibility", "PRIVATE");
+        
+        DefaultDescription description = new DefaultDescription();
+        description.setMarkings(markings);
+        description.setDescription("my ultra cool description");
+        
+        Set<DefaultDescription> descriptions = Collections.singleton(description);
+        
+        // Ensure no alias will be found.
+        givenQueryModelReverseMapping(FIELD_NAME, "noalias");
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Execute function under test.
+        dataDictionary.addDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry(FIELD_NAME, DATATYPE), descriptions);
+    }
+    
+    @Test
+    public void whenSettingDescription_givenAlias_shouldSetDescriptionWithAlias() throws Exception {
+        Map<String,String> markings = new HashMap<>();
+        markings.put("columnVisibility", "PRIVATE");
+        
+        DefaultDescription description = new DefaultDescription();
+        description.setMarkings(markings);
+        description.setDescription("my ultra cool description");
+        
+        Set<DefaultDescription> descriptions = Collections.singleton(description);
+        
+        // Ensure an alias will be found.
+        givenQueryModelReverseMapping("alias", FIELD_NAME);
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Execute function under test.
+        dataDictionary.addDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry("alias", DATATYPE), descriptions);
+    }
+    
+    @Test
+    public void whenRetrievingDescriptions_shouldRetrieveDescriptions() throws Exception {
+        // Set the given field aliases.
+        Map<String,String> queryModelMapping = new HashMap<>();
+        queryModelMapping.put("FIELDA", "aliasA");
+        queryModelMapping.put("FIELDB", "aliasB");
+        givenQueryModelReverseMapping(queryModelMapping);
+        
+        // Set the descriptions to be returned by the helper.
+        DefaultDescription descriptionA = new DefaultDescription("fieldA description");
+        DefaultDescription descriptionB = new DefaultDescription("fieldB description");
+        DefaultDescription descriptionC = new DefaultDescription("fieldC description");
+        
+        SetMultimap<MetadataEntry,DefaultDescription> descriptions = HashMultimap.create();
+        descriptions.put(new MetadataEntry("fieldA", DATATYPE), descriptionA);
+        descriptions.put(new MetadataEntry("fieldB", DATATYPE), descriptionB);
+        descriptions.put(new MetadataEntry("fieldC", DATATYPE), descriptionC);
+        
+        givenInitializedMetadataDescriptionsHelper();
+        when(metadataDescriptionsHelper.getDescriptions((Set<String>) null)).thenReturn(descriptions);
+        
+        // Execute function under test.
+        Multimap<Map.Entry<String,String>,DefaultDescription> result = dataDictionary.getDescriptions(connectionConfig);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        
+        // Verify the result.
+        Map<Map.Entry<String,String>,Collection<DefaultDescription>> resultMap = result.asMap();
+        assertThat(resultMap).hasSize(3);
+        assertThat(resultMap).containsEntry(Maps.immutableEntry("aliasA", DATATYPE), Collections.singleton(descriptionA));
+        assertThat(resultMap).containsEntry(Maps.immutableEntry("aliasB", DATATYPE), Collections.singleton(descriptionB));
+        assertThat(resultMap).containsEntry(Maps.immutableEntry("FIELDC", DATATYPE), Collections.singleton(descriptionC));
+    }
+    
+    @Test
+    public void whenRetrievingDescriptionsWithDatatype_shouldRetrieveDescriptionsWithDatatype() throws Exception {
+        // Set the given field aliases.
+        Map<String,String> queryModelMapping = new HashMap<>();
+        queryModelMapping.put("FIELDA", "aliasA");
+        queryModelMapping.put("FIELDB", "aliasB");
+        givenQueryModelReverseMapping(queryModelMapping);
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // EEstablish expected result.
+        DefaultDescription descriptionA = new DefaultDescription("fieldA description");
+        DefaultDescription descriptionB = new DefaultDescription("fieldB description");
+        DefaultDescription descriptionC = new DefaultDescription("fieldC description");
+        
+        SetMultimap<MetadataEntry,DefaultDescription> descriptions = HashMultimap.create();
+        descriptions.put(new MetadataEntry("fieldA", DATATYPE), descriptionA);
+        descriptions.put(new MetadataEntry("fieldB", DATATYPE), descriptionB);
+        descriptions.put(new MetadataEntry("fieldC", DATATYPE), descriptionC);
+        
+        when(metadataDescriptionsHelper.getDescriptions(DATATYPE)).thenReturn(descriptions);
+        
+        // Execute function under test.
+        Multimap<Map.Entry<String,String>,DefaultDescription> result = dataDictionary.getDescriptions(connectionConfig, DATATYPE);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        
+        // Verify the result.
+        Map<Map.Entry<String,String>,Collection<DefaultDescription>> resultMap = result.asMap();
+        assertThat(resultMap).hasSize(3);
+        assertThat(resultMap).containsEntry(Maps.immutableEntry("aliasA", DATATYPE), Collections.singleton(descriptionA));
+        assertThat(resultMap).containsEntry(Maps.immutableEntry("aliasB", DATATYPE), Collections.singleton(descriptionB));
+        assertThat(resultMap).containsEntry(Maps.immutableEntry("FIELDC", DATATYPE), Collections.singleton(descriptionC));
+    }
+    
+    @Test
+    public void whenRetrievingDescriptionsWithFieldNameAndDatatype_givenNoAlias_shouldRetrieveDescriptionsWithOriginalFieldName() throws Exception {
+        // Ensure no alias will be found.
+        givenQueryModelReverseMapping(FIELD_NAME, "noalias");
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Establish expected result.
+        DefaultDescription description = new DefaultDescription("description");
+        when(metadataDescriptionsHelper.getDescriptions(FIELD_NAME, DATATYPE)).thenReturn(Collections.singleton(description));
+        
+        // Execute function under test.
+        Set<DefaultDescription> descriptions = dataDictionary.getDescriptions(connectionConfig, FIELD_NAME, DATATYPE);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        
+        // Verify the result.
+        assertThat(descriptions).containsExactly(description);
+    }
+    
+    @Test
+    public void whenRetrievingDescriptionsWithFieldNameAndDatatype_givenAlias_shouldRetrieveDescriptionsWithAlias() throws Exception {
+        // Ensure an alias will be found.
+        givenQueryModelReverseMapping("alias", FIELD_NAME);
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Establish expected result.
+        DefaultDescription description = new DefaultDescription("description");
+        when(metadataDescriptionsHelper.getDescriptions("alias", DATATYPE)).thenReturn(Collections.singleton(description));
+        
+        // Execute function under test.
+        Set<DefaultDescription> descriptions = dataDictionary.getDescriptions(connectionConfig, FIELD_NAME, DATATYPE);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        
+        // Verify the result.
+        assertThat(descriptions).containsExactly(description);
+    }
+    
+    @Test
+    public void whenDeletingDescription_givenNoAlias_shouldDeleteDescriptionWithOriginalFieldName() throws Exception {
+        Map<String,String> markings = new HashMap<>();
+        markings.put("columnVisibility", "PRIVATE");
+        
+        DefaultDescription description = new DefaultDescription();
+        description.setMarkings(markings);
+        description.setDescription("my ultra cool description");
+        
+        // Ensure no alias will be found.
+        givenQueryModelReverseMapping(FIELD_NAME, "noalias");
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Execute function under test.
+        dataDictionary.deleteDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).removeDescription(new MetadataEntry(FIELD_NAME, DATATYPE), description);
+    }
+    
+    @Test
+    public void whenDeletingDescription_givenAlias_shouldDeleteDescriptionWithAlias() throws Exception {
+        Map<String,String> markings = new HashMap<>();
+        markings.put("columnVisibility", "PRIVATE");
+        
+        DefaultDescription description = new DefaultDescription();
+        description.setMarkings(markings);
+        description.setDescription("my ultra cool description");
+        
+        // Ensure an alias will be found.
+        givenQueryModelReverseMapping("alias", FIELD_NAME);
+        givenInitializedMetadataDescriptionsHelper();
+        
+        // Execute function under test.
+        dataDictionary.deleteDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
+        
+        // Verify expected calls.
+        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).removeDescription(new MetadataEntry("alias", DATATYPE), description);
+    }
+    
+    private void givenQueryModelReverseMapping(String key, String value) throws ExecutionException, TableNotFoundException {
+        Map<String,String> map = new HashMap<>();
+        map.put(key, value);
+        givenQueryModelReverseMapping(map);
+    }
+    
+    private void givenQueryModelReverseMapping(Map<String,String> map) throws ExecutionException, TableNotFoundException {
+        QueryModel model = mock(QueryModel.class);
+        when(model.getReverseQueryMapping()).thenReturn(map);
+        
+        MetadataHelper helper = mock(MetadataHelper.class);
+        when(helper.getQueryModel(eq(MODEL_TABLE), eq(MODEL_NAME))).thenReturn(model);
+        
+        when(metadataHelperFactory.createMetadataHelper(any(), eq(METADATA_TABLE), any())).thenReturn(helper);
+    }
+    
+    private void givenInitializedMetadataDescriptionsHelper() {
+        when(metadataDescriptionsHelperFactory.createMetadataDescriptionsHelper()).thenReturn(metadataDescriptionsHelper);
     }
 }

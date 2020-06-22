@@ -8,6 +8,7 @@ import datawave.accumulo.util.security.UserAuthFunctions;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
+import datawave.microservice.dictionary.data.ConnectionConfig;
 import datawave.microservice.dictionary.data.DatawaveDataDictionary;
 import datawave.security.authorization.DatawaveUser;
 import datawave.webservice.query.result.metadata.MetadataFieldBase;
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
@@ -74,7 +76,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         this.responseObjectFactory = responseObjectFactory;
         this.userAuthFunctions = userAuthFunctions;
         this.accumuloConnector = accumuloConnector;
-        dataDictionary.setNormalizerMapping(dataDictionaryConfiguration.getNormalizerMap());
+        dataDictionary.setNormalizationMap(dataDictionaryConfiguration.getNormalizerMap());
     }
     
     @ResponseBody
@@ -83,24 +85,14 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     public DataDictionaryBase<DICT,META> get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
                     @RequestParam(required = false) String metadataTableName, @RequestParam(name = "auths", required = false) String queryAuthorizations,
                     @RequestParam(defaultValue = "") String dataTypeFilters, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (null == modelName || StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
         
-        if (null == modelTableName || StringUtils.isBlank(modelTableName)) {
-            modelTableName = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        if (null == metadataTableName || StringUtils.isBlank(metadataTableName)) {
-            metadataTableName = this.dataDictionaryConfiguration.getMetadataTableName();
-        }
+        ConnectionConfig connectionConfig = getConnectionConfig(metadataTableName, modelTableName, modelName, currentUser);
+        // If the user provides authorizations, intersect it with their actual authorizations
+        connectionConfig.setAuths(getDowngradedAuthorizations(queryAuthorizations, currentUser));
         
         Collection<String> dataTypes = (StringUtils.isBlank(dataTypeFilters) ? Collections.emptyList() : Arrays.asList(dataTypeFilters.split(",")));
         
-        // If the user provides authorizations, intersect it with their actual authorizations
-        Set<Authorizations> auths = getDowngradedAuthorizations(queryAuthorizations, currentUser);
-        Collection<META> fields = dataDictionary.getFields(modelName, modelTableName, metadataTableName, dataTypes, accumuloConnector, auths,
-                        dataDictionaryConfiguration.getNumThreads());
+        Collection<META> fields = dataDictionary.getFields(connectionConfig, dataTypes, dataDictionaryConfiguration.getNumThreads());
         DICT dataDictionary = responseObjectFactory.getDataDictionary();
         dataDictionary.setFields(fields);
         // Ensure that empty internal field names will be set to the field name instead.
@@ -126,18 +118,10 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.uploadDescriptions", absolute = true)
     public VoidResponse uploadDescriptions(@RequestBody FIELDS fields, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
-        
-        if (StringUtils.isBlank(modelTable)) {
-            modelTable = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        Set<Authorizations> auths = getAuths(currentUser);
+        ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
         List<FIELD> list = fields.getFields();
         for (FIELD desc : list) {
-            dataDictionary.setDescription(accumuloConnector, dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, desc);
+            dataDictionary.addDescription(connectionConfig, desc);
         }
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
@@ -199,22 +183,14 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     public VoidResponse setDescriptionPost(@RequestParam String fieldName, @RequestParam String datatype, @RequestParam String description,
                     @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
-        
-        if (StringUtils.isBlank(modelTable)) {
-            modelTable = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        Set<Authorizations> auths = getAuths(currentUser);
         DESC desc = this.responseObjectFactory.getDescription();
         Map<String,String> markings = Maps.newHashMap();
         markings.put("columnVisibility", columnVisibility);
         desc.setMarkings(markings);
         desc.setDescription(description);
-        dataDictionary.setDescription(accumuloConnector, dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, fieldName, datatype,
-                        desc);
+        
+        ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
+        dataDictionary.addDescription(connectionConfig, fieldName, datatype, desc);
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
         return new VoidResponse();
@@ -236,17 +212,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.allDescriptions", absolute = true)
     public FIELDS allDescriptions(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
-        
-        if (StringUtils.isBlank(modelTable)) {
-            modelTable = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        Set<Authorizations> auths = getAuths(currentUser);
-        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(accumuloConnector,
-                        this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable);
+        ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
+        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connectionConfig);
         FIELDS response = this.responseObjectFactory.getFields();
         response.setDescriptions(descriptions);
         return response;
@@ -269,17 +236,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
     public FIELDS datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
-        
-        if (StringUtils.isBlank(modelTable)) {
-            modelTable = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        Set<Authorizations> auths = getAuths(currentUser);
-        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(accumuloConnector,
-                        this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, datatype);
+        ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
+        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connectionConfig, datatype);
         FIELDS response = this.responseObjectFactory.getFields();
         response.setDescriptions(descriptions);
         return response;
@@ -304,17 +262,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
     public FIELDS fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
-        
-        if (StringUtils.isBlank(modelTable)) {
-            modelTable = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        Set<Authorizations> auths = getAuths(currentUser);
-        Set<DESC> descriptions = dataDictionary.getDescriptions(accumuloConnector, this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName,
-                        modelTable, fieldName, datatype);
+        ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
+        Set<DESC> descriptions = dataDictionary.getDescriptions(connectionConfig, fieldName, datatype);
         FIELDS response = responseObjectFactory.getFields();
         if (!descriptions.isEmpty()) {
             Multimap<Entry<String,String>,DESC> mmap = HashMultimap.create();
@@ -348,26 +297,36 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     public VoidResponse deleteDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
-        if (StringUtils.isBlank(modelName)) {
-            modelName = this.dataDictionaryConfiguration.getModelName();
-        }
-        
-        if (StringUtils.isBlank(modelTable)) {
-            modelTable = this.dataDictionaryConfiguration.getModelTableName();
-        }
-        
-        Set<Authorizations> auths = getAuths(currentUser);
         Map<String,String> markings = Maps.newHashMap();
         markings.put("columnVisibility", columnVisibility);
         DESC desc = this.responseObjectFactory.getDescription();
         desc.setDescription("");
         desc.setMarkings(markings);
         
-        dataDictionary.deleteDescription(accumuloConnector, this.dataDictionaryConfiguration.getMetadataTableName(), auths, modelName, modelTable, fieldName,
-                        datatype, desc);
+        ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
+        
+        dataDictionary.deleteDescription(connectionConfig, fieldName, datatype, desc);
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
         return new VoidResponse();
+    }
+    
+    private ConnectionConfig getConnectionConfig(String modelTable, String modelName, ProxiedUserDetails user) {
+        return getConnectionConfig(dataDictionaryConfiguration.getMetadataTableName(), modelTable, modelName, user);
+    }
+    
+    private ConnectionConfig getConnectionConfig(String metadataTable, String modelTable, String modelName, ProxiedUserDetails user) {
+        ConnectionConfig helper = new ConnectionConfig();
+        helper.setMetadataTable(getSupplierValueIfBlank(metadataTable, dataDictionaryConfiguration::getMetadataTableName));
+        helper.setModelTable(getSupplierValueIfBlank(modelTable, dataDictionaryConfiguration::getModelTableName));
+        helper.setModelName(getSupplierValueIfBlank(modelName, dataDictionaryConfiguration::getModelName));
+        helper.setAuths(getAuths(user));
+        helper.setConnector(accumuloConnector);
+        return helper;
+    }
+    
+    private String getSupplierValueIfBlank(final String value, final Supplier<String> supplier) {
+        return StringUtils.isBlank(value) ? supplier.get() : value;
     }
     
     private Set<Authorizations> getAuths(ProxiedUserDetails currentUser) {

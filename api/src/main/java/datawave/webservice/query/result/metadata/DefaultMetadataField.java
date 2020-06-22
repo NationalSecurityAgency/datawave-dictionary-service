@@ -1,5 +1,22 @@
 package datawave.webservice.query.result.metadata;
 
+import datawave.webservice.query.result.event.MapSchema;
+import datawave.webservice.results.datadictionary.DefaultDescription;
+import datawave.webservice.results.datadictionary.DescriptionBase;
+import io.protostuff.Input;
+import io.protostuff.Message;
+import io.protostuff.Output;
+import io.protostuff.Schema;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -9,25 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-
-import datawave.webservice.query.result.event.MapSchema;
-import datawave.webservice.results.datadictionary.DefaultDescription;
-
-import datawave.webservice.results.datadictionary.DescriptionBase;
-
-import io.protostuff.Input;
-import io.protostuff.Message;
-import io.protostuff.Output;
-import io.protostuff.Schema;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = {"fieldName", "internalFieldName", "dataType", "descriptions", "indexOnly", "forwardIndexed", "reverseIndexed", "normalized", "tokenized",
@@ -168,6 +166,24 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
     @Override
     public int hashCode() {
         return new HashCodeBuilder(6197, 7993).append(this.fieldName).hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        DefaultMetadataField field = (DefaultMetadataField) o;
+        
+        return new EqualsBuilder().append(fieldName, field.fieldName).append(internalFieldName, field.internalFieldName).append(dataType, field.dataType)
+                        .append(indexOnly, field.indexOnly).append(forwardIndexed, field.forwardIndexed).append(normalized, field.normalized)
+                        .append(reverseIndexed, field.reverseIndexed).append(tokenized, field.tokenized).append(types, field.types)
+                        .append(descriptions, field.descriptions).append(lastUpdated, field.lastUpdated).isEquals();
     }
     
     @SuppressWarnings("unused")
