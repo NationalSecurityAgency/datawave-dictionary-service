@@ -57,7 +57,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     /**
      * Retrieve metadata fields from the specified metadata table, aggregated by field name and data type.
      *
-     * <p/>
+     * <p>
      *
      * If no data types are specified, then all metadata fields are returned. Otherwise, only metadata fields with one of the specified data types will be
      * returned.
@@ -149,7 +149,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     /**
      * Retrieve all descriptions for metadata field entries.
      *
-     * <p/>
+     * <p>
      *
      * If an alias exists for the given field name, that alias will be used when attempting to retrieve the descriptions.
      *
@@ -167,7 +167,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     /**
      * Retrieves all descriptions for metadata entries with the specified data type.
      *
-     * <p/>
+     * <p>
      *
      * If an alias exists for the given field name, that alias will be used when attempting to retrieve the descriptions.
      *
@@ -187,7 +187,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     /**
      * Retrieves all descriptions for metadata entries with the specified field name and data type combination.
      *
-     * <p/>
+     * <p>
      *
      * If an alias exists for the given field name, that alias will be used when attempting to retrieve the descriptions.
      *
@@ -209,7 +209,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     /**
      * Deletes the specified description for the specified field name and data type combination.
      *
-     * <p/>
+     * <p>
      *
      * If an alias exists for the given field name, that alias will be used when attempting to delete the description.
      *
@@ -232,19 +232,8 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         descriptionsHelper.removeDescription(new MetadataEntry(fieldName, datatype), description);
     }
     
-    /**
-     * Transform the {@link MetadataEntry} key of the specified map into {@link <fieldName,dataType>} entries.
-     *
-     * <p>
-     *
-     * If an alias exists for a field name, that alias will be returned instead of the field name.
-     *
-     * @param descriptions
-     *            the descriptions to transform
-     * @param connectionConfig
-     *            the connection config to use when retrieving the aliases
-     * @return the transformed map
-     */
+    // Transform the MetadataEntry key of the specified map into <fieldName,dataType> entries.
+    // If an alias exists for a field name, that alias will be returned instead of the field name.
     private Multimap<Entry<String,String>,DefaultDescription> transformKeys(Multimap<MetadataEntry,DefaultDescription> descriptions,
                     ConnectionConfig connectionConfig) throws ExecutionException, TableNotFoundException {
         Map<String,String> aliases = getAliases(connectionConfig);
@@ -262,24 +251,14 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         return transformedDescriptions;
     }
     
-    /**
-     * Return a new, initialized {@link MetadataDescriptionsHelper}
-     *
-     * @param connectionConfig
-     *            the connection configuration to use when initializing the helper
-     * @return the {@link MetadataDescriptionsHelper}
-     */
+    // Return a new, initialized metadata description helper.
     private MetadataDescriptionsHelper<DefaultDescription> getInitializedDescriptionsHelper(ConnectionConfig connectionConfig) {
         MetadataDescriptionsHelper<DefaultDescription> helper = metadataDescriptionsHelperFactory.createMetadataDescriptionsHelper();
         helper.initialize(connectionConfig.getConnector(), connectionConfig.getMetadataTable(), connectionConfig.getAuths());
         return helper;
     }
     
-    /**
-     * Return the alias map for the query model in the specified connection config.
-     *
-     * @return the alias map, or an empty map if no query model exists
-     */
+    // Return the alias map for the query model in the specified connection config.
     private Map<String,String> getAliases(ConnectionConfig connectionConfig) throws ExecutionException, TableNotFoundException {
         MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connectionConfig.getConnector(), connectionConfig.getMetadataTable(),
                         connectionConfig.getAuths());
@@ -287,11 +266,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
         return model != null ? model.getReverseQueryMapping() : Collections.emptyMap();
     }
     
-    /**
-     * Retrieve the alias for the specified field name from the alias map for the specified field name.
-     *
-     * @return the alias, or null if no alias exists
-     */
+    // Retrieve the alias for the specified field name from the alias map for the specified field name.
     private String getAlias(String fieldName, ConnectionConfig connectionConfig) throws ExecutionException, TableNotFoundException {
         Map<String,String> map = getAliases(connectionConfig);
         Map<String,String> reversedMap = map.entrySet().stream().collect(Collectors.toMap(Entry::getValue, Entry::getKey));

@@ -68,6 +68,7 @@ public class DefaultMetadataFieldScanner {
      * Create and return a scanner that will aggregate metadata entries by their row.
      * 
      * @return the scanner
+     * @throws TableNotFoundException if the metadata table is not found
      */
     private BatchScanner createScanner() throws TableNotFoundException {
         BatchScanner scanner = ScannerHelper.createBatchScanner(connectionConfig.getConnector(), connectionConfig.getMetadataTable(),
@@ -198,9 +199,7 @@ public class DefaultMetadataFieldScanner {
             }
         }
         
-        /**
-         * Set the current variables from the specified entry.
-         */
+        // Set the current variables from the specified entry.
         private void setCurrentVars(Map.Entry<Key,Value> entry) {
             currKey = entry.getKey();
             currValue = entry.getValue();
@@ -209,32 +208,24 @@ public class DefaultMetadataFieldScanner {
             currColumnQualifier = currKey.getColumnQualifier().toString();
         }
         
-        /**
-         * Return true if the current column family is equal to the specified text, or false otherwise.
-         */
+        // Return true if the current column family is equal to the specified text, or false otherwise.
         private boolean isColumnFamly(Text columnFamily) {
             return columnFamily.equals(currColumnFamily);
         }
         
-        /**
-         * Return true if all data types are allowed or if the given data type is in the set of data type filters, or false otherwise.
-         */
+        // Return true if all data types are allowed or if the given data type is in the set of data type filters, or false otherwise.
         private boolean hasAllowedDataType(String dataType) {
             return acceptAllDataTypes || dataTypeFilters.contains(dataType);
         }
         
-        /**
-         * Return the data type from the current column qualifier.
-         */
+        // Return the data type from the current column qualifier.
         private String getDataType() {
             int nullPos = currColumnQualifier.indexOf('\0');
             return (nullPos < 0) ? currColumnQualifier : currColumnQualifier.substring(0, nullPos);
         }
         
-        /**
-         * Set the current {@link DefaultMetadataField}. If a field already exists for the given field name and data type combination, it will be reused,
-         * otherwise a new {@link DefaultMetadataField} will be created.
-         */
+        //Set the current {@link DefaultMetadataField}. If a field already exists for the given field name and data type combination, it will be reused,
+        //  otherwise a new {@link DefaultMetadataField} will be created.
         private void setCurrentField(final String dataType) {
             Map<String,DefaultMetadataField> dataTypes = fields.computeIfAbsent(currRow.toString(), k -> Maps.newHashMap());
             currField = dataTypes.get(dataType);
@@ -249,10 +240,8 @@ public class DefaultMetadataFieldScanner {
             }
         }
         
-        /**
-         * Set the field name for the current {@link DefaultMetadataField}. If an alias exists for the field name, the alias will be used as the primary field
-         * name while the original field name is relegated to the internal field name.
-         */
+        // Set the field name for the current {@link DefaultMetadataField}. If an alias exists for the field name, the alias will be used as the primary field
+        // name while the original field name is relegated to the internal field name.
         private void setFieldNameAndAlias() {
             String fieldName = currKey.getRow().toString();
             if (aliases.containsKey(fieldName)) {
@@ -263,9 +252,7 @@ public class DefaultMetadataFieldScanner {
             }
         }
         
-        /**
-         * Extract the description from the current value and add it to the current {@link DefaultMetadataField}.
-         */
+        // Extract the description from the current value and add it to the current {@link DefaultMetadataField}.
         private void setDescriptions() throws MarkingFunctions.Exception {
             DefaultDescription description = responseObjectFactory.getDescription();
             description.setDescription(currValue.toString());
@@ -273,10 +260,8 @@ public class DefaultMetadataFieldScanner {
             currField.getDescriptions().add(description);
         }
         
-        /**
-         * Set the normalized type for the current {@link DefaultMetadataField}. If no normalized version can be found for the type, the type will default to
-         * "Unknown".
-         */
+        // Set the normalized type for the current {@link DefaultMetadataField}. If no normalized version can be found for the type, the type will default to
+        // "Unknown".
         private void setType() {
             int nullPos = currColumnQualifier.indexOf('\0');
             String type = currColumnQualifier.substring(nullPos + 1);
@@ -284,9 +269,7 @@ public class DefaultMetadataFieldScanner {
             currField.addType(normalizedType != null ? normalizedType : "Unknown");
         }
         
-        /**
-         * Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
-         */
+        // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
         private void setLastUpdated() {
             currField.setLastUpdated(DATE_FORMATTER.print(currKey.getTimestamp()));
         }

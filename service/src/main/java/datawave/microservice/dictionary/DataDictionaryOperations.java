@@ -109,6 +109,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
      *            Optional model name
      * @param modelTable
      *            Optional model table name
+     * @param currentUser
+     *            The user sending the request
      * @return a VoidResponse
      * @throws Exception
      *             if there is any problem uploading the descriptions
@@ -143,6 +145,8 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
      *            Optional model table name
      * @param columnVisibility
      *            ColumnVisibility of the description
+     * @param currentUser
+     *            The user sending the request
      * @return a {@link VoidResponse}
      * @throws Exception
      *             if there is any problem updating the description
@@ -160,21 +164,15 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     /**
      * Set a description for a field in a datatype, optionally applying a model to the field name.
      *
-     * @param fieldName
-     *            Name of field
-     * @param datatype
-     *            Name of datatype
-     * @param description
-     *            Description of field
-     * @param modelName
-     *            Optional model name
-     * @param modelTable
-     *            Optional model table name
-     * @param columnVisibility
-     *            ColumnVisibility of the description
+     * @param fieldName        Name of field
+     * @param datatype         Name of datatype
+     * @param description      Description of field
+     * @param modelName        Optional model name
+     * @param modelTable       Optional model table name
+     * @param columnVisibility ColumnVisibility of the description
+     * @param currentUser      The user sending the request
      * @return Description of fields
-     * @throws Exception
-     *             if there is any problem updating the dictionary item description
+     * @throws Exception if there is any problem updating the dictionary item description
      */
     @RolesAllowed({"Administrator", "JBossAdministrator"})
     @PostMapping(path = "/Descriptions", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
@@ -199,13 +197,11 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     /**
      * Fetch all descriptions stored in the database, optionally applying a model.
      *
-     * @param modelName
-     *            Optional model name
-     * @param modelTable
-     *            Optional model table name
+     * @param modelName  Optional model name
+     * @param modelTable Optional model table name
+     * @param currentUser The user sending the request
      * @return the dictionary descriptions
-     * @throws Exception
-     *             if there is any problem retrieving the descriptions from Accumulo
+     * @throws Exception if there is any problem retrieving the descriptions from Accumulo
      */
     @RequestMapping(path = "/Descriptions")
     @ResponseBody
@@ -222,15 +218,12 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     /**
      * Fetch all descriptions for a datatype, optionally applying a model to the field names.
      *
-     * @param datatype
-     *            Name of datatype
-     * @param modelName
-     *            Optional model name
-     * @param modelTable
-     *            Optional model table name
+     * @param datatype   Name of datatype
+     * @param modelName  Optional model name
+     * @param modelTable Optional model table name
+     * @param currentUser The user sending the request
      * @return the dictionary descriptions for {@code datatype}
-     * @throws Exception
-     *             if there is any problem retrieving the descriptions from Accumulo
+     * @throws Exception if there is any problem retrieving the descriptions from Accumulo
      */
     @RequestMapping(path = "/Descriptions/{datatype}")
     @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
@@ -246,17 +239,13 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     /**
      * Fetch the description for a field in a datatype, optionally applying a model.
      *
-     * @param fieldName
-     *            Name of field
-     * @param datatype
-     *            Name of datatype
-     * @param modelName
-     *            Optional model name
-     * @param modelTable
-     *            Optional model table name
+     * @param fieldName  Name of field
+     * @param datatype   Name of datatype
+     * @param modelName  Optional model name
+     * @param modelTable Optional model table name
+     * @param currentUser The user sending the request
      * @return the dictionary descriptions for field {@code fieldName} in the type {@code dataType}
-     * @throws Exception
-     *             if there is any problem retrieving the descriptions from Accumulo
+     * @throws Exception if there is any problem retrieving the descriptions from Accumulo
      */
     @RequestMapping(path = "/Descriptions/{datatype}/{fieldName}")
     @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
@@ -278,17 +267,14 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     /**
      * Delete a description for a field in a datatype, optionally applying a model to the field name.
      *
-     * @param fieldName
-     *            Name of field
-     * @param datatype
-     *            Name of datatype
-     * @param modelName
-     *            Optional model name
-     * @param modelTable
-     *            Optional model table name
+     * @param fieldName  Name of field
+     * @param datatype   Name of datatype
+     * @param modelName  Optional model name
+     * @param modelTable Optional model table name
+     * @param columnVisibility the column visibility
+     * @param currentUser The user sending the request
      * @return a {@link VoidResponse} with operation time and error information
-     * @throws Exception
-     *             if there is any problem removing the description from Accumulo
+     * @throws Exception if there is any problem removing the description from Accumulo
      */
     @RolesAllowed({"Administrator", "JBossAdministrator"})
     @DeleteMapping(path = "/Descriptions/{datatype}/{fieldName}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
