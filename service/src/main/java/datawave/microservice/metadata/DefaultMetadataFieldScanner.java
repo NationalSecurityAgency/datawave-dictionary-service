@@ -68,7 +68,8 @@ public class DefaultMetadataFieldScanner {
      * Create and return a scanner that will aggregate metadata entries by their row.
      * 
      * @return the scanner
-     * @throws TableNotFoundException if the metadata table is not found
+     * @throws TableNotFoundException
+     *             if the metadata table is not found
      */
     private BatchScanner createScanner() throws TableNotFoundException {
         BatchScanner scanner = ScannerHelper.createBatchScanner(connectionConfig.getConnector(), connectionConfig.getMetadataTable(),
@@ -224,8 +225,8 @@ public class DefaultMetadataFieldScanner {
             return (nullPos < 0) ? currColumnQualifier : currColumnQualifier.substring(0, nullPos);
         }
         
-        //Set the current {@link DefaultMetadataField}. If a field already exists for the given field name and data type combination, it will be reused,
-        //  otherwise a new {@link DefaultMetadataField} will be created.
+        // Set the current {@link DefaultMetadataField}. If a field already exists for the given field name and data type combination, it will be reused,
+        // otherwise a new {@link DefaultMetadataField} will be created.
         private void setCurrentField(final String dataType) {
             Map<String,DefaultMetadataField> dataTypes = fields.computeIfAbsent(currRow.toString(), k -> Maps.newHashMap());
             currField = dataTypes.get(dataType);
