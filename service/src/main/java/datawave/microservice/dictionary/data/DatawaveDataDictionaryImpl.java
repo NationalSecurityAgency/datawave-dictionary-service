@@ -79,7 +79,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
     }
     
     /**
-     * Add the specified description to the metadata table for the field name and data type combination supplied by the description.
+     * Set the specified description to the metadata table for the field name and data type combination supplied by the description.
      *
      * <p>
      *
@@ -91,12 +91,12 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
      *            the description to add
      */
     @Override
-    public void addDescription(ConnectionConfig connectionConfig, DefaultDictionaryField description) throws Exception {
-        this.addDescriptions(connectionConfig, description.getFieldName(), description.getDatatype(), description.getDescriptions());
+    public void setDescription(ConnectionConfig connectionConfig, DefaultDictionaryField description) throws Exception {
+        this.setDescriptions(connectionConfig, description.getFieldName(), description.getDatatype(), description.getDescriptions());
     }
     
     /**
-     * Add the specified description to the metadata table for the specified field name and data type combination.
+     * Set the specified description to the metadata table for the specified field name and data type combination.
      *
      * <p>
      *
@@ -112,12 +112,12 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
      *            the description to add
      */
     @Override
-    public void addDescription(ConnectionConfig connectionConfig, String fieldName, String datatype, DefaultDescription description) throws Exception {
-        addDescriptions(connectionConfig, fieldName, datatype, Collections.singleton(description));
+    public void setDescription(ConnectionConfig connectionConfig, String fieldName, String datatype, DefaultDescription description) throws Exception {
+        setDescriptions(connectionConfig, fieldName, datatype, Collections.singleton(description));
     }
     
     /**
-     * Add the specified descriptions to the metadata table for the specified field name and data type combination.
+     * Set the specified descriptions to the metadata table for the specified field name and data type combination.
      *
      * <p>
      *
@@ -133,7 +133,7 @@ public class DatawaveDataDictionaryImpl implements DatawaveDataDictionary<Defaul
      *            the descriptions to add
      */
     @Override
-    public void addDescriptions(ConnectionConfig connectionConfig, String fieldName, String datatype, Set<DefaultDescription> descriptions) throws Exception {
+    public void setDescriptions(ConnectionConfig connectionConfig, String fieldName, String datatype, Set<DefaultDescription> descriptions) throws Exception {
         // TODO - Consider skipping this. We check for an alias when retrieving descriptions or metadata fields anyway, rendering this unnecessary.
         String alias = getAlias(fieldName, connectionConfig);
         if (null != alias) {

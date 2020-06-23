@@ -123,7 +123,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
         List<FIELD> list = fields.getFields();
         for (FIELD desc : list) {
-            dataDictionary.addDescription(connectionConfig, desc);
+            dataDictionary.setDescription(connectionConfig, desc);
         }
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
@@ -196,7 +196,7 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
         desc.setDescription(description);
         
         ConnectionConfig connectionConfig = getConnectionConfig(modelTable, modelName, currentUser);
-        dataDictionary.addDescription(connectionConfig, fieldName, datatype, desc);
+        dataDictionary.setDescription(connectionConfig, fieldName, datatype, desc);
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
         return new VoidResponse();

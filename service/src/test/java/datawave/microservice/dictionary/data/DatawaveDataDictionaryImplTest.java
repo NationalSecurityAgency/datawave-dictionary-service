@@ -97,7 +97,7 @@ public class DatawaveDataDictionaryImplTest {
         givenInitializedMetadataDescriptionsHelper();
         
         // Execute function under test.
-        dataDictionary.addDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
+        dataDictionary.setDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
         
         // Verify expected calls.
         Set<DefaultDescription> descriptions = Collections.singleton(description);
@@ -126,7 +126,7 @@ public class DatawaveDataDictionaryImplTest {
         givenInitializedMetadataDescriptionsHelper();
         
         // Execute function under test.
-        dataDictionary.addDescription(connectionConfig, dictionaryField);
+        dataDictionary.setDescription(connectionConfig, dictionaryField);
         
         // Verify expected calls.
         verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
@@ -149,7 +149,7 @@ public class DatawaveDataDictionaryImplTest {
         givenInitializedMetadataDescriptionsHelper();
         
         // Execute function under test.
-        dataDictionary.addDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
+        dataDictionary.setDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
         
         // Verify expected calls.
         verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
@@ -172,7 +172,7 @@ public class DatawaveDataDictionaryImplTest {
         givenInitializedMetadataDescriptionsHelper();
         
         // Execute function under test.
-        dataDictionary.addDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
+        dataDictionary.setDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
         
         // Verify expected calls.
         verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);

@@ -18,11 +18,11 @@ public interface DatawaveDataDictionary<META extends MetadataFieldBase<META,DESC
     
     Collection<META> getFields(ConnectionConfig connectionConfig, Collection<String> dataTypeFilters, int numThreads) throws Exception;
     
-    void addDescription(ConnectionConfig connectionConfig, FIELD description) throws Exception;
+    void setDescription(ConnectionConfig connectionConfig, FIELD description) throws Exception;
     
-    void addDescription(ConnectionConfig connectionConfig, String fieldName, String datatype, DESC description) throws Exception;
+    void setDescription(ConnectionConfig connectionConfig, String fieldName, String datatype, DESC description) throws Exception;
     
-    void addDescriptions(ConnectionConfig connectionConfig, String fieldName, String datatype, Set<DESC> descriptions) throws Exception;
+    void setDescriptions(ConnectionConfig connectionConfig, String fieldName, String datatype, Set<DESC> descriptions) throws Exception;
     
     Multimap<Entry<String,String>,DESC> getDescriptions(ConnectionConfig connectionConfig) throws Exception;
     
