@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -257,6 +258,11 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
         builder.append("</table>\n");
         
         return builder.toString();
+    }
+    
+    @Override
+    public void transformFields(Consumer<DefaultMetadataField> transformer) {
+        fields.forEach(transformer);
     }
     
     @Override

@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultDataDictionary.class)
@@ -31,4 +32,6 @@ public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends 
     public abstract String getPageHeader();
     
     public abstract String getMainContent();
+    
+    public abstract void transformFields(final Consumer<M> transformer);
 }
