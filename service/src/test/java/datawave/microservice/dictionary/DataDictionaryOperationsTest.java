@@ -113,7 +113,6 @@ public class DataDictionaryOperationsTest {
         // @formatter:on
         
         ResponseEntity<DefaultDataDictionary> response = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, DefaultDataDictionary.class);
-        System.out.println(response.toString());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     
