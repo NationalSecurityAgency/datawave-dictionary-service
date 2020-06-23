@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
@@ -58,6 +59,12 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
     private final ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory;
     private final UserAuthFunctions userAuthFunctions;
     private final Connector accumuloConnector;
+    
+    private final Consumer<META> TRANSFORM_EMPTY_INTERNAL_FIELD_NAMES = meta -> {
+        if (meta.getInternalFieldName() == null || meta.getInternalFieldName().isEmpty()) {
+            meta.setInternalFieldName(meta.getFieldName());
+        }
+    };
     
     public DataDictionaryOperations(DataDictionaryProperties dataDictionaryConfiguration, DatawaveDataDictionary<META,DESC,FIELD> dataDictionary,
                     ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory, UserAuthFunctions userAuthFunctions,
@@ -96,8 +103,9 @@ public class DataDictionaryOperations<DESC extends DescriptionBase<DESC>,DICT ex
                         dataDictionaryConfiguration.getNumThreads());
         DICT dataDictionary = responseObjectFactory.getDataDictionary();
         dataDictionary.setFields(fields);
+        // Ensure that empty internal field names will be set to the field name instead.
+        dataDictionary.transformFields(TRANSFORM_EMPTY_INTERNAL_FIELD_NAMES);
         return dataDictionary;
-        
     }
     
     /**
