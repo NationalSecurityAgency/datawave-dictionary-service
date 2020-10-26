@@ -42,9 +42,14 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
      * Pagination on the table is turned off, we do an ascending sort on the 2nd column (field name) and a cookie is saved in the browser that will leave the
      * last sort in place upon revisit of the page.
      */
-    private static final String DATA_TABLES_TEMPLATE = "<script type=''text/javascript'' src=''{0}jquery.min.js''></script>\n"
-                    + "<script type=''text/javascript'' src=''{1}jquery.dataTables.min.js''></script>\n" + "<script type=''text/javascript''>\n"
-                    + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}') '}')\n"
+    private static final String AG_GRID_TEMPLATE = "<script type=''text/javascript'' src=''{0}jquery.min.js''></script>\n"
+                    + "<script type=''text/javascript'' src=''{1}24.0.0/dist/ag-grid-community.min.js''></script>\n" + "<script type=''text/javascript''>\n"
+                    + "var columnDefs = [\n" + "  " + " '{'headerName: \"FieldName\", field: \"fieldname\"'}',\n"
+                    + " '{'headerName: \"Internal FieldName\", field: \"internalFieldName\"'}',\n" + " '{'headerName: \"Data Type\", field: \"datatype\"'}',\n"
+                    + " '{'headerName: \"Index Only\", field: \"indexOnly\"'}',\n" + " '{'headerName: \"Forward Indexed\", field: \"forwardIndexed\"'}',\n"
+                    + " '{'headerName: \"Reverse Indexed\", field: \"reverseIndexed\"'}',\n" + " '{'headerName: \"Normalized\", field: \"normalized\"'}',\n"
+                    + " '{'headerName: \"Types\", field: \"types\"'}',\n" + " '{'headerName: \"Tokenized\", field: \"tokenized\"'}',\n"
+                    + " '{'headerName: \"Description\", field: \"description\"'}',\n" + " '{'headerName: \"Last Updated\", field: \"lastUpdated\"'}'\n" + "];\n"
                     + "</script>\n";
     
     private final String dataTablesHeader;
@@ -57,11 +62,11 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
     private Long totalResults = null;
     
     public DefaultDataDictionary() {
-        this("/webjars/jquery/", "/webjars/datatables/");
+        this("/webjars/jquery/", "/webjars/ag-grid-community/");
     }
     
     public DefaultDataDictionary(String jqueryUri, String datatablesUri) {
-        this.dataTablesHeader = MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, datatablesUri);
+        this.dataTablesHeader = MessageFormat.format(AG_GRID_TEMPLATE, jqueryUri, datatablesUri);
     }
     
     public DefaultDataDictionary(Collection<DefaultMetadataField> fields) {
@@ -205,16 +210,22 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
         builder.append("query terms will be treated (e.g. text, number, IPv4 address, etc). The same applies for the reverse index types with ");
         builder.append("the caveat that you can also query these fields using leading wildcards. Fields that are marked as 'Index only' will not ");
         builder.append("appear in a result set unless explicitly queried on. Index only fields are typically composite fields, derived from actual data, ");
-        builder.append("created by the software to make querying easier.</p>");
-        builder.append("</div>");
-        builder.append("<table id=\"myTable\">\n");
+        builder.append("created by the software to make querying easier.</p><input type=\"text\" id=\"filter-text-box\" placeholder=\"Filter...\" oninput=\"onFilterTextBoxChanged()\"/>");
         
-        builder.append("<thead><tr><th>FieldName</th><th>Internal FieldName</th><th>DataType</th>");
-        builder.append("<th>Index only</th><th>Forward Indexed</th><th>Reverse Indexed</th><th>Normalized</th><th>Types</th><th>Tokenized</th><th>Description</th><th>LastUpdated</th></tr></thead>");
+        builder.append("</div><div id=\"myGrid\" style=\"margin-left: auto;\n" + "        margin-right: auto;" + "        min-width: 60%;"
+                        + "        max-width: 95%;" + "        border: 1px #333333 solid;" + "        border-spacing-top: 0;"
+                        + "        border-spacing-bottom: 0;" + "        border: 1px #333333 solid;"
+                        + "        border: 1px #333333 solid;\" class=\"ag-theme-alpine\"></div>");
         
-        builder.append("<tbody>");
+        builder.append("<script type=''text/javascript''>\n var rowData = [");
+        boolean first = true;
         for (DefaultMetadataField f : this.getFields()) {
-            builder.append("<tr>");
+            if (!first) {
+                builder.append(",");
+            } else {
+                first = false;
+            }
+            builder.append("{");
             
             String fieldName = (null == f.getFieldName()) ? EMPTY_STR : f.getFieldName();
             String internalFieldName = (null == f.getInternalFieldName()) ? EMPTY_STR : f.getInternalFieldName();
@@ -230,32 +241,36 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
                 }
             }
             
-            builder.append("<td>").append(fieldName).append("</td>");
-            builder.append("<td>").append(internalFieldName).append("</td>");
-            builder.append("<td>").append(datatype).append("</td>");
-            builder.append("<td>").append(f.isIndexOnly()).append("</td>");
-            builder.append("<td>").append(f.isForwardIndexed() ? true : "").append("</td>");
-            builder.append("<td>").append(f.isReverseIndexed() ? true : "").append("</td>");
-            builder.append("<td>").append(f.getTypes() != null && f.getTypes().size() > 0 ? "true" : "false").append("</td>");
-            builder.append("<td>").append(types).append("</td>");
-            builder.append("<td>").append(f.isTokenized() ? true : "").append("</td>");
-            builder.append("<td>");
+            builder.append("\"fieldname\":\"").append(fieldName).append("\",");
+            builder.append("\"internalFieldName\":\"").append(internalFieldName).append("\",");
+            builder.append("\"datatype\":\"").append(datatype).append("\",");
+            builder.append("\"indexOnly\":\"").append(f.isIndexOnly()).append("\",");
+            builder.append("\"forwardIndexed\":\"").append(f.isForwardIndexed() ? true : "").append("\",");
+            builder.append("\"reverseIndexed\":\"").append(f.isReverseIndexed() ? true : "").append("\",");
+            builder.append("\"normalized\":\"").append(f.getTypes() != null && f.getTypes().size() > 0 ? "true" : "false").append("\",");
+            builder.append("\"types\":\"").append(types).append("\",");
+            builder.append("\"tokenized\":\"").append(f.isTokenized() ? true : "").append("\",");
+            builder.append("\"description\":\"");
             
-            boolean first = true;
+            boolean firstDesc = true;
             for (DescriptionBase desc : f.getDescriptions()) {
-                if (!first) {
+                if (!firstDesc) {
                     builder.append(", ");
                 }
                 builder.append(desc.getMarkings()).append(" ").append(desc.getDescription());
                 first = false;
             }
             
-            builder.append("</td>");
-            builder.append("<td>").append(f.getLastUpdated()).append("</td>").append("</tr>");
+            builder.append("\",");
+            builder.append("\"lastUpdated\":\"").append(f.getLastUpdated()).append("\"").append("}");
         }
-        builder.append("</tbody>");
-        
-        builder.append("</table>\n");
+        builder.append("];\n");
+        builder.append("    \n" + "// specify the data\n" + "// let the grid know which columns and what data to use\n" + "var gridOptions = {\n"
+                        + "  columnDefs: columnDefs,\n" + "  rowData: rowData,\ndefaultColDef: { pagination: true, sortable: true, filter: true\n" + "  },"
+                        + "};\n" + "\n" + "// setup the grid after the page has finished loading\n" + "\n"
+                        + "    new agGrid.Grid($('#myGrid').get(0), gridOptions);\n" + "\n" + "function onFilterTextBoxChanged() {\n"
+                        + "    gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);\n" + "}");
+        builder.append("</script>\n");
         
         return builder.toString();
     }

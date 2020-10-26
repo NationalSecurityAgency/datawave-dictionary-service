@@ -71,7 +71,7 @@ public class DictionaryServiceConfiguration {
             @Override
             public DefaultDataDictionary getDataDictionary() {
                 return new DefaultDataDictionary(datawaveServerProperties.getCdnUri() + "webjars/jquery/",
-                                datawaveServerProperties.getCdnUri() + "webjars/datatables/js/");
+                                datawaveServerProperties.getCdnUri() + "webjars/ag-grid-community/");
             }
             
             @Override
