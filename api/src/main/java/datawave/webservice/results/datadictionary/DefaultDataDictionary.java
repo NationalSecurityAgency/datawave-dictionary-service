@@ -267,10 +267,11 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
         builder.append("];\n");
         builder.append("    \n" + "// specify the data\n" + "// let the grid know which columns and what data to use\n" + "var gridOptions = {\n"
                         + "  columnDefs: columnDefs,\n"
-                        + "  rowData: rowData,paginationAutoPageSize: true, pagination: true,\ndefaultColDef: { sortable: true, filter: true\n" + "  },"
+                        + "  rowData: rowData,paginationAutoPageSize: true, pagination: true,\ndefaultColDef: { resizable: true, sortable: true, filter: true\n" + "  },"
                         + "};\n" + "\n" + "// setup the grid after the page has finished loading\n" + "\n"
                         + "    new agGrid.Grid($('#myGrid').get(0), gridOptions);\n" + "\n" + "function onFilterTextBoxChanged() {\n"
-                        + "    gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);\n" + "}");
+                        + "    gridOptions.api.setQuickFilter(document.getElementById('filter-text-box').value);\n"
+                        + "    gridOptions.api.autoSizeAllColumns(true); }");
         builder.append("</script>\n");
         
         return builder.toString();
