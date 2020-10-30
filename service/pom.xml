@@ -21,7 +21,7 @@
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.microservice.dictionary-api>1.2-SNAPSHOT</version.microservice.dictionary-api>
         <version.microservice.starter>1.6.3</version.microservice.starter>
-        <version.webjars.datatables>1.10.19</version.webjars.datatables>
+        <version.webjars.ag-grid-community>24.0.0</version.webjars.ag-grid-community>
         <version.webjars.jquery>3.3.1-2</version.webjars.jquery>
     </properties>
     <dependencyManagement>
@@ -38,13 +38,13 @@
             </dependency>
             <dependency>
                 <groupId>org.webjars</groupId>
-                <artifactId>datatables</artifactId>
-                <version>${version.webjars.datatables}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars</groupId>
                 <artifactId>jquery</artifactId>
                 <version>${version.webjars.jquery}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.npm</groupId>
+                <artifactId>ag-grid-community</artifactId>
+                <version>${version.webjars.ag-grid-community}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
@@ -78,15 +78,15 @@
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
-            <artifactId>datatables</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>ag-grid-community</artifactId>
         </dependency>
         <dependency>
             <groupId>gov.nsa.datawave.contrib</groupId>
