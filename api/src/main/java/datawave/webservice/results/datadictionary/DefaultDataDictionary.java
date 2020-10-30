@@ -18,6 +18,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.query.result.metadata.DefaultMetadataField;
 import datawave.webservice.result.TotalResultsAware;
@@ -26,6 +28,7 @@ import io.protostuff.Input;
 import io.protostuff.Message;
 import io.protostuff.Output;
 import io.protostuff.Schema;
+import org.apache.avro.data.Json;
 
 @XmlRootElement(name = "DefaultDataDictionary")
 @XmlAccessorType(XmlAccessType.NONE)
@@ -219,13 +222,15 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
         
         builder.append("<script type=''text/javascript''>\n var rowData = [");
         boolean first = true;
+        Gson gson = new Gson();
         for (DefaultMetadataField f : this.getFields()) {
             if (!first) {
                 builder.append(",");
             } else {
                 first = false;
             }
-            builder.append("{");
+            
+            JsonObject jsonObject = new JsonObject();
             
             String fieldName = (null == f.getFieldName()) ? EMPTY_STR : f.getFieldName();
             String internalFieldName = (null == f.getInternalFieldName()) ? EMPTY_STR : f.getInternalFieldName();
@@ -241,28 +246,29 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
                 }
             }
             
-            builder.append("\"fieldname\":\"").append(fieldName).append("\",");
-            builder.append("\"internalFieldName\":\"").append(internalFieldName).append("\",");
-            builder.append("\"datatype\":\"").append(datatype).append("\",");
-            builder.append("\"indexOnly\":\"").append(f.isIndexOnly()).append("\",");
-            builder.append("\"forwardIndexed\":\"").append(f.isForwardIndexed() ? true : "").append("\",");
-            builder.append("\"reverseIndexed\":\"").append(f.isReverseIndexed() ? true : "").append("\",");
-            builder.append("\"normalized\":\"").append(f.getTypes() != null && f.getTypes().size() > 0 ? "true" : "false").append("\",");
-            builder.append("\"types\":\"").append(types).append("\",");
-            builder.append("\"tokenized\":\"").append(f.isTokenized() ? true : "").append("\",");
-            builder.append("\"description\":\"");
+            jsonObject.addProperty("fieldname", fieldName);
+            jsonObject.addProperty("internalFieldName", internalFieldName);
+            jsonObject.addProperty("datatype", datatype);
+            jsonObject.addProperty("indexOnly", f.isIndexOnly());
+            jsonObject.addProperty("forwardIndexed", f.isForwardIndexed() ? "true" : "");
+            jsonObject.addProperty("reverseIndexed", f.isReverseIndexed() ? "true" : "");
+            jsonObject.addProperty("normalized", f.getTypes() != null && f.getTypes().size() > 0 ? "true" : "false");
+            jsonObject.addProperty("types", types.toString());
+            jsonObject.addProperty("tokenized", f.isTokenized() ? "true" : "");
             
             boolean firstDesc = true;
+            StringBuilder descriptionBuilder = new StringBuilder();
             for (DescriptionBase desc : f.getDescriptions()) {
                 if (!firstDesc) {
                     builder.append(", ");
                 }
-                builder.append(desc.getMarkings()).append(" ").append(desc.getDescription());
-                first = false;
+                descriptionBuilder.append(desc.getMarkings()).append(" ").append(desc.getDescription());
+                firstDesc = false;
             }
             
-            builder.append("\",");
-            builder.append("\"lastUpdated\":\"").append(f.getLastUpdated()).append("\"").append("}");
+            jsonObject.addProperty("description", descriptionBuilder.toString());
+            jsonObject.addProperty("lastUpdated", f.getLastUpdated());
+            builder.append(gson.toJson(jsonObject));
         }
         builder.append("];\n");
         builder.append("    \n" + "// specify the data\n" + "// let the grid know which columns and what data to use\n" + "var gridOptions = {\n"
