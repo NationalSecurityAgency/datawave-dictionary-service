@@ -19,14 +19,14 @@ import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
 import org.apache.hadoop.io.Text;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,7 +38,6 @@ public class DefaultMetadataFieldScanner {
     
     private static final Logger log = LoggerFactory.getLogger(DefaultMetadataFieldScanner.class);
     private static final String TIMESTAMP_FORMAT = "yyyyMMddHHmmss";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern(TIMESTAMP_FORMAT);
     
     private final MarkingFunctions markingFunctions;
     private final ResponseObjectFactory<DefaultDescription,?,DefaultMetadataField,?,?> responseObjectFactory;
@@ -272,7 +271,7 @@ public class DefaultMetadataFieldScanner {
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
         private void setLastUpdated() {
-            currField.setLastUpdated(DATE_FORMATTER.print(currKey.getTimestamp()));
+            currField.setLastUpdated(new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date(currKey.getTimestamp())));
         }
     }
 }
