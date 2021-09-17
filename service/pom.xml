@@ -21,8 +21,9 @@
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.microservice.dictionary-api>1.2-SNAPSHOT</version.microservice.dictionary-api>
         <version.microservice.starter>1.6.3</version.microservice.starter>
-        <version.webjars.datatables>1.10.19</version.webjars.datatables>
-        <version.webjars.jquery>3.3.1-2</version.webjars.jquery>
+        <version.webjars.datatables>1.10.25</version.webjars.datatables>
+        <version.webjars.jquery>3.6.0</version.webjars.jquery>
+        <version.webjars.locator>0.48</version.webjars.locator>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -45,6 +46,11 @@
                 <groupId>org.webjars</groupId>
                 <artifactId>jquery</artifactId>
                 <version>${version.webjars.jquery}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>webjars-locator-core</artifactId>
+                <version>${version.webjars.locator}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
