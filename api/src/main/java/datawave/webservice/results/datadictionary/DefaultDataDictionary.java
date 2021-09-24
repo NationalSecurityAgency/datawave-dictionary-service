@@ -37,15 +37,19 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
     private static final String TITLE = "Data Dictionary", EMPTY_STR = "", SEP = ", ";
     
     /*
-     * Loads jQuery, DataTables, some CSS elements for DataTables, and executes `.dataTables()` on the HTML table in the payload.
+     * Loads jQuery, DataTables, some CSS elements for DataTables, and executes `.DataTable()` on the HTML table in the payload.
      * 
      * Pagination on the table is turned off, we do an ascending sort on the 2nd column (field name) and a cookie is saved in the browser that will leave the
      * last sort in place upon revisit of the page.
      */
+    // @formatter:off
     private static final String DATA_TABLES_TEMPLATE = "<script type=''text/javascript'' src=''{0}jquery.min.js''></script>\n"
                     + "<script type=''text/javascript'' src=''{1}jquery.dataTables.min.js''></script>\n" + "<script type=''text/javascript''>\n"
-                    + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}');  $(window).bind(\"load\", function() '{' $(''#myTable'').find(\"td\").css(\"word-break\", \"break-word\"); '}'); '}');\n"
+                    + "$(document).ready(function() '{' var table = $(''#myTable'').DataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}'); "
+                                                     + "table.on(''preDraw.dt'', function() '{' $(''#myTable'').find(\"td\").css(\"word-break\", \"break-word\"); '}'); "
+                                                     + "table.draw(); '}');\n"
                     + "</script>\n";
+    // @formatter:on
     
     private final String dataTablesHeader;
     
