@@ -20,10 +20,11 @@
     <properties>
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.microservice.dictionary-api>1.2-SNAPSHOT</version.microservice.dictionary-api>
-        <version.microservice.starter>1.6.3</version.microservice.starter>
-        <version.webjars.datatables>1.10.25</version.webjars.datatables>
+        <version.microservice.starter>1.6.7</version.microservice.starter>
+        <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
-        <version.webjars.locator>0.48</version.webjars.locator>
+        <version.webjars.locator>0.50</version.webjars.locator>
+        <version.zookeeper>3.4.14</version.zookeeper>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -36,6 +37,11 @@
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave</artifactId>
                 <version>${version.microservice.starter}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>${version.zookeeper}</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars</groupId>
