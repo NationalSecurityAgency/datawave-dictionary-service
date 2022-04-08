@@ -21,6 +21,7 @@
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.accumulo>1.9.3</version.accumulo>
         <version.microservice.dictionary-api>1.2-SNAPSHOT</version.microservice.dictionary-api>
+        <version.microservice.metadata-utils>1.9</version.microservice.metadata-utils>
         <version.microservice.starter>1.6.7</version.microservice.starter>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
@@ -33,6 +34,17 @@
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>dictionary-api</artifactId>
                 <version>${version.microservice.dictionary-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.microservice</groupId>
+                <artifactId>metadata-utils</artifactId>
+                <version>${version.microservice.metadata-utils}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>servlet-api</artifactId>
+                        <groupId>javax.servlet</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
