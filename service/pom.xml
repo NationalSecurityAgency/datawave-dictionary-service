@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <artifactId>dictionary-service</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <description>DATAWAVE Dictionary Service</description>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
     <scm>
@@ -20,7 +20,7 @@
     <properties>
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.accumulo>1.9.3</version.accumulo>
-        <version.microservice.dictionary-api>1.2-SNAPSHOT</version.microservice.dictionary-api>
+        <version.microservice.dictionary-api>1.2</version.microservice.dictionary-api>
         <version.microservice.metadata-utils>1.9</version.microservice.metadata-utils>
         <version.microservice.starter>1.6.7</version.microservice.starter>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
