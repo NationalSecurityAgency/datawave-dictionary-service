@@ -4,13 +4,13 @@ import com.google.common.collect.Maps;
 import datawave.data.ColumnFamilyConstants;
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.microservice.dictionary.data.ConnectionConfig;
+import datawave.microservice.Connection;
 import datawave.security.util.ScannerHelper;
-import datawave.webservice.query.result.metadata.DefaultMetadataField;
-import datawave.webservice.results.datadictionary.DefaultDataDictionary;
-import datawave.webservice.results.datadictionary.DefaultDescription;
-import datawave.webservice.results.datadictionary.DefaultDictionaryField;
-import datawave.webservice.results.datadictionary.DefaultFields;
+import datawave.webservice.metadata.DefaultMetadataField;
+import datawave.webservice.dictionary.data.DefaultDataDictionary;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultDictionaryField;
+import datawave.webservice.dictionary.data.DefaultFields;
 import org.apache.accumulo.core.client.BatchScanner;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.TableNotFoundException;
@@ -42,12 +42,12 @@ public class DefaultMetadataFieldScanner {
     private final MarkingFunctions markingFunctions;
     private final ResponseObjectFactory<DefaultDescription,?,DefaultMetadataField,?,?> responseObjectFactory;
     private final Map<String,String> normalizationMap;
-    private final ConnectionConfig connectionConfig;
+    private final Connection connectionConfig;
     private final int numThreads;
     
     public DefaultMetadataFieldScanner(MarkingFunctions markingFunctions,
                     ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields> responseObjectFactory,
-                    Map<String,String> normalizationMap, ConnectionConfig connectionConfig, int numThreads) {
+                    Map<String,String> normalizationMap, Connection connectionConfig, int numThreads) {
         this.markingFunctions = markingFunctions;
         this.responseObjectFactory = responseObjectFactory;
         this.normalizationMap = normalizationMap;

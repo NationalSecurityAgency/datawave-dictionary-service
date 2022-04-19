@@ -8,7 +8,7 @@ import datawave.marking.MarkingFunctions;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
 import datawave.query.util.MetadataEntry;
 import datawave.security.util.ScannerHelper;
-import datawave.webservice.results.datadictionary.DescriptionBase;
+import datawave.webservice.dictionary.data.DescriptionBase;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.Connector;

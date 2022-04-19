@@ -4,12 +4,12 @@ import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.data.ColumnFamilyConstants;
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.microservice.dictionary.data.ConnectionConfig;
-import datawave.webservice.query.result.metadata.DefaultMetadataField;
-import datawave.webservice.results.datadictionary.DefaultDataDictionary;
-import datawave.webservice.results.datadictionary.DefaultDescription;
-import datawave.webservice.results.datadictionary.DefaultDictionaryField;
-import datawave.webservice.results.datadictionary.DefaultFields;
+import datawave.microservice.Connection;
+import datawave.webservice.metadata.DefaultMetadataField;
+import datawave.webservice.dictionary.data.DefaultDataDictionary;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultDictionaryField;
+import datawave.webservice.dictionary.data.DefaultFields;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
@@ -20,10 +20,8 @@ import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.accumulo.core.security.ColumnVisibility;
 import org.apache.hadoop.io.Text;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -37,7 +35,6 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(JUnit4.class)
 public class DefaultMetadataFieldScannerTest {
     
     private static final String DATE = "20200115051230";
@@ -68,7 +65,7 @@ public class DefaultMetadataFieldScannerTest {
     
     private DefaultMetadataFieldScanner scanner;
     
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         InMemoryInstance instance = new InMemoryInstance();
         connector = instance.getConnector("root", new PasswordToken(""));
@@ -81,7 +78,7 @@ public class DefaultMetadataFieldScannerTest {
         normalizerMapping.put("datawave.data.type.LcNoDiacriticsType", "Text");
         normalizerMapping.put("datawave.data.type.NumberType", "Number");
         
-        ConnectionConfig connectionConfig = new ConnectionConfig();
+        Connection connectionConfig = new Connection();
         connectionConfig.setConnector(connector);
         connectionConfig.setMetadataTable(METADATA_TABLE);
         connectionConfig.setAuths(AUTHS);
