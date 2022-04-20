@@ -8,11 +8,10 @@ import datawave.microservice.dictionary.edge.EdgeDictionary;
 import datawave.security.authorization.DatawaveUser;
 import datawave.webservice.dictionary.edge.EdgeDictionaryBase;
 import datawave.webservice.dictionary.edge.MetadataBase;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
@@ -27,13 +26,13 @@ import java.util.Set;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
+@Slf4j
 @PermitAll
 @RestController
 @RequestMapping(path = "/edge/v1", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
         MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @EnableConfigurationProperties(EdgeDictionaryProperties.class)
 public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>,META extends MetadataBase<META>> {
-    private Logger log = LoggerFactory.getLogger(getClass());
     
     private final EdgeDictionaryProperties edgeDictionaryProperties;
     private final EdgeDictionary<EDGE,META> edgeDictionary;

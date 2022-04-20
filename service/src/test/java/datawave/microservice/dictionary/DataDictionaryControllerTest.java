@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.marking.MarkingFunctions;
+import datawave.microservice.ControllerIT;
 import datawave.microservice.authorization.jwt.JWTRestTemplate;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
@@ -53,54 +54,28 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.main.allow-bean-definition-overriding=true")
-public class DataDictionaryControllerTest {
-    private static Instance instance = new InMemoryInstance();
-    
-    @LocalServerPort
-    private int webServicePort;
-    
-    @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
-    
-    @Autowired
-    @Qualifier("warehouse")
-    private Connector connector;
+public class DataDictionaryControllerTest extends ControllerIT {
     
     @Autowired
     private DataDictionaryProperties dataDictionaryProperties;
     
-    private JWTRestTemplate jwtRestTemplate;
-    private ProxiedUserDetails adminUser;
-    private ProxiedUserDetails regularUser;
+    @ComponentScan(basePackages = "datawave.microservice")
+    @Configuration
+    public static class DataDictionaryImplTestConfiguration {
+        @Bean
+        @Qualifier("warehouse")
+        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
+            return new InMemoryInstance().getConnector("root", new PasswordToken(""));
+        }
+    }
     
     @BeforeEach
     public void setUp() throws Exception {
-        // Allow 403 responses through without throwing an exception so we can assert the response in the test.
-        ResponseErrorHandler errorHandler = new DefaultResponseErrorHandler() {
-            @Override
-            protected boolean hasError(HttpStatus statusCode) {
-                return super.hasError(statusCode) && statusCode.value() != 403;
-            }
-        };
-        jwtRestTemplate = restTemplateBuilder.errorHandler(errorHandler).build(JWTRestTemplate.class);
-        
         try {
             connector.tableOperations().create(dataDictionaryProperties.getMetadataTableName());
         } catch (TableExistsException e) {
             // ignore
         }
-        
-        SubjectIssuerDNPair dn = SubjectIssuerDNPair.of("userDn", "issuerDn");
-        HashSet<String> auths = Sets.newHashSet("PUBLIC", "PRIVATE");
-        HashSet<String> roles = Sets.newHashSet("AuthorizedUser", "Administrator");
-        long createTime = System.currentTimeMillis();
-        adminUser = new ProxiedUserDetails(Collections.singleton(new DatawaveUser(dn, DatawaveUser.UserType.USER, auths, roles, null, createTime)), createTime);
-        regularUser = new ProxiedUserDetails(
-                        Collections.singleton(
-                                        new DatawaveUser(dn, DatawaveUser.UserType.USER, auths, Collections.singleton("AuthorizedUser"), null, createTime)),
-                        createTime);
     }
     
     @Test
@@ -181,13 +156,4 @@ public class DataDictionaryControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     
-    @ComponentScan(basePackages = "datawave.microservice")
-    @Configuration
-    public static class DataDictionaryImplTestConfiguration {
-        @Bean
-        @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return instance.getConnector("root", new PasswordToken(""));
-        }
-    }
 }
