@@ -103,17 +103,9 @@ public class ModelController {
             }
         } catch (TableNotFoundException e) {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
-            // log.error(qe);
+            log.error(qe.getMessage());
             response.addException(qe.getBottomQueryException());
             // throw new DatawaveWebApplicationException(qe, response);
-        } finally {
-            // if (null != connector) {
-            // try {
-            // connectionFactory.returnConnection(connector);
-            // } catch (Exception e) {
-            // log.error("Error returning connection to factory", e);
-            // }
-            // }
         }
         
         response.setNames(modelNames);

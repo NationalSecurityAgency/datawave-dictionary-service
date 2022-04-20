@@ -1,48 +1,7 @@
 package datawave.microservice.model;
 
-//import static org.powermock.api.easymock.PowerMock.createMock;
-//import static org.powermock.api.easymock.PowerMock.createStrictMock;
-//
-//import java.net.URL;
-//import java.util.Arrays;
-//import java.util.Collection;
-//import java.util.Collections;
-//import java.util.HashMap;
-//import java.util.HashSet;
-//import java.util.Map.Entry;
-//import java.util.Set;
-//
-//import javax.ejb.EJBContext;
-//import javax.xml.bind.JAXBContext;
-//import javax.xml.bind.Unmarshaller;
-//
-//import datawave.microservice.dictionary.AccumuloConnectionService;
-//import datawave.microservice.dictionary.model.model.ModelKeyParser;
-//import datawave.security.authorization.DatawavePrincipal;
-//import datawave.security.authorization.DatawaveUser;
-//import datawave.security.authorization.DatawaveUser.UserType;
-//import datawave.security.authorization.SubjectIssuerDNPair;
-//import datawave.security.util.DnUtils.NpeUtils;
-//import datawave.security.util.ScannerHelper;
-//import datawave.webservice.common.cache.AccumuloTableCache;
-//import datawave.webservice.common.connection.AccumuloConnectionFactory;
-//import datawave.webservice.common.exception.DatawaveWebApplicationException;
-//import datawave.webservice.model.ModelList;
-//
-//import org.apache.accumulo.core.client.Connector;
-//import org.apache.accumulo.core.client.Scanner;
-//import datawave.accumulo.inmemory.InMemoryInstance;
-//import org.apache.accumulo.core.client.security.tokens.PasswordToken;
-//import org.apache.accumulo.core.data.Key;
-//import org.apache.accumulo.core.data.Value;
-//import org.apache.accumulo.core.security.Authorizations;
-//import org.apache.log4j.Level;
-//import org.apache.log4j.Logger;
-//import org.easymock.EasyMock;
-//import org.junit.jupiter.api.BeforeEach;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.microservice.ControllerIT;
-import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.microservice.model.config.ModelProperties;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -50,19 +9,11 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-//import org.powermock.api.easymock.PowerMock;
-//import org.powermock.core.classloader.annotations.PowerMockIgnore;
-//import org.powermock.core.classloader.annotations.PrepareForTest;
-//import org.powermock.modules.junit4.PowerMockRunner;
-//import org.powermock.reflect.Whitebox;
-//import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 public class ModelControllerTest extends ControllerIT {
     
