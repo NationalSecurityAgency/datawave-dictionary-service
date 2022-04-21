@@ -20,7 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.ResponseErrorHandler;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -57,7 +56,7 @@ public class ControllerIT {
         // Allow 403 responses through without throwing an exception so tests can assert the response appropriately.
         ResponseErrorHandler errorHandler = new DefaultResponseErrorHandler() {
             @Override
-            protected boolean hasError(@Nonnull HttpStatus statusCode) {
+            protected boolean hasError(HttpStatus statusCode) {
                 return super.hasError(statusCode) && statusCode.value() != 403;
             }
         };
