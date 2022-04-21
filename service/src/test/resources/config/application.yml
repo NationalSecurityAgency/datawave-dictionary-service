@@ -2,6 +2,9 @@ spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
 
+  main:
+    allow-bean-definition-overriding: true
+
   security:
     user.password: passwordNotUsed
     datawave:
@@ -11,6 +14,10 @@ spring:
         - "cn=testserver.example.com, ou=servers, o=example corp, c=us<cn=example corp ca, o=example corp, c=us>"
 
 datawave:
+  model:
+    default-table-name: "DatawaveMetadata"
+    jquery-uri: "/jquery.min.js"
+    data-tables-uri: "/jquery.dataTables.min.js"
   metadata:
     all-metadata-auths:
       - PRIVATE,PUBLIC

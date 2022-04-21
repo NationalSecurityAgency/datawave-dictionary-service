@@ -5,19 +5,19 @@ import datawave.accumulo.util.security.UserAuthFunctions;
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.config.accumulo.AccumuloProperties;
 import datawave.microservice.config.web.DatawaveServerProperties;
-import datawave.microservice.dictionary.data.DatawaveDataDictionary;
-import datawave.microservice.dictionary.data.DatawaveDataDictionaryImpl;
-import datawave.microservice.dictionary.edge.DatawaveEdgeDictionary;
-import datawave.microservice.dictionary.edge.DefaultDatawaveEdgeDictionaryImpl;
+import datawave.microservice.dictionary.data.DataDictionary;
+import datawave.microservice.dictionary.data.DataDictionaryImpl;
+import datawave.microservice.dictionary.edge.EdgeDictionary;
+import datawave.microservice.dictionary.edge.EdgeDictionaryImpl;
 import datawave.microservice.metadata.MetadataDescriptionsHelper;
 import datawave.microservice.metadata.MetadataDescriptionsHelperFactory;
 import datawave.query.util.MetadataHelperFactory;
-import datawave.webservice.query.result.metadata.DefaultMetadataField;
-import datawave.webservice.results.datadictionary.DefaultDataDictionary;
-import datawave.webservice.results.datadictionary.DefaultDescription;
-import datawave.webservice.results.datadictionary.DefaultDictionaryField;
-import datawave.webservice.results.datadictionary.DefaultFields;
-import datawave.webservice.results.datadictionary.FieldsBase;
+import datawave.webservice.metadata.DefaultMetadataField;
+import datawave.webservice.dictionary.data.DefaultDataDictionary;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultDictionaryField;
+import datawave.webservice.dictionary.data.DefaultFields;
+import datawave.webservice.dictionary.data.FieldsBase;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -51,16 +51,16 @@ public class DictionaryServiceConfiguration {
     
     @Bean
     @ConditionalOnMissingBean
-    public DatawaveDataDictionary datawaveDataDictionary(MarkingFunctions markingFunctions,
+    public DataDictionary datawaveDataDictionary(MarkingFunctions markingFunctions,
                     ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields> responseObjectFactory,
                     MetadataHelperFactory metadataHelperFactory, MetadataDescriptionsHelperFactory<DefaultDescription> metadataDescriptionsHelperFactory) {
-        return new DatawaveDataDictionaryImpl(markingFunctions, responseObjectFactory, metadataHelperFactory, metadataDescriptionsHelperFactory);
+        return new DataDictionaryImpl(markingFunctions, responseObjectFactory, metadataHelperFactory, metadataDescriptionsHelperFactory);
     }
     
     @Bean
     @ConditionalOnMissingBean
-    public DatawaveEdgeDictionary datawaveEdgeDictionary(MetadataHelperFactory metadataHelperFactory) {
-        return new DefaultDatawaveEdgeDictionaryImpl(metadataHelperFactory);
+    public EdgeDictionary datawaveEdgeDictionary(MetadataHelperFactory metadataHelperFactory) {
+        return new EdgeDictionaryImpl(metadataHelperFactory);
     }
     
     @Bean

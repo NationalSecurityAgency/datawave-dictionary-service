@@ -1,6 +1,6 @@
 package datawave.microservice.metadata;
 
-import datawave.webservice.results.datadictionary.DescriptionBase;
+import datawave.webservice.dictionary.data.DescriptionBase;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Component;
 

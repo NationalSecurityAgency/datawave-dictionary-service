@@ -1,11 +1,15 @@
 package datawave.microservice.dictionary.config;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 
+@Getter
+@Setter
 @ConfigurationProperties(prefix = "datawave.dictionary.edge")
 @Validated
 public class EdgeDictionaryProperties {
@@ -14,20 +18,4 @@ public class EdgeDictionaryProperties {
     private String metadataTableName;
     @Positive
     private int numThreads;
-    
-    public String getMetadataTableName() {
-        return metadataTableName;
-    }
-    
-    public void setMetadataTableName(String metadataTableName) {
-        this.metadataTableName = metadataTableName;
-    }
-    
-    public int getNumThreads() {
-        return numThreads;
-    }
-    
-    public void setNumThreads(int numThreads) {
-        this.numThreads = numThreads;
-    }
 }
