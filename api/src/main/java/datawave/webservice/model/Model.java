@@ -13,11 +13,13 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @XmlRootElement
+// @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class Model extends BaseResponse implements Serializable, HtmlProvider {
     
     private static final long serialVersionUID = 1L;

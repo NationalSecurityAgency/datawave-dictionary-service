@@ -1,19 +1,29 @@
 package datawave.microservice.model;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.microservice.ControllerIT;
 import datawave.microservice.model.config.ModelProperties;
+import datawave.webservice.model.Model;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class ModelControllerTest extends ControllerIT {
     
@@ -30,6 +40,15 @@ public class ModelControllerTest extends ControllerIT {
         }
     }
     
+    @Value("classpath:TestModel_1.xml")
+    private Resource model1;
+    
+    @Value("classpath:TestModel_2.xml")
+    private Resource model2;
+    
+    private Model MODEL_ONE;
+    private Model MODEL_TWO;
+    
     @BeforeEach
     public void setUp() throws Exception {
         try {
@@ -37,7 +56,44 @@ public class ModelControllerTest extends ControllerIT {
         } catch (TableExistsException e) {
             // ignore
         }
+        
+        // URL m1Url = ModelBeanTest.class.getResource("/TestModel_1.xml");
+        // URL m2Url = ModelBeanTest.class.getResource("/TestModel_2.xml");
+        // JAXBContext ctx = JAXBContext.newInstance(Model.class);
+        // Unmarshaller u = ctx.createUnmarshaller();
+        // MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(testModel1.getInputStream());
+        // MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(testModel2.getInputStream());
+        
+        // XmlMapper mapper = new XmlMapper();
+        // MODEL_ONE = mapper.readValue(inputStreamToString(model1.getInputStream()), Model.class);
+        // MODEL_TWO = mapper.readValue(inputStreamToString(model2.getInputStream()), Model.class);
+        //
+        System.out.println(MODEL_ONE);
     };
+    
+    private String inputStreamToString(InputStream fs) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        String line;
+        BufferedReader br = new BufferedReader(new InputStreamReader(fs));
+        while ((line = br.readLine()) != null) {
+            sb.append(line);
+        }
+        br.close();
+        return sb.toString();
+    }
+    
+    @Test
+    public void testList() {
+        // @formatter:off
+//        UriComponents uri = UriComponentsBuilder.newInstance()
+//                .scheme("https").host("localhost").port(webServicePort)
+//                .path("/dictionary/model/list")
+//                .build();
+        // @formatter:on
+        
+        // ResponseEntity<ModelList> response = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        // assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
     
     // private static final String userDN = "CN=Guy Some Other soguy, OU=ou1, OU=ou2, OU=ou3, O=o1, C=US";
     // private static final String issuerDN = "CN=CA1, OU=ou3, O=o1, C=US";

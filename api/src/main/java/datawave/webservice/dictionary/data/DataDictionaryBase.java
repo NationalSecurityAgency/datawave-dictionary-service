@@ -1,7 +1,6 @@
 package datawave.webservice.dictionary.data;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.protostuff.Message;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.metadata.MetadataFieldBase;
@@ -12,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 @JsonSubTypes({@JsonSubTypes.Type(value = DefaultDataDictionary.class, name = "DefaultDataDictionary")})
 public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends BaseResponse implements TotalResultsAware, Message<T>, HtmlProvider {
     
