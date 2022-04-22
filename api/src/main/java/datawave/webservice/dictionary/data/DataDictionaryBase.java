@@ -1,20 +1,19 @@
 package datawave.webservice.dictionary.data;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.protostuff.Message;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.TotalResultsAware;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso(DefaultDataDictionary.class)
+//@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+@JsonSubTypes({@JsonSubTypes.Type(value = DefaultDataDictionary.class, name = "DefaultDataDictionary")})
 public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends BaseResponse implements TotalResultsAware, Message<T>, HtmlProvider {
     
     public abstract List<M> getFields();
