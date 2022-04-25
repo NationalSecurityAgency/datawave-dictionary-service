@@ -2,10 +2,10 @@ package datawave.webservice.metadata;
 
 import io.protostuff.Message;
 import datawave.webservice.dictionary.data.DescriptionBase;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
