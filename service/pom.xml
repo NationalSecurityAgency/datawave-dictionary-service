@@ -49,6 +49,14 @@
                         <artifactId>servlet-api</artifactId>
                         <groupId>javax.servlet</groupId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-reload4j</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>log4j</artifactId>
+                        <groupId>log4j</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -64,6 +72,14 @@
                     <exclusion>
                         <artifactId>servlet-api</artifactId>
                         <groupId>javax.servlet</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-reload4j</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>log4j</artifactId>
+                        <groupId>log4j</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -138,6 +154,12 @@
             <groupId>gov.nsa.datawave.contrib</groupId>
             <artifactId>datawave-in-memory-accumulo</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-reload4j</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
