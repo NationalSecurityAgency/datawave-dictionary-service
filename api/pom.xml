@@ -18,7 +18,6 @@
     </scm>
     <properties>
         <version.base-responses>1.3-SNAPSHOT</version.base-responses>
-        <version.guava>31.1-jre</version.guava>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -32,17 +31,6 @@
                 <artifactId>base-rest-responses</artifactId>
                 <version>${version.base-responses}</version>
             </dependency>
-            <dependency>
-                <groupId>jakarta.xml.bind</groupId>
-                <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${version.jakarta.xml.bind}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${version.sun.xml.bind}</version>
-                <scope>runtime</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -53,6 +41,10 @@
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>base-rest-responses</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

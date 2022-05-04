@@ -5,9 +5,10 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import io.protostuff.Message;
 import datawave.webservice.query.result.event.HasMarkings;
-import jakarta.xml.bind.annotation.XmlAccessType;
-import jakarta.xml.bind.annotation.XmlAccessorType;
-import jakarta.xml.bind.annotation.XmlSeeAlso;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultMetadata.class)

@@ -1,7 +1,6 @@
 package datawave.webservice.model;
 
-import jakarta.xml.bind.annotation.XmlEnum;
-
+import javax.xml.bind.annotation.XmlEnum;
 import java.io.Serializable;
 
 @XmlEnum
