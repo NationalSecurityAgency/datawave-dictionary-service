@@ -180,12 +180,34 @@ public class ModelControllerTest extends ControllerIT {
         assertEquals(2, modelListResponse2.getBody().getNames().size());
     }
     
-    // @Test
+     @Test
     public void testGet() {
-        
+        // Verify that there is only one model so far (the model that is seeded before the test)
+        // @formatter:off
+        UriComponents uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/list")
+                .build();
+        // @formatter:on
+
+        ResponseEntity<ModelList> modelListResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
+        assertEquals(1, modelListResponse.getBody().getNames().size());
+
+        // Verify that we can get that model by name
+        // @formatter:off
+        uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/{name}")
+                .queryParam("name", MODEL_ONE.getName())
+                .build();
+        // @formatter:on
+        ResponseEntity<Model> modelResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, Model.class);
+        assertEquals(HttpStatus.OK, modelResponse.getStatusCode());
+        assertEquals(MODEL_ONE.getName(), modelResponse.getBody().getName());
     }
     
-    // @Test
+//     @Test
     public void testDelete() {
         // Verify that there is only one model so far (the model that is seeded before the test)
         // @formatter:off

@@ -5,6 +5,8 @@ import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.util.ScannerHelper;
+import org.apache.accumulo.core.client.BatchWriter;
+import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.Scanner;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,11 @@ public class AccumuloConnectionService {
     private final Connector accumuloConnector;
     private final DataDictionaryProperties dataDictionaryConfiguration;
     private final UserAuthFunctions userAuthFunctions;
+
+    // These were already hardcodeded values in ModelBean -> ModelController so therefore they weren't made configurable
+    private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
+    private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
+    private static final int BATCH_WRITER_MAX_THREADS = 2;
     
     public AccumuloConnectionService(DataDictionaryProperties dataDictionaryConfiguration, UserAuthFunctions userAuthFunctions,
                     @Qualifier("warehouse") Connector accumuloConnector) {
@@ -83,5 +91,12 @@ public class AccumuloConnectionService {
         Scanner scanner = getScanner(modelTable, currentUser);
         scanner.addScanIterator(cfg);
         return scanner;
+    }
+
+    public BatchWriter getDefaultBatchWriter(String modelTable, String modelName, ProxiedUserDetails user) throws TableNotFoundException {
+        Connector connector = getConnection(modelTable, modelName, user).getConnector();
+        // TODO Do we need a new instance of BatchWriterConfig each time, or can this be a static or bean object?
+        return connector.createBatchWriter(modelTable, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS).setMaxMemory(BATCH_WRITER_MAX_MEMORY)
+                .setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
     }
 }

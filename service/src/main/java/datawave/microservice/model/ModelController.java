@@ -24,23 +24,19 @@ import datawave.webservice.result.VoidResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
-//import org.apache.deltaspike.core.api.config.ConfigProperty;
-import org.apache.accumulo.core.iterators.user.RegExFilter;
+import org.apache.accumulo.core.security.Authorizations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 /**
  * Service that supports manipulation of models. The models are contained in the data dictionary table.
@@ -67,7 +63,7 @@ public class ModelController {
     private final AccumuloConnectionService accumloConnectionService;
     
     public static final String DEFAULT_MODEL_TABLE_NAME = "DatawaveMetadata";
-    
+
     private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
     private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
     private static final int BATCH_WRITER_MAX_THREADS = 2;
@@ -197,10 +193,11 @@ public class ModelController {
     public Model getModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         Model response = new Model(jqueryUri, dataTablesUri);
+        Set<Authorizations> auths = accumloConnectionService.getConnection(modelTableName, name, currentUser).getAuths();
         try (Scanner scanner = accumloConnectionService.getScannerWithRegexIteratorSetting(name, modelTableName, currentUser)) {
             for (Map.Entry<Key,Value> entry : scanner) {
-                // FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), cbAuths);
-                // response.getFields().add(mapping);
+                 FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), auths);
+                 response.getFields().add(mapping);
             }
         } catch (TableNotFoundException e) {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
@@ -240,13 +237,9 @@ public class ModelController {
         }
         
         BatchWriter writer = null;
-        
-        Connection connection = accumloConnectionService.getConnection(modelTableName, model.getName(), currentUser);
+
         try {
-            // Is the BatchWriterConfig already a spring bean?
-            writer = connection.getConnector().createBatchWriter(modelTableName,
-                            new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS).setMaxMemory(BATCH_WRITER_MAX_MEMORY)
-                                            .setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
+            writer = accumloConnectionService.getDefaultBatchWriter(modelTableName, model.getName(), currentUser);
         } catch (TableNotFoundException e) {
             log.error("The " + modelTableName + " could not be found to write to ", e);
             QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
@@ -272,7 +265,6 @@ public class ModelController {
                         log.error("Error closing the BatchWriter; ", e);
                     }
                 }
-                
             }
         }
         
@@ -301,44 +293,38 @@ public class ModelController {
             log.debug("Deleting model name: " + model.getName() + "from modelTableName " + modelTableName);
         }
         VoidResponse response = new VoidResponse();
-        //
-        // Connector connector = null;
-        // BatchWriter writer = null;
-        // try {
-        // Map<String,String> trackingMap = connectionFactory.getTrackingMap(Thread.currentThread().getStackTrace());
-        // connector = connectionFactory.getConnection(getCurrentUserDN(), getCurrentProxyServers(), AccumuloConnectionFactory.Priority.LOW, trackingMap);
-        // writer = connector.createBatchWriter(modelTableName, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
-        // .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
-        // for (FieldMapping mapping : model.getFields()) {
-        // Mutation m = ModelKeyParser.createDeleteMutation(mapping, model.getName());
-        // writer.addMutation(m);
-        // }
-        // } catch (Exception e) {
-        // log.error("Could not delete mapping.", e);
-        // QueryException qe = new QueryException(DatawaveErrorCode.MAPPING_DELETION_ERROR, e);
-        // response.addException(qe.getBottomQueryException());
-        // throw new DatawaveWebApplicationException(qe, response);
-        // } finally {
-        // if (null != writer) {
-        // try {
-        // writer.close();
-        // } catch (MutationsRejectedException e1) {
-        // QueryException qe = new QueryException(DatawaveErrorCode.WRITER_CLOSE_ERROR, e1);
-        // log.error(qe);
-        // response.addException(qe);
-        // throw new DatawaveWebApplicationException(qe, response);
-        // }
-        // }
-        // if (null != connector) {
-        // try {
-        // connectionFactory.returnConnection(connector);
-        // } catch (Exception e) {
-        // log.error("Error returning connection to factory", e);
-        // }
-        // }
-        // }
-        // if (reloadCache)
-        // cache.reloadTableCache(tableName);
+        BatchWriter writer = null;
+
+        try {
+            writer = accumloConnectionService.getDefaultBatchWriter(modelTableName, model.getName(), currentUser);
+        } catch (TableNotFoundException e) {
+            log.error("The " + modelTableName + " could not be found to write to ", e);
+            QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
+            response.addException(qe.getBottomQueryException());
+        }
+
+        if (writer != null) {
+            for (FieldMapping mapping : model.getFields()) {
+                Mutation m = ModelKeyParser.createDeleteMutation(mapping, model.getName());
+                try {
+                    writer.addMutation(m);
+                } catch (MutationsRejectedException e) {
+                    // So that we know exactly which mapping causes the error, catch here, but break out of loop
+                    // Unfortunately, this does mean if there are multiple mappings that cause this error, only the first will be logged.
+                    log.error("Could not delete mapping  -- " + mapping, e);
+                    QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
+                    response.addException(qe.getBottomQueryException());
+                } finally {
+                    // we know the writer isn't null since we've already checked.
+                    try {
+                        writer.close();
+                    } catch (MutationsRejectedException e) {
+                        log.error("Error closing the BatchWriter; ", e);
+                    }
+                }
+            }
+        }
+
         return response;
     }
     
