@@ -3,7 +3,7 @@ spring:
     name: dictionary-test
   cloud:
     bus:
-      enabled: false
+      enabled: true
     consul:
       enabled: false
     config:
