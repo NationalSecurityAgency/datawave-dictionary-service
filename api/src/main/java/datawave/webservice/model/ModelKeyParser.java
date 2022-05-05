@@ -1,5 +1,6 @@
 package datawave.webservice.model;
 
+import io.netty.util.Mapping;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
@@ -16,8 +17,8 @@ public class ModelKeyParser {
     public static final Value NULL_VALUE = new Value(new byte[0]);
     private static final Logger log = Logger.getLogger(ModelKeyParser.class);
     
-    public static Mapping parseKey(Key key, Set<Authorizations> auths) {
-        Mapping mapping = new Mapping();
+    public static FieldMapping parseKey(Key key, Set<Authorizations> auths) {
+        FieldMapping mapping = new FieldMapping();
         String row = key.getRow().toString();
         String[] colf = key.getColumnFamily().toString().split(NULL_BYTE);
         String[] colq = key.getColumnQualifier().toString().split(NULL_BYTE);
@@ -61,7 +62,7 @@ public class ModelKeyParser {
         return mapping;
     }
     
-    public static Key createKey(Mapping mapping, String modelName) {
+    public static Key createKey(FieldMapping mapping, String modelName) {
         ColumnVisibility cv = new ColumnVisibility(mapping.getColumnVisibility());
         
         String inName = Direction.REVERSE.equals(mapping.getDirection()) ? mapping.getFieldName() : mapping.getModelFieldName();
@@ -75,7 +76,7 @@ public class ModelKeyParser {
         );
     }
     
-    public static Mutation createMutation(Mapping mapping, String modelName) {
+    public static Mutation createMutation(FieldMapping mapping, String modelName) {
         ColumnVisibility cv = new ColumnVisibility(mapping.getColumnVisibility());
         Mutation m;
         String dataType = StringUtils.isEmpty(mapping.getDatatype()) ? "" : NULL_BYTE + mapping.getDatatype().trim();
@@ -93,7 +94,7 @@ public class ModelKeyParser {
         }
     }
     
-    public static Mutation createDeleteMutation(Mapping mapping, String modelName) {
+    public static Mutation createDeleteMutation(FieldMapping mapping, String modelName) {
         ColumnVisibility cv = new ColumnVisibility(mapping.getColumnVisibility());
         Mutation m;
         String dataType = StringUtils.isEmpty(mapping.getDatatype()) ? "" : NULL_BYTE + mapping.getDatatype().trim();

@@ -3,19 +3,15 @@ package datawave.webservice.model;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.HashSet;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementWrapper;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@XmlRootElement
+@XmlRootElement(name = "ModelList")
 public class ModelList extends BaseResponse implements Serializable, HtmlProvider {
     
     private String jqueryUri;
@@ -25,9 +21,15 @@ public class ModelList extends BaseResponse implements Serializable, HtmlProvide
     private static final long serialVersionUID = 1L;
     private static final String TITLE = "Model Names";
     private static final String DATA_TABLES_TEMPLATE = "<script type=''text/javascript'' src=''{0}''></script>\n"
-                    + "<script type=''text/javascript'' src=''{1}''></script>\n" + "<script type=''text/javascript''>\n"
+                    + "<script type=''text/javascript'' src=''{1}''></script>\n"
+                    + "<script type=''text/javascript''>\n"
                     + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}') '}')\n"
                     + "</script>\n";
+    
+    /**
+     * Need empty constructor for serialization
+     */
+    public ModelList() {}
     
     public ModelList(String jqueryUri, String datatablesUri, String modelTableName) {
         this.jqueryUri = jqueryUri;

@@ -10,9 +10,11 @@ import com.google.common.collect.Sets;
 //import datawave.webservice.common.exception.NotFoundException;
 //import datawave.webservice.common.exception.PreConditionFailedException;
 import datawave.microservice.AccumuloConnectionService;
+import datawave.microservice.Connection;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter;
 import datawave.microservice.model.config.ModelProperties;
+import datawave.webservice.model.FieldMapping;
 import datawave.webservice.model.Model;
 import datawave.webservice.model.ModelKeyParser;
 import datawave.webservice.model.ModelList;
@@ -20,11 +22,18 @@ import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.result.VoidResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.accumulo.core.client.BatchWriter;
+import org.apache.accumulo.core.client.BatchWriterConfig;
+import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.IteratorSetting;
+import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 //import org.apache.deltaspike.core.api.config.ConfigProperty;
+import org.apache.accumulo.core.iterators.user.RegExFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -33,20 +42,22 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Service that supports manipulation of models. The models are contained in the data dictionary table.
  */
 @Slf4j
 @RestController
-@RequestMapping(path = "/model", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
-        ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+@RequestMapping(path = "/model",
+        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @Secured({"AuthorizedUser", "AuthorizedQueryServer", "InternalUser", "Administrator", "JBossAdministrator"})
 @EnableConfigurationProperties(ModelProperties.class)
 public class ModelController {
@@ -64,7 +75,6 @@ public class ModelController {
     private static final HashSet<String> RESERVED_COLF_VALUES = Sets.newHashSet("e", "i", "ri", "f", "tf", "m", "desc", "edge", "t", "n", "h");
     
     public ModelController(ModelProperties modelProperties, AccumuloConnectionService accumloConnectionService) {
-        // this.defaultModelTableName = modelProperties.getDefaultTableName();
         this.dataTablesUri = modelProperties.getDefaultTableName();
         this.jqueryUri = modelProperties.getJqueryUri();
         this.accumloConnectionService = accumloConnectionService;
@@ -81,7 +91,7 @@ public class ModelController {
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
-    @GetMapping("/list")
+    @GetMapping("/list")  //  If we get to change to follow true REST standard, this would just be / and remain a GET
     public ModelList listModelNames(@RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         
@@ -105,42 +115,9 @@ public class ModelController {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
             log.error(qe.getMessage());
             response.addException(qe.getBottomQueryException());
-            // throw new DatawaveWebApplicationException(qe, response);
         }
         
         response.setNames(modelNames);
-        return response;
-    }
-    
-    /**
-     * <strong>Administrator credentials required.</strong> Insert a new model
-     *
-     * @param model
-     * @param modelTableName
-     *            name of the table that contains the model
-     * @return datawave.webservice.result.VoidResponse
-     * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
-     * @HTTP 200 success
-     * @HTTP 412 if model already exists with this name, delete it first
-     * @HTTP 500 internal server error
-     */
-    
-    @PostMapping("/import")
-    @Secured({"Administrator", "JBossAdministrator"})
-    public VoidResponse importModel(@RequestParam Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        if (log.isDebugEnabled()) {
-            log.debug("modelTableName: " + (null == modelTableName ? "" : modelTableName));
-        }
-        VoidResponse response = new VoidResponse();
-        
-        ModelList models = listModelNames(modelTableName, currentUser);
-        // if (models.getNames().contains(model.getName()))
-        // throw new PreConditionFailedException(null, response);
-        
-        // insertMapping(model, modelTableName);
-        
         return response;
     }
     
@@ -162,18 +139,13 @@ public class ModelController {
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse deleteModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        if (log.isDebugEnabled()) {
-            log.debug("model name: " + name);
-            log.debug("modelTableName: " + (null == modelTableName ? "" : modelTableName));
-        }
         VoidResponse response = new VoidResponse();
-        
         ModelList models = listModelNames(modelTableName, currentUser);
-        // if (!models.getNames().contains(name))
-        // throw new NotFoundException(null, response);
-        
-        Model model = getModel(name, modelTableName, currentUser);
-        // deleteMapping(model, modelTableName, reloadCache);
+         if (models.getNames().contains(name)) {
+             // the specified model exists, so we can proceed with deleting it
+             Model model = getModel(name, modelTableName, currentUser);
+             deleteMapping(model, modelTableName, currentUser);
+         }
         
         return response;
     }
@@ -203,7 +175,7 @@ public class ModelController {
         Model model = getModel(name, modelTableName, currentUser);
         // Set the new name
         model.setName(newName);
-        // importModel(model, modelTableName);
+        insertMapping(model, modelTableName, currentUser);
         return response;
     }
     
@@ -225,59 +197,20 @@ public class ModelController {
     public Model getModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         Model response = new Model(jqueryUri, dataTablesUri);
-        //
-        // // Find out who/what called this method
-        // Principal p = ctx.getCallerPrincipal();
-        // String user = p.getName();
-        // Set<Authorizations> cbAuths = new HashSet<>();
-        // if (p instanceof DatawavePrincipal) {
-        // DatawavePrincipal cp = (DatawavePrincipal) p;
-        // user = cp.getShortName();
-        // for (Collection<String> auths : cp.getAuthorizations()) {
-        // cbAuths.add(new Authorizations(auths.toArray(new String[auths.size()])));
-        // }
-        // }
-        // log.trace(user + " has authorizations " + cbAuths);
-        //
-        // Connector connector = null;
-        // try {
-        // Map<String,String> trackingMap = connectionFactory.getTrackingMap(Thread.currentThread().getStackTrace());
-        // connector = connectionFactory.getConnection(getCurrentUserDN(), getCurrentProxyServers(), AccumuloConnectionFactory.Priority.LOW, trackingMap);
-        // try (Scanner scanner = ScannerHelper.createScanner(connector, modelTableName, cbAuths)) {
-        
-        try (Scanner scanner = accumloConnectionService.getScanner(modelTableName, currentUser)) {
-            // IteratorSetting cfg = new IteratorSetting(21, "colfRegex", RegExFilter.class.getName());
-            // cfg.addOption(RegExFilter.COLF_REGEX, "^" + name + "(\\x00.*)?");
-            // scanner.addScanIterator(cfg);
-            // for (Entry<Key,Value> entry : scanner) {
-            // FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), cbAuths);
-            // response.getFields().add(mapping);
-            // }
-            // }
+        try (Scanner scanner = accumloConnectionService.getScannerWithRegexIteratorSetting(name, modelTableName, currentUser)) {
+             for (Map.Entry<Key,Value> entry : scanner) {
+//                 FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), cbAuths);
+//                 response.getFields().add(mapping);
+             }
         } catch (TableNotFoundException e) {
-            // QueryException qe = new QueryException(DatawaveErrorCode.MODEL_FETCH_ERROR, e);
-            // log.error(qe);
-            // response.addException(qe.getBottomQueryException());
-            // throw new DatawaveWebApplicationException(qe, response);
-        } finally {
-            // if (null != connector) {
-            // try {
-            // connectionFactory.returnConnection(connector);
-            // } catch (Exception e) {
-            // log.error("Error returning connection to factory", e);
+            QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
+            log.error(qe.getMessage());
+            response.addException(qe.getBottomQueryException());
         }
-        // }
-        // }
-        //
-        // return 404 if model not found
-        if (response.getMappings().isEmpty()) {
-            // throw new NotFoundException(null, response);
-        }
-        
         response.setName(name);
         return response;
     }
-    
+
     /**
      * <strong>Administrator credentials required.</strong> Insert a new field mapping into an existing model
      *
@@ -291,48 +224,58 @@ public class ModelController {
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
-    @PostMapping("/insert")
+    @PostMapping(value = {"/insert", "/import"})        //  If we get to change to standard REST, this would just be / and rely on the
     @Secured({"Administrator", "JBossAdministrator"})
-    public VoidResponse insertMapping(@RequestParam Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName) {
-        
+    public VoidResponse insertMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName, @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+        if (log.isDebugEnabled()) {
+            log.debug("modelTableName: " + (null == modelTableName ? "" : modelTableName));
+        }
+
         VoidResponse response = new VoidResponse();
-        //
-        // Connector connector = null;
-        // BatchWriter writer = null;
-        // try {
-        // Map<String,String> trackingMap = connectionFactory.getTrackingMap(Thread.currentThread().getStackTrace());
-        // connector = connectionFactory.getConnection(getCurrentUserDN(), getCurrentProxyServers(), AccumuloConnectionFactory.Priority.LOW, trackingMap);
-        // writer = connector.createBatchWriter(modelTableName, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
-        // .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
-        // for (FieldMapping mapping : model.getFields()) {
-        // Mutation m = ModelKeyParser.createMutation(mapping, model.getName());
-        // writer.addMutation(m);
-        // }
-        // } catch (Exception e) {
-        // log.error("Could not insert mapping.", e);
-        // QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
-        // response.addException(qe.getBottomQueryException());
-        // throw new DatawaveWebApplicationException(qe, response);
-        // } finally {
-        // if (null != writer) {
-        // try {
-        // writer.close();
-        // } catch (MutationsRejectedException e1) {
-        // QueryException qe = new QueryException(DatawaveErrorCode.WRITER_CLOSE_ERROR, e1);
-        // log.error(qe);
-        // response.addException(qe);
-        // throw new DatawaveWebApplicationException(qe, response);
-        // }
-        // }
-        // if (null != connector) {
-        // try {
-        // connectionFactory.returnConnection(connector);
-        // } catch (Exception e) {
-        // log.error("Error returning connection to factory", e);
-        // }
-        // }
-        // }
-        // cache.reloadTableCache(tableName);
+        ModelList models = listModelNames(modelTableName, currentUser);
+        if (models.getNames().contains(model.getName())) {
+           // the model already exists -- nothing to do
+            return response;
+        }
+
+         BatchWriter writer = null;
+
+        Connection connection = accumloConnectionService.getConnection(modelTableName, model.getName(), currentUser);
+        try {
+            // Is the BatchWriterConfig already a spring bean?
+            writer = connection.getConnector().createBatchWriter(modelTableName, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
+                    .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
+        } catch (TableNotFoundException e) {
+           log.error("The " + modelTableName + " could not be found to write to ", e );
+            QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
+            response.addException(qe.getBottomQueryException());
+        }
+
+        if (writer != null) {
+                for (FieldMapping mapping : model.getFields()) {
+                    Mutation m = ModelKeyParser.createMutation(mapping, model.getName());
+                    try {
+                        writer.addMutation(m);
+                    } catch (MutationsRejectedException e) {
+                        // So that we know exactly which mapping causes the error, catch here, but break out of loop
+                        // Unfortunately, this does mean if there are multiple mappings that cause this error, only the first will be logged.
+                        log.error("Could not insert mapping  -- " + mapping, e);
+                        QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
+                        response.addException(qe.getBottomQueryException());
+                    } finally {
+                        // we know the writer isn't null since we've already checked.
+                        try {
+                            writer.close();
+                        } catch (MutationsRejectedException e) {
+                            log.error("Error closing the BatchWriter; ", e);
+                        }
+                    }
+
+                }
+        }
+
+        // Do we already have an AccumuloTableCache bean somewhere?
+//         cache.reloadTableCache(tableName);
         return response;
     }
     
@@ -352,10 +295,9 @@ public class ModelController {
     @DeleteMapping("/delete")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse deleteMapping(@RequestParam Model model, @RequestParam String modelTableName, @AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        return deleteMapping(model, modelTableName, true, currentUser);
-    }
-    
-    private VoidResponse deleteMapping(Model model, String modelTableName, boolean reloadCache, @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+        if (log.isDebugEnabled()) {
+            log.debug("Deleting model name: " + model.getName() + "from modelTableName " + modelTableName);
+        }
         VoidResponse response = new VoidResponse();
         //
         // Connector connector = null;

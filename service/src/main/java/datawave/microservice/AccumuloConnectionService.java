@@ -6,8 +6,10 @@ import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.util.ScannerHelper;
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.iterators.user.RegExFilter;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -72,5 +74,14 @@ public class AccumuloConnectionService {
     
     public Scanner getScanner(String modelTable, ProxiedUserDetails currentUser) throws TableNotFoundException {
         return ScannerHelper.createScanner(this.accumuloConnector, modelTable, this.getAuths(currentUser));
+    }
+
+    public Scanner getScannerWithRegexIteratorSetting(String name, String modelTable, ProxiedUserDetails currentUser) throws TableNotFoundException {
+        IteratorSetting cfg = new IteratorSetting(21, "colfRegex", RegExFilter.class.getName());
+        cfg.addOption(RegExFilter.COLF_REGEX, "^" + name + "(\\x00.*)?");
+
+        Scanner scanner = getScanner(modelTable, currentUser);
+        scanner.addScanIterator(cfg);
+        return scanner;
     }
 }

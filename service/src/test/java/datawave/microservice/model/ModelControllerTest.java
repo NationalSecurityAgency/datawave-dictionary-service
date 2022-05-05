@@ -1,15 +1,30 @@
 package datawave.microservice.model;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import datawave.accumulo.inmemory.InMemoryInstance;
+import datawave.marking.MarkingFunctions;
 import datawave.microservice.ControllerIT;
 import datawave.microservice.model.config.ModelProperties;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultFields;
+import datawave.webservice.model.FieldMapping;
 import datawave.webservice.model.Model;
+import datawave.webservice.model.ModelKeyParser;
+import datawave.webservice.model.ModelList;
+import datawave.webservice.result.VoidResponse;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
+import org.apache.accumulo.core.client.BatchWriter;
+import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.accumulo.core.data.Mutation;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +34,39 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class ModelControllerTest extends ControllerIT {
-    
+
+    private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
+    private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
+    private static final int BATCH_WRITER_MAX_THREADS = 2;
+
     @Autowired
     private ModelProperties modelProperties;
     
@@ -56,333 +96,115 @@ public class ModelControllerTest extends ControllerIT {
         } catch (TableExistsException e) {
             // ignore
         }
-        
-        // URL m1Url = ModelBeanTest.class.getResource("/TestModel_1.xml");
-        // URL m2Url = ModelBeanTest.class.getResource("/TestModel_2.xml");
-        // JAXBContext ctx = JAXBContext.newInstance(Model.class);
-        // Unmarshaller u = ctx.createUnmarshaller();
-        // MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(testModel1.getInputStream());
-        // MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(testModel2.getInputStream());
-        
-        // XmlMapper mapper = new XmlMapper();
-        // MODEL_ONE = mapper.readValue(inputStreamToString(model1.getInputStream()), Model.class);
-        // MODEL_TWO = mapper.readValue(inputStreamToString(model2.getInputStream()), Model.class);
-        //
-        System.out.println(MODEL_ONE);
-    };
-    
-    private String inputStreamToString(InputStream fs) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        String line;
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs));
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
+
+         JAXBContext ctx = JAXBContext.newInstance(Model.class);
+         Unmarshaller u = ctx.createUnmarshaller();
+         MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(model1.getInputStream());
+         MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(model2.getInputStream());
+
+        BatchWriter writer = connector.createBatchWriter(modelProperties.getDefaultTableName(), new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
+                .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
+
+        // Seed MODEL_ONE, and leave MODEL_TWO for testing import and other "addition" capabilities
+        for (FieldMapping mapping : MODEL_ONE.getFields()) {
+            Mutation m = ModelKeyParser.createMutation(mapping, MODEL_ONE.getName());
+            try {
+                writer.addMutation(m);
+            } catch (MutationsRejectedException e) {
+                // ignore
+            }
         }
-        br.close();
-        return sb.toString();
     }
-    
+
+    @AfterEach
+    public void teardown() {
+         try {
+             connector.tableOperations().delete(modelProperties.getDefaultTableName());
+         } catch (Exception e) {}
+    }
+
     @Test
     public void testList() {
+        // There is 1 model that is guaranteed to be there because it was seeded by the @BeforeEach
         // @formatter:off
-//        UriComponents uri = UriComponentsBuilder.newInstance()
-//                .scheme("https").host("localhost").port(webServicePort)
-//                .path("/dictionary/model/list")
-//                .build();
-        // @formatter:on
+        UriComponents uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/list")
+                .build();
+         // @formatter:on
         
-        // ResponseEntity<ModelList> response = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
-        // assertEquals(HttpStatus.OK, response.getStatusCode());
+         ResponseEntity<ModelList> response = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+         assertEquals(HttpStatus.OK, response.getStatusCode());
+         assertEquals(1, response.getBody().getNames().size());
     }
-    
-    // private static final String userDN = "CN=Guy Some Other soguy, OU=ou1, OU=ou2, OU=ou3, O=o1, C=US";
-    // private static final String issuerDN = "CN=CA1, OU=ou3, O=o1, C=US";
-    // private static final String[] auths = new String[] {"PRIVATE", "PUBLIC"};
-    //
-    // private ModelController modelController;
-    // private AccumuloConnectionService connection;
-    //// private AccumuloTableCache cache;
-    //
-    // private InMemoryInstance instance = null;
-    // private Connector connector = null;
-    //// private DatawavePrincipal principal = null;
-    //
-    // private static long TIMESTAMP = System.currentTimeMillis();
-    //
-    //// private datawave.webservice.model.Model MODEL_ONE = null;
-    //// private datawave.webservice.model.Model MODEL_TWO = null;
-    //
-    // @BeforeEach
-    // public void setup() throws Exception {
-    //// System.setProperty(NpeUtils.NPE_OU_PROPERTY, "iamnotaperson");
-    // System.setProperty("dw.metadatahelper.all.auths", "A,B,C,D");
-    // bean = new ModelBean();
-    // connectionFactory = createStrictMock(AccumuloConnectionFactory.class);
-    // ctx = createMock(EJBContext.class);
-    // cache = createMock(AccumuloTableCache.class);
-    // Whitebox.setInternalState(bean, EJBContext.class, ctx);
-    // Whitebox.setInternalState(bean, AccumuloConnectionFactory.class, connectionFactory);
-    // Whitebox.setInternalState(bean, AccumuloTableCache.class, cache);
-    //
-    // instance = new InMemoryInstance("test");
-    // connector = instance.getConnector("root", new PasswordToken(""));
-    //
-    // DatawaveUser user = new DatawaveUser(SubjectIssuerDNPair.of(userDN, issuerDN), UserType.USER, Arrays.asList(auths), null, null, 0L);
-    // principal = new DatawavePrincipal(Collections.singletonList(user));
-    //
-    // URL m1Url = ModelBeanTest.class.getResource("/ModelBeanTest_m1.xml");
-    // URL m2Url = ModelBeanTest.class.getResource("/ModelBeanTest_m2.xml");
-    // JAXBContext ctx = JAXBContext.newInstance(datawave.webservice.model.Model.class);
-    // Unmarshaller u = ctx.createUnmarshaller();
-    // MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(m1Url);
-    // MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(m2Url);
-    //
-    // Logger.getLogger(ModelBean.class).setLevel(Level.OFF);
-    // PowerMock.mockStatic(System.class, System.class.getMethod("currentTimeMillis"));
-    // }
-    //
-    // public void printTable(String tableName) throws Exception {
-    // Scanner s = connector.createScanner(tableName, new Authorizations(auths));
-    // for (Entry<Key,Value> entry : s) {
-    // System.out.println(entry.getKey());
-    // }
-    // }
-    //
-    // @After
-    // public void tearDown() {
-    // try {
-    // connector.tableOperations().delete(ModelBean.DEFAULT_MODEL_TABLE_NAME);
-    // } catch (Exception e) {}
-    // }
-    //
-    //// @Test(expected = DatawaveWebApplicationException.class)
-    //// public void testModelImportNoTable() throws Exception {
-    //// HashMap<String,String> trackingMap = new HashMap<>();
-    //// EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    //// EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    //// connectionFactory.returnConnection(connector);
-    //// EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    //// PowerMock.replayAll();
-    ////
-    //// bean.importModel(MODEL_ONE, (String) null);
-    //// PowerMock.verifyAll();
-    //// }
-    ////
-    // private void importModels() throws Exception {
-    // connector.tableOperations().create(ModelBean.DEFAULT_MODEL_TABLE_NAME);
-    //
-    // HashMap<String,String> trackingMap = new HashMap<>();
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(cache.reloadCache(ModelBean.DEFAULT_MODEL_TABLE_NAME)).andReturn(null);
-    // PowerMock.replayAll();
-    //
-    // bean.importModel(MODEL_ONE, (String) null);
-    // PowerMock.verifyAll();
-    // PowerMock.resetAll();
-    //
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(cache.reloadCache(ModelBean.DEFAULT_MODEL_TABLE_NAME)).andReturn(null);
-    // PowerMock.replayAll();
-    //
-    // bean.importModel(MODEL_TWO, (String) null);
-    //
-    // PowerMock.verifyAll();
-    // }
-    //
-    // @Test
-    // public void testListModels() throws Exception {
-    // importModels();
-    // PowerMock.resetAll();
-    //
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // HashMap<String,String> trackingMap = new HashMap<>();
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // PowerMock.replayAll();
-    //
-    // ModelList list = bean.listModelNames((String) null);
-    // PowerMock.verifyAll();
-    //
-    // Assert.assertEquals(2, list.getNames().size());
-    // Assert.assertTrue(list.getNames().contains(MODEL_ONE.getName()));
-    // Assert.assertTrue(list.getNames().contains(MODEL_TWO.getName()));
-    // }
-    //
-    // @Test
-    // public void testModelGet() throws Exception {
-    // importModels();
-    // PowerMock.resetAll();
-    //
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // HashMap<String,String> trackingMap = new HashMap<>();
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // PowerMock.replayAll();
-    //
-    // datawave.webservice.model.Model model = bean.getModel(MODEL_ONE.getName(), (String) null);
-    // PowerMock.verifyAll();
-    //
-    // Assert.assertEquals(MODEL_ONE, model);
-    // }
-    //
-    // @Test
-    // public void testModelDelete() throws Exception {
-    // importModels();
-    // PowerMock.resetAll();
-    //
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // HashMap<String,String> trackingMap = new HashMap<>();
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(cache.reloadCache(ModelBean.DEFAULT_MODEL_TABLE_NAME)).andReturn(null);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // PowerMock.replayAll();
-    //
-    // bean.deleteModel(MODEL_TWO.getName(), (String) null);
-    // PowerMock.verifyAll();
-    // PowerMock.resetAll();
-    //
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // PowerMock.replayAll();
-    // try {
-    // bean.getModel(MODEL_TWO.getName(), (String) null);
-    // Assert.fail("getModel should have failed");
-    // } catch (DatawaveWebApplicationException e) {
-    // if (e.getResponse().getStatus() == 404) {
-    // // success
-    // } else {
-    // Assert.fail("getModel did not return a 404, returned: " + e.getResponse().getStatus());
-    // }
-    // } catch (Exception ex) {
-    // Assert.fail("getModel did not throw a DatawaveWebApplicationException");
-    // }
-    // PowerMock.verifyAll();
-    // PowerMock.resetAll();
-    // // Ensure model one still intact
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // PowerMock.replayAll();
-    // datawave.webservice.model.Model model1 = bean.getModel(MODEL_ONE.getName(), (String) null);
-    // PowerMock.verifyAll();
-    // Assert.assertEquals(MODEL_ONE, model1);
-    //
-    // }
-    //
-    // @Test(expected = DatawaveWebApplicationException.class)
-    // public void testModelGetInvalidModelName() throws Exception {
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // HashMap<String,String> trackingMap = new HashMap<>();
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // PowerMock.replayAll();
-    //
-    // bean.getModel(MODEL_ONE.getName(), (String) null);
-    // PowerMock.verifyAll();
-    // }
-    //
-    // @Test
-    // public void testCloneModel() throws Exception {
-    // importModels();
-    // PowerMock.resetAll();
-    //
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // HashMap<String,String> trackingMap = new HashMap<>();
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // EasyMock.expect(cache.reloadCache(ModelBean.DEFAULT_MODEL_TABLE_NAME)).andReturn(null);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // connectionFactory.returnConnection(connector);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // EasyMock.expect(System.currentTimeMillis()).andReturn(TIMESTAMP);
-    // PowerMock.replayAll();
-    //
-    // bean.cloneModel(MODEL_ONE.getName(), "MODEL2", (String) null);
-    // PowerMock.verifyAll();
-    // PowerMock.resetAll();
-    // EasyMock.expect(ctx.getCallerPrincipal()).andReturn(principal);
-    // EasyMock.expect(connectionFactory.getTrackingMap((StackTraceElement[]) EasyMock.anyObject())).andReturn(trackingMap);
-    // EasyMock.expect(connectionFactory.getConnection(EasyMock.eq(AccumuloConnectionFactory.Priority.LOW), EasyMock.eq(trackingMap))).andReturn(connector);
-    // connectionFactory.returnConnection(connector);
-    // PowerMock.replayAll();
-    //
-    // datawave.webservice.model.Model model = bean.getModel("MODEL2", (String) null);
-    // PowerMock.verifyAll();
-    //
-    // MODEL_ONE.setName("MODEL2");
-    // Assert.assertEquals(MODEL_ONE, model);
-    //
-    // }
-    //
-    // @Test
-    // public void testCheckModelName() throws Exception {
-    // String modelTableName = Whitebox.invokeMethod(bean, "checkModelTableName", (String) null);
-    // Assert.assertEquals(ModelBean.DEFAULT_MODEL_TABLE_NAME, modelTableName);
-    // modelTableName = "foo";
-    // String response = Whitebox.invokeMethod(bean, "checkModelTableName", modelTableName);
-    // Assert.assertEquals(modelTableName, response);
-    //
-    // }
-    //
-    // private void dumpModels() throws Exception {
-    // System.out.println("******************* Start Dump Models **********************");
-    // Set<Authorizations> cbAuths = new HashSet<>();
-    // for (Collection<String> auths : principal.getAuthorizations()) {
-    // cbAuths.add(new Authorizations(auths.toArray(new String[auths.size()])));
-    // }
-    //
-    // Scanner scanner = ScannerHelper.createScanner(connector, ModelBean.DEFAULT_MODEL_TABLE_NAME, cbAuths);
-    // for (Entry<Key,Value> entry : scanner) {
-    // System.out.println(entry.getKey());
-    // }
-    //
-    // System.out.println("******************* End Dump Models **********************");
-    // }
-    
+
+    @Test
+    public void testImport() {
+        // Verify that there is only one model so far (the model that is seeded before the test)
+        // @formatter:off
+        UriComponents uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/list")
+                .build();
+        // @formatter:on
+
+        ResponseEntity<ModelList> modelListResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
+        assertEquals(1, modelListResponse.getBody().getNames().size());
+
+        // Now import a model
+        // @formatter:off
+        uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/import")
+                .build();
+        // @formatter:on
+
+        HttpHeaders additionalHeaders = new HttpHeaders();
+        additionalHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        RequestEntity<Model> postEntity = jwtRestTemplate.createRequestEntity(adminUser, MODEL_TWO, additionalHeaders, HttpMethod.POST, uri);
+        ResponseEntity<VoidResponse> imprtResponse = jwtRestTemplate.exchange(postEntity, VoidResponse.class);
+
+        assertEquals(HttpStatus.OK, imprtResponse.getStatusCode());
+
+        // Now call list again, and there should be 2 models
+        // @formatter:off
+        uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/list")
+                .build();
+        // @formatter:on
+
+        ResponseEntity<ModelList> modelListResponse2 = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse2.getStatusCode());
+        assertEquals(2, modelListResponse2.getBody().getNames().size());
+    }
+
+//    @Test
+    public void testGet() {
+
+    }
+
+//    @Test
+    public void testDelete() {
+        // Verify that there is only one model so far (the model that is seeded before the test)
+        // @formatter:off
+        UriComponents uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/list")
+                .build();
+        // @formatter:on
+
+        ResponseEntity<ModelList> modelListResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
+        assertEquals(1, modelListResponse.getBody().getNames().size());
+
+        // Call delete
+        // @formatter:off
+        uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/delete")
+                .build();
+        // @formatter:on
+    }
 }

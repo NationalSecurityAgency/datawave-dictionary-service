@@ -3,23 +3,23 @@ package datawave.webservice.model;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.TreeSet;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
 
-import jakarta.xml.bind.annotation.XmlAttribute;
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElementWrapper;
-import jakarta.xml.bind.annotation.XmlRootElement;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-@Data
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@XmlRootElement
-// @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@XmlRootElement(name = "Model")
+@XmlAccessorType(XmlAccessType.NONE)
 public class Model extends BaseResponse implements Serializable, HtmlProvider {
     
     private static final long serialVersionUID = 1L;
@@ -27,21 +27,64 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
     private String dataTablesUri;
     private static final String TITLE = "Model Description", EMPTY = "";
     private static final String DATA_TABLES_TEMPLATE = "<script type=''text/javascript'' src=''{0}''></script>\n"
-                    + "<script type=''text/javascript'' src=''{1}''></script>\n" + "<script type=''text/javascript''>\n"
+                    + "<script type=''text/javascript'' src=''{1}''></script>\n"
+                    + "<script type=''text/javascript''>\n"
                     + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[3, \"asc\"]], \"bStateSave\": true'}') '}')\n"
                     + "</script>\n";
     
     public Model(String jqueryUri, String datatablesUri) {
         this.jqueryUri = jqueryUri;
         this.dataTablesUri = datatablesUri;
+        
     }
     
-    @XmlAttribute(required = true)
-    private String name;
+    // Only used in ModelBeanTest now
+    public Model() {};
+    
+    @XmlAttribute(name = "name", required = true)
+    private String name = null;
     
     @XmlElementWrapper(name = "Mappings")
-    @XmlElement(name = "Mappings")
-    private TreeSet<Mapping> mappings = new TreeSet<Mapping>();
+    @XmlElement(name = "Mapping")
+    private TreeSet<FieldMapping> fields = new TreeSet<FieldMapping>();
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public TreeSet<FieldMapping> getFields() {
+        return fields;
+    }
+    
+    public void setFields(TreeSet<FieldMapping> fields) {
+        this.fields = fields;
+    }
+    
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(fields).toHashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != this.getClass())
+            return false;
+        Model other = (Model) obj;
+        return new EqualsBuilder().append(name, other.name).append(fields, other.fields).isEquals();
+    }
+    
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).append("name", name).append("fields", fields).toString();
+    }
     
     /*
      * (non-Javadoc)
@@ -89,7 +132,7 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
         builder.append("<thead><tr><th>Visibility</th><th>FieldName</th><th>DataType</th><th>ModelFieldName</th><th>Direction</th></tr></thead>");
         builder.append("<tbody>");
         
-        for (Mapping f : this.getMappings()) {
+        for (FieldMapping f : this.getFields()) {
             builder.append("<td>").append(f.getColumnVisibility()).append("</td>");
             builder.append("<td>").append(f.getFieldName()).append("</td>");
             builder.append("<td>").append(f.getDatatype()).append("</td>");
