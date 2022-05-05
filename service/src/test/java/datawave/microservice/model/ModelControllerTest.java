@@ -60,13 +60,12 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 public class ModelControllerTest extends ControllerIT {
-
+    
     private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
     private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
     private static final int BATCH_WRITER_MAX_THREADS = 2;
-
+    
     @Autowired
     private ModelProperties modelProperties;
     
@@ -96,15 +95,16 @@ public class ModelControllerTest extends ControllerIT {
         } catch (TableExistsException e) {
             // ignore
         }
-
-         JAXBContext ctx = JAXBContext.newInstance(Model.class);
-         Unmarshaller u = ctx.createUnmarshaller();
-         MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(model1.getInputStream());
-         MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(model2.getInputStream());
-
-        BatchWriter writer = connector.createBatchWriter(modelProperties.getDefaultTableName(), new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
-                .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
-
+        
+        JAXBContext ctx = JAXBContext.newInstance(Model.class);
+        Unmarshaller u = ctx.createUnmarshaller();
+        MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(model1.getInputStream());
+        MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(model2.getInputStream());
+        
+        BatchWriter writer = connector.createBatchWriter(modelProperties.getDefaultTableName(),
+                        new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS).setMaxMemory(BATCH_WRITER_MAX_MEMORY)
+                                        .setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
+        
         // Seed MODEL_ONE, and leave MODEL_TWO for testing import and other "addition" capabilities
         for (FieldMapping mapping : MODEL_ONE.getFields()) {
             Mutation m = ModelKeyParser.createMutation(mapping, MODEL_ONE.getName());
@@ -115,14 +115,14 @@ public class ModelControllerTest extends ControllerIT {
             }
         }
     }
-
+    
     @AfterEach
     public void teardown() {
-         try {
-             connector.tableOperations().delete(modelProperties.getDefaultTableName());
-         } catch (Exception e) {}
+        try {
+            connector.tableOperations().delete(modelProperties.getDefaultTableName());
+        } catch (Exception e) {}
     }
-
+    
     @Test
     public void testList() {
         // There is 1 model that is guaranteed to be there because it was seeded by the @BeforeEach
@@ -133,11 +133,11 @@ public class ModelControllerTest extends ControllerIT {
                 .build();
          // @formatter:on
         
-         ResponseEntity<ModelList> response = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
-         assertEquals(HttpStatus.OK, response.getStatusCode());
-         assertEquals(1, response.getBody().getNames().size());
+        ResponseEntity<ModelList> response = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().getNames().size());
     }
-
+    
     @Test
     public void testImport() {
         // Verify that there is only one model so far (the model that is seeded before the test)
@@ -147,11 +147,11 @@ public class ModelControllerTest extends ControllerIT {
                 .path("/dictionary/model/list")
                 .build();
         // @formatter:on
-
+        
         ResponseEntity<ModelList> modelListResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
         assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
         assertEquals(1, modelListResponse.getBody().getNames().size());
-
+        
         // Now import a model
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
@@ -159,14 +159,14 @@ public class ModelControllerTest extends ControllerIT {
                 .path("/dictionary/model/import")
                 .build();
         // @formatter:on
-
+        
         HttpHeaders additionalHeaders = new HttpHeaders();
         additionalHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
         RequestEntity<Model> postEntity = jwtRestTemplate.createRequestEntity(adminUser, MODEL_TWO, additionalHeaders, HttpMethod.POST, uri);
         ResponseEntity<VoidResponse> imprtResponse = jwtRestTemplate.exchange(postEntity, VoidResponse.class);
-
+        
         assertEquals(HttpStatus.OK, imprtResponse.getStatusCode());
-
+        
         // Now call list again, and there should be 2 models
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
@@ -174,18 +174,18 @@ public class ModelControllerTest extends ControllerIT {
                 .path("/dictionary/model/list")
                 .build();
         // @formatter:on
-
+        
         ResponseEntity<ModelList> modelListResponse2 = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
         assertEquals(HttpStatus.OK, modelListResponse2.getStatusCode());
         assertEquals(2, modelListResponse2.getBody().getNames().size());
     }
-
-//    @Test
+    
+    // @Test
     public void testGet() {
-
+        
     }
-
-//    @Test
+    
+    // @Test
     public void testDelete() {
         // Verify that there is only one model so far (the model that is seeded before the test)
         // @formatter:off
@@ -194,11 +194,11 @@ public class ModelControllerTest extends ControllerIT {
                 .path("/dictionary/model/list")
                 .build();
         // @formatter:on
-
+        
         ResponseEntity<ModelList> modelListResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
         assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
         assertEquals(1, modelListResponse.getBody().getNames().size());
-
+        
         // Call delete
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()

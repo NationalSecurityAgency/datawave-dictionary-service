@@ -56,8 +56,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @RestController
-@RequestMapping(path = "/model",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+@RequestMapping(path = "/model", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
+        ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @Secured({"AuthorizedUser", "AuthorizedQueryServer", "InternalUser", "Administrator", "JBossAdministrator"})
 @EnableConfigurationProperties(ModelProperties.class)
 public class ModelController {
@@ -91,7 +91,7 @@ public class ModelController {
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
-    @GetMapping("/list")  //  If we get to change to follow true REST standard, this would just be / and remain a GET
+    @GetMapping("/list") // If we get to change to follow true REST standard, this would just be / and remain a GET
     public ModelList listModelNames(@RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         
@@ -141,11 +141,11 @@ public class ModelController {
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         VoidResponse response = new VoidResponse();
         ModelList models = listModelNames(modelTableName, currentUser);
-         if (models.getNames().contains(name)) {
-             // the specified model exists, so we can proceed with deleting it
-             Model model = getModel(name, modelTableName, currentUser);
-             deleteMapping(model, modelTableName, currentUser);
-         }
+        if (models.getNames().contains(name)) {
+            // the specified model exists, so we can proceed with deleting it
+            Model model = getModel(name, modelTableName, currentUser);
+            deleteMapping(model, modelTableName, currentUser);
+        }
         
         return response;
     }
@@ -198,10 +198,10 @@ public class ModelController {
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         Model response = new Model(jqueryUri, dataTablesUri);
         try (Scanner scanner = accumloConnectionService.getScannerWithRegexIteratorSetting(name, modelTableName, currentUser)) {
-             for (Map.Entry<Key,Value> entry : scanner) {
-//                 FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), cbAuths);
-//                 response.getFields().add(mapping);
-             }
+            for (Map.Entry<Key,Value> entry : scanner) {
+                // FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), cbAuths);
+                // response.getFields().add(mapping);
+            }
         } catch (TableNotFoundException e) {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
             log.error(qe.getMessage());
@@ -210,7 +210,7 @@ public class ModelController {
         response.setName(name);
         return response;
     }
-
+    
     /**
      * <strong>Administrator credentials required.</strong> Insert a new field mapping into an existing model
      *
@@ -224,58 +224,60 @@ public class ModelController {
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
-    @PostMapping(value = {"/insert", "/import"})        //  If we get to change to standard REST, this would just be / and rely on the
+    @PostMapping(value = {"/insert", "/import"}) // If we get to change to standard REST, this would just be / and rely on the
     @Secured({"Administrator", "JBossAdministrator"})
-    public VoidResponse insertMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName, @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public VoidResponse insertMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
+                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         if (log.isDebugEnabled()) {
             log.debug("modelTableName: " + (null == modelTableName ? "" : modelTableName));
         }
-
+        
         VoidResponse response = new VoidResponse();
         ModelList models = listModelNames(modelTableName, currentUser);
         if (models.getNames().contains(model.getName())) {
-           // the model already exists -- nothing to do
+            // the model already exists -- nothing to do
             return response;
         }
-
-         BatchWriter writer = null;
-
+        
+        BatchWriter writer = null;
+        
         Connection connection = accumloConnectionService.getConnection(modelTableName, model.getName(), currentUser);
         try {
             // Is the BatchWriterConfig already a spring bean?
-            writer = connection.getConnector().createBatchWriter(modelTableName, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
-                    .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
+            writer = connection.getConnector().createBatchWriter(modelTableName,
+                            new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS).setMaxMemory(BATCH_WRITER_MAX_MEMORY)
+                                            .setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
         } catch (TableNotFoundException e) {
-           log.error("The " + modelTableName + " could not be found to write to ", e );
+            log.error("The " + modelTableName + " could not be found to write to ", e);
             QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
             response.addException(qe.getBottomQueryException());
         }
-
+        
         if (writer != null) {
-                for (FieldMapping mapping : model.getFields()) {
-                    Mutation m = ModelKeyParser.createMutation(mapping, model.getName());
+            for (FieldMapping mapping : model.getFields()) {
+                Mutation m = ModelKeyParser.createMutation(mapping, model.getName());
+                try {
+                    writer.addMutation(m);
+                } catch (MutationsRejectedException e) {
+                    // So that we know exactly which mapping causes the error, catch here, but break out of loop
+                    // Unfortunately, this does mean if there are multiple mappings that cause this error, only the first will be logged.
+                    log.error("Could not insert mapping  -- " + mapping, e);
+                    QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
+                    response.addException(qe.getBottomQueryException());
+                } finally {
+                    // we know the writer isn't null since we've already checked.
                     try {
-                        writer.addMutation(m);
+                        writer.close();
                     } catch (MutationsRejectedException e) {
-                        // So that we know exactly which mapping causes the error, catch here, but break out of loop
-                        // Unfortunately, this does mean if there are multiple mappings that cause this error, only the first will be logged.
-                        log.error("Could not insert mapping  -- " + mapping, e);
-                        QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
-                        response.addException(qe.getBottomQueryException());
-                    } finally {
-                        // we know the writer isn't null since we've already checked.
-                        try {
-                            writer.close();
-                        } catch (MutationsRejectedException e) {
-                            log.error("Error closing the BatchWriter; ", e);
-                        }
+                        log.error("Error closing the BatchWriter; ", e);
                     }
-
                 }
+                
+            }
         }
-
+        
         // Do we already have an AccumuloTableCache bean somewhere?
-//         cache.reloadTableCache(tableName);
+        // cache.reloadTableCache(tableName);
         return response;
     }
     
