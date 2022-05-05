@@ -34,7 +34,7 @@ public class AccumuloConnectionService {
     private final Connector accumuloConnector;
     private final DataDictionaryProperties dataDictionaryConfiguration;
     private final UserAuthFunctions userAuthFunctions;
-
+    
     // These were already hardcodeded values in ModelBean -> ModelController so therefore they weren't made configurable
     private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
     private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
@@ -92,11 +92,11 @@ public class AccumuloConnectionService {
         scanner.addScanIterator(cfg);
         return scanner;
     }
-
+    
     public BatchWriter getDefaultBatchWriter(String modelTable, String modelName, ProxiedUserDetails user) throws TableNotFoundException {
         Connector connector = getConnection(modelTable, modelName, user).getConnector();
         // TODO Do we need a new instance of BatchWriterConfig each time, or can this be a static or bean object?
-        return connector.createBatchWriter(modelTable, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS).setMaxMemory(BATCH_WRITER_MAX_MEMORY)
-                .setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
+        return connector.createBatchWriter(modelTable, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
+                        .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
     }
 }

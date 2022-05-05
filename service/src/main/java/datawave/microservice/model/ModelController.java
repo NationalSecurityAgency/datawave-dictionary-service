@@ -63,7 +63,7 @@ public class ModelController {
     private final AccumuloConnectionService accumloConnectionService;
     
     public static final String DEFAULT_MODEL_TABLE_NAME = "DatawaveMetadata";
-
+    
     private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
     private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
     private static final int BATCH_WRITER_MAX_THREADS = 2;
@@ -196,8 +196,8 @@ public class ModelController {
         Set<Authorizations> auths = accumloConnectionService.getConnection(modelTableName, name, currentUser).getAuths();
         try (Scanner scanner = accumloConnectionService.getScannerWithRegexIteratorSetting(name, modelTableName, currentUser)) {
             for (Map.Entry<Key,Value> entry : scanner) {
-                 FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), auths);
-                 response.getFields().add(mapping);
+                FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), auths);
+                response.getFields().add(mapping);
             }
         } catch (TableNotFoundException e) {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
@@ -237,7 +237,7 @@ public class ModelController {
         }
         
         BatchWriter writer = null;
-
+        
         try {
             writer = accumloConnectionService.getDefaultBatchWriter(modelTableName, model.getName(), currentUser);
         } catch (TableNotFoundException e) {
@@ -294,7 +294,7 @@ public class ModelController {
         }
         VoidResponse response = new VoidResponse();
         BatchWriter writer = null;
-
+        
         try {
             writer = accumloConnectionService.getDefaultBatchWriter(modelTableName, model.getName(), currentUser);
         } catch (TableNotFoundException e) {
@@ -302,7 +302,7 @@ public class ModelController {
             QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
             response.addException(qe.getBottomQueryException());
         }
-
+        
         if (writer != null) {
             for (FieldMapping mapping : model.getFields()) {
                 Mutation m = ModelKeyParser.createDeleteMutation(mapping, model.getName());
@@ -324,7 +324,7 @@ public class ModelController {
                 }
             }
         }
-
+        
         return response;
     }
     
