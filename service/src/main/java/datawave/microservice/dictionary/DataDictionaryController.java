@@ -5,30 +5,30 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import datawave.microservice.AccumuloConnectionService;
+import datawave.microservice.Connection;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.microservice.Connection;
 import datawave.microservice.dictionary.data.DataDictionary;
-import datawave.webservice.metadata.MetadataFieldBase;
-import datawave.webservice.result.VoidResponse;
 import datawave.webservice.dictionary.data.DataDictionaryBase;
 import datawave.webservice.dictionary.data.DescriptionBase;
 import datawave.webservice.dictionary.data.DictionaryFieldBase;
 import datawave.webservice.dictionary.data.FieldsBase;
+import datawave.webservice.metadata.MetadataFieldBase;
+import datawave.webservice.result.VoidResponse;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -52,8 +52,6 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     private final DataDictionary<META,DESC,FIELD> dataDictionary;
     private final ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory;
     private final AccumuloConnectionService accumuloConnectionService;
-    // private final UserAuthFunctions userAuthFunctions;
-    // private final Connector accumuloConnector;
     
     private final Consumer<META> TRANSFORM_EMPTY_INTERNAL_FIELD_NAMES = meta -> {
         if (meta.getInternalFieldName() == null || meta.getInternalFieldName().isEmpty()) {
@@ -70,8 +68,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         dataDictionary.setNormalizationMap(dataDictionaryConfiguration.getNormalizerMap());
     }
     
-    @ResponseBody
-    @RequestMapping(path = "/")
+    @GetMapping("/")
     @Timed(name = "dw.dictionary.data.get", absolute = true)
     public DataDictionaryBase<DICT,META> get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
                     @RequestParam(required = false) String metadataTableName, @RequestParam(name = "auths", required = false) String queryAuthorizations,
@@ -106,7 +103,6 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem uploading the descriptions
      */
-    @ResponseBody
     @PostMapping(path = "/Descriptions", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Timed(name = "dw.dictionary.data.uploadDescriptions", absolute = true)
     public VoidResponse uploadDescriptions(@RequestBody FIELDS fields, @RequestParam(required = false) String modelName,
@@ -143,8 +139,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      *             if there is any problem updating the description
      */
     @Secured({"Administrator", "JBossAdministrator"})
-    @PutMapping(path = "/Descriptions/{datatype}/{fieldName}/{description}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
-            MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, "text/x-yaml", "application/x-yaml"})
+    @PutMapping("/Descriptions/{datatype}/{fieldName}/{description}")
     @Timed(name = "dw.dictionary.data.setDescriptionPut", absolute = true)
     public VoidResponse setDescriptionPut(@PathVariable String fieldName, @PathVariable String datatype, @PathVariable String description,
                     @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
@@ -174,8 +169,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      *             if there is any problem updating the dictionary item description
      */
     @Secured({"Administrator", "JBossAdministrator"})
-    @PostMapping(path = "/Descriptions", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
-            PROTOSTUFF_VALUE, "text/x-yaml", "application/x-yaml"})
+    @PostMapping("/Descriptions")
     @Timed(name = "dw.dictionary.data.setDescriptionPost", absolute = true)
     public VoidResponse setDescriptionPost(@RequestParam String fieldName, @RequestParam String datatype, @RequestParam String description,
                     @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
@@ -206,8 +200,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem retrieving the descriptions from Accumulo
      */
-    @RequestMapping(path = "/Descriptions")
-    @ResponseBody
+    @GetMapping("/Descriptions")
     @Timed(name = "dw.dictionary.data.allDescriptions", absolute = true)
     public FIELDS allDescriptions(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
@@ -233,7 +226,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem retrieving the descriptions from Accumulo
      */
-    @RequestMapping(path = "/Descriptions/{datatype}")
+    @GetMapping("/Descriptions/{datatype}")
     @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
     public FIELDS datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
@@ -261,7 +254,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem retrieving the descriptions from Accumulo
      */
-    @RequestMapping(path = "/Descriptions/{datatype}/{fieldName}")
+    @GetMapping("/Descriptions/{datatype}/{fieldName}")
     @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
     public FIELDS fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
@@ -298,8 +291,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      *             if there is any problem removing the description from Accumulo
      */
     @Secured({"Administrator", "JBossAdministrator"})
-    @DeleteMapping(path = "/Descriptions/{datatype}/{fieldName}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE,
-            MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE, "text/x-yaml", "application/x-yaml"})
+    @DeleteMapping("/Descriptions/{datatype}/{fieldName}")
     @Timed(name = "dw.dictionary.data.deleteDescription", absolute = true)
     public VoidResponse deleteDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,

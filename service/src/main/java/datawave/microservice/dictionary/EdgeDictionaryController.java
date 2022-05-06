@@ -2,26 +2,21 @@ package datawave.microservice.dictionary;
 
 import com.codahale.metrics.annotation.Timed;
 import datawave.accumulo.util.security.UserAuthFunctions;
+import datawave.microservice.AccumuloConnectionService;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.dictionary.config.EdgeDictionaryProperties;
 import datawave.microservice.dictionary.edge.EdgeDictionary;
-import datawave.security.authorization.DatawaveUser;
 import datawave.webservice.dictionary.edge.EdgeDictionaryBase;
 import datawave.webservice.dictionary.edge.MetadataBase;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Set;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
@@ -35,14 +30,14 @@ public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>
     private final EdgeDictionaryProperties edgeDictionaryProperties;
     private final EdgeDictionary<EDGE,META> edgeDictionary;
     private final UserAuthFunctions userAuthFunctions;
-    private final Connector accumuloConnector;
+    private final AccumuloConnectionService accumuloConnectionService;
     
     public EdgeDictionaryController(EdgeDictionaryProperties edgeDictionaryProperties, EdgeDictionary<EDGE,META> edgeDictionary,
-                    UserAuthFunctions userAuthFunctions, @Qualifier("warehouse") Connector accumuloConnector) {
+                    UserAuthFunctions userAuthFunctions, AccumuloConnectionService accumloConnectionService) {
         this.edgeDictionaryProperties = edgeDictionaryProperties;
         this.edgeDictionary = edgeDictionary;
         this.userAuthFunctions = userAuthFunctions;
-        this.accumuloConnector = accumuloConnector;
+        this.accumuloConnectionService = accumloConnectionService;
     }
     
     /**
@@ -56,8 +51,7 @@ public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>
      * @throws Exception
      *             if there is any problem retrieving the edge dictionary from Accumulo
      */
-    @ResponseBody
-    @RequestMapping(path = "/")
+    @GetMapping("/")
     @Timed(name = "dw.dictionary.edge.get", absolute = true)
     public EdgeDictionaryBase<EDGE,META> get(@RequestParam(required = false) String metadataTableName,
                     @RequestParam(name = "auths", required = false) String queryAuthorizations, @AuthenticationPrincipal ProxiedUserDetails currentUser)
@@ -67,18 +61,11 @@ public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>
             metadataTableName = edgeDictionaryProperties.getMetadataTableName();
         }
         
-        // If the user provides authorizations, intersect it with their actual authorizations
-        Set<Authorizations> auths = getDowngradedAuthorizations(queryAuthorizations, currentUser);
-        
-        EDGE edgeDict = edgeDictionary.getEdgeDictionary(metadataTableName, accumuloConnector, auths, edgeDictionaryProperties.getNumThreads());
+        EDGE edgeDict = edgeDictionary.getEdgeDictionary(metadataTableName, accumuloConnectionService.getConnection().getConnector(),
+                        accumuloConnectionService.getDowngradedAuthorizations(queryAuthorizations, currentUser), edgeDictionaryProperties.getNumThreads());
         
         log.info("EDGEDICTIONARY: returning edge dictionary");
         return edgeDict;
     }
     
-    private Set<Authorizations> getDowngradedAuthorizations(String requestedAuthorizations, ProxiedUserDetails currentUser) {
-        DatawaveUser primaryUser = currentUser.getPrimaryUser();
-        return userAuthFunctions.mergeAuthorizations(userAuthFunctions.getRequestedAuthorizations(requestedAuthorizations, currentUser.getPrimaryUser()),
-                        currentUser.getProxiedUsers(), u -> u != primaryUser);
-    }
 }

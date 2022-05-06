@@ -60,7 +60,18 @@ public class AccumuloConnectionService {
     }
     
     /**
-     * Returns a Connection representing the connection to accumulo
+     * Return a basic connection to accumulo (as configured by spring)
+     *
+     * @return a basic connection to accumulo
+     */
+    public Connection getConnection() {
+        Connection connection = new Connection();
+        connection.setConnector(accumuloConnector);
+        return connection;
+    }
+    
+    /**
+     * Returns a Connection representing the connection to accumulo configured with the specified parameters
      *
      * @param modelTable
      *            the name of the model table to use in the connection
@@ -76,7 +87,7 @@ public class AccumuloConnectionService {
     }
     
     /**
-     * Returns a Connection representing the connection to accumulo
+     * Returns a Connection representing the connection to accumulo configured with the specified parameters
      *
      * @param metadataTable
      *            the name of the metadata table to use in the connection
