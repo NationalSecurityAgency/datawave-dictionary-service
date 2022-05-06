@@ -1,16 +1,19 @@
 package datawave.webservice.model;
 
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.HashSet;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.BaseResponse;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.HashSet;
 
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.BaseResponse;
-
+@Data
+@NoArgsConstructor
 @XmlRootElement(name = "ModelList")
 public class ModelList extends BaseResponse implements Serializable, HtmlProvider {
     
@@ -25,11 +28,6 @@ public class ModelList extends BaseResponse implements Serializable, HtmlProvide
                     + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}') '}')\n"
                     + "</script>\n";
     
-    /**
-     * Need empty constructor for serialization
-     */
-    public ModelList() {}
-    
     public ModelList(String jqueryUri, String datatablesUri, String modelTableName) {
         this.jqueryUri = jqueryUri;
         this.dataTablesUri = datatablesUri;
@@ -38,15 +36,7 @@ public class ModelList extends BaseResponse implements Serializable, HtmlProvide
     
     @XmlElementWrapper(name = "ModelNames")
     @XmlElement(name = "ModelName")
-    private HashSet<String> names = null;
-    
-    public HashSet<String> getNames() {
-        return names;
-    }
-    
-    public void setNames(HashSet<String> names) {
-        this.names = names;
-    }
+    private HashSet<String> names;
     
     /*
      * (non-Javadoc)

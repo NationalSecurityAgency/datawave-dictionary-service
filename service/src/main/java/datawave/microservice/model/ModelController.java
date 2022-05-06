@@ -1,16 +1,7 @@
 package datawave.microservice.model;
 
 import com.google.common.collect.Sets;
-//import datawave.interceptor.RequiredInterceptor;
-//import datawave.interceptor.ResponseInterceptor;
-//import datawave.security.authorization.DatawavePrincipal;
-//import datawave.services.common.cache.AccumuloTableCache;
-//import datawave.services.common.connection.AccumuloConnectionFactory;
-//import datawave.webservice.common.exception.DatawaveWebApplicationException;
-//import datawave.webservice.common.exception.NotFoundException;
-//import datawave.webservice.common.exception.PreConditionFailedException;
 import datawave.microservice.AccumuloConnectionService;
-import datawave.microservice.Connection;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter;
 import datawave.microservice.model.config.ModelProperties;
@@ -22,14 +13,9 @@ import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.result.VoidResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.accumulo.core.client.BatchWriter;
-import org.apache.accumulo.core.client.BatchWriterConfig;
-import org.apache.accumulo.core.client.MutationsRejectedException;
-import org.apache.accumulo.core.client.Scanner;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
-import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
@@ -44,8 +30,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * Service that supports manipulation of models. The models are contained in the data dictionary table.
@@ -63,11 +51,6 @@ public class ModelController {
     private final AccumuloConnectionService accumloConnectionService;
     
     public static final String DEFAULT_MODEL_TABLE_NAME = "DatawaveMetadata";
-    
-    private static final long BATCH_WRITER_MAX_LATENCY = 1000L;
-    private static final long BATCH_WRITER_MAX_MEMORY = 10845760;
-    private static final int BATCH_WRITER_MAX_THREADS = 2;
-    
     private static final HashSet<String> RESERVED_COLF_VALUES = Sets.newHashSet("e", "i", "ri", "f", "tf", "m", "desc", "edge", "t", "n", "h");
     
     public ModelController(ModelProperties modelProperties, AccumuloConnectionService accumloConnectionService) {
@@ -83,7 +66,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return ModelList
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     * 
+     *
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
@@ -93,24 +76,26 @@ public class ModelController {
         
         ModelList response = new ModelList(jqueryUri, dataTablesUri, modelTableName);
         HashSet<String> modelNames = new HashSet<>();
-        
-        try (Scanner scanner = accumloConnectionService.getScanner(modelTableName, currentUser)) {
-            for (Map.Entry<Key,Value> entry : scanner) {
-                String colf = entry.getKey().getColumnFamily().toString();
-                if (!RESERVED_COLF_VALUES.contains(colf) && !modelNames.contains(colf)) {
-                    String[] parts = colf.split(ModelKeyParser.NULL_BYTE);
-                    if (parts.length == 1) {
-                        modelNames.add(colf);
-                    } else if (parts.length == 2) {
-                        modelNames.add(parts[0]);
-                    }
-                }
-                
-            }
+        List<Key> keys;
+        try {
+            keys = accumloConnectionService.getKeys(modelTableName, currentUser, "");
         } catch (TableNotFoundException e) {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
             log.error(qe.getMessage());
             response.addException(qe.getBottomQueryException());
+            return response;
+        }
+        
+        Set<String> colFamilies = keys.stream().map(k -> k.getColumnFamily().toString()).filter(colFamily -> !RESERVED_COLF_VALUES.contains(colFamily))
+                        .collect(Collectors.toSet());
+        
+        for (String colf : colFamilies) {
+            String[] parts = colf.split(ModelKeyParser.NULL_BYTE);
+            if (parts.length == 1) {
+                modelNames.add(colf);
+            } else if (parts.length == 2) {
+                modelNames.add(parts[0]);
+            }
         }
         
         response.setNames(modelNames);
@@ -193,17 +178,19 @@ public class ModelController {
     public Model getModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         Model response = new Model(jqueryUri, dataTablesUri);
-        Set<Authorizations> auths = accumloConnectionService.getConnection(modelTableName, name, currentUser).getAuths();
-        try (Scanner scanner = accumloConnectionService.getScannerWithRegexIteratorSetting(name, modelTableName, currentUser)) {
-            for (Map.Entry<Key,Value> entry : scanner) {
-                FieldMapping mapping = ModelKeyParser.parseKey(entry.getKey(), auths);
-                response.getFields().add(mapping);
-            }
+        List<Key> keys;
+        try {
+            keys = accumloConnectionService.getKeys(modelTableName, currentUser, name);
         } catch (TableNotFoundException e) {
             QueryException qe = new QueryException(DatawaveErrorCode.MODEL_NAME_LIST_ERROR, e);
             log.error(qe.getMessage());
             response.addException(qe.getBottomQueryException());
+            return response;
         }
+        
+        Set<Authorizations> auths = accumloConnectionService.getConnection(modelTableName, name, currentUser).getAuths();
+        TreeSet<FieldMapping> fields = response.getFields();
+        keys.forEach(k -> fields.add(ModelKeyParser.parseKey(k, auths)));
         response.setName(name);
         return response;
     }
@@ -230,42 +217,12 @@ public class ModelController {
         }
         
         VoidResponse response = new VoidResponse();
-        ModelList models = listModelNames(modelTableName, currentUser);
-        if (models.getNames().contains(model.getName())) {
-            // the model already exists -- nothing to do
-            return response;
-        }
+        List<Mutation> mutations = model.getFields().stream().map(mapping -> ModelKeyParser.createMutation(mapping, model.getName()))
+                        .collect(Collectors.toList());
         
-        BatchWriter writer = null;
-        
-        try {
-            writer = accumloConnectionService.getDefaultBatchWriter(modelTableName, model.getName(), currentUser);
-        } catch (TableNotFoundException e) {
-            log.error("The " + modelTableName + " could not be found to write to ", e);
-            QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
-            response.addException(qe.getBottomQueryException());
-        }
-        
-        if (writer != null) {
-            for (FieldMapping mapping : model.getFields()) {
-                Mutation m = ModelKeyParser.createMutation(mapping, model.getName());
-                try {
-                    writer.addMutation(m);
-                } catch (MutationsRejectedException e) {
-                    // So that we know exactly which mapping causes the error, catch here, but break out of loop
-                    // Unfortunately, this does mean if there are multiple mappings that cause this error, only the first will be logged.
-                    log.error("Could not insert mapping  -- " + mapping, e);
-                    QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
-                    response.addException(qe.getBottomQueryException());
-                } finally {
-                    // we know the writer isn't null since we've already checked.
-                    try {
-                        writer.close();
-                    } catch (MutationsRejectedException e) {
-                        log.error("Error closing the BatchWriter; ", e);
-                    }
-                }
-            }
+        QueryException exception = accumloConnectionService.modifyMappings(mutations, modelTableName, model.getName(), currentUser);
+        if (exception != null) {
+            response.addException(exception.getBottomQueryException());
         }
         
         // Do we already have an AccumuloTableCache bean somewhere?
@@ -288,66 +245,21 @@ public class ModelController {
      */
     @DeleteMapping("/delete")
     @Secured({"Administrator", "JBossAdministrator"})
-    public VoidResponse deleteMapping(@RequestParam Model model, @RequestParam String modelTableName, @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public VoidResponse deleteMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
+                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         if (log.isDebugEnabled()) {
             log.debug("Deleting model name: " + model.getName() + "from modelTableName " + modelTableName);
         }
         VoidResponse response = new VoidResponse();
-        BatchWriter writer = null;
         
-        try {
-            writer = accumloConnectionService.getDefaultBatchWriter(modelTableName, model.getName(), currentUser);
-        } catch (TableNotFoundException e) {
-            log.error("The " + modelTableName + " could not be found to write to ", e);
-            QueryException qe = new QueryException(DatawaveErrorCode.TABLE_NOT_FOUND, e);
-            response.addException(qe.getBottomQueryException());
-        }
+        List<Mutation> mutations = model.getFields().stream().map(mapping -> ModelKeyParser.createDeleteMutation(mapping, model.getName()))
+                        .collect(Collectors.toList());
         
-        if (writer != null) {
-            for (FieldMapping mapping : model.getFields()) {
-                Mutation m = ModelKeyParser.createDeleteMutation(mapping, model.getName());
-                try {
-                    writer.addMutation(m);
-                } catch (MutationsRejectedException e) {
-                    // So that we know exactly which mapping causes the error, catch here, but break out of loop
-                    // Unfortunately, this does mean if there are multiple mappings that cause this error, only the first will be logged.
-                    log.error("Could not delete mapping  -- " + mapping, e);
-                    QueryException qe = new QueryException(DatawaveErrorCode.INSERT_MAPPING_ERROR, e);
-                    response.addException(qe.getBottomQueryException());
-                } finally {
-                    // we know the writer isn't null since we've already checked.
-                    try {
-                        writer.close();
-                    } catch (MutationsRejectedException e) {
-                        log.error("Error closing the BatchWriter; ", e);
-                    }
-                }
-            }
+        QueryException exception = accumloConnectionService.modifyMappings(mutations, modelTableName, model.getName(), currentUser);
+        if (exception != null) {
+            response.addException(exception.getBottomQueryException());
         }
         
         return response;
     }
-    
-    // public String getCurrentUserDN() {
-    // String currentUserDN = null;
-    // Principal p = ctx.getCallerPrincipal();
-    //
-    // if (p != null && p instanceof DatawavePrincipal) {
-    // currentUserDN = ((DatawavePrincipal) p).getUserDN().subjectDN();
-    // }
-    //
-    // return currentUserDN;
-    // }
-    //
-    // public Collection<String> getCurrentProxyServers() {
-    // Set<String> currentProxyServers = null;
-    // Principal p = ctx.getCallerPrincipal();
-    //
-    // if (p != null && p instanceof DatawavePrincipal) {
-    // currentProxyServers = ((DatawavePrincipal) p).getProxyServers();
-    // }
-    //
-    // return currentProxyServers;
-    // }
-    
 }

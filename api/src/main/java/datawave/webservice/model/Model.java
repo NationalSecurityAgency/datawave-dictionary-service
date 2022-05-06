@@ -1,8 +1,8 @@
 package datawave.webservice.model;
 
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.TreeSet;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.BaseResponse;
+import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -10,14 +10,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.TreeSet;
 
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.BaseResponse;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-
+@Data
 @XmlRootElement(name = "Model")
 @XmlAccessorType(XmlAccessType.NONE)
 public class Model extends BaseResponse implements Serializable, HtmlProvider {
@@ -41,49 +38,11 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
     public Model() {};
     
     @XmlAttribute(name = "name", required = true)
-    private String name = null;
+    private String name;
     
     @XmlElementWrapper(name = "Mappings")
     @XmlElement(name = "Mapping")
     private TreeSet<FieldMapping> fields = new TreeSet<FieldMapping>();
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public TreeSet<FieldMapping> getFields() {
-        return fields;
-    }
-    
-    public void setFields(TreeSet<FieldMapping> fields) {
-        this.fields = fields;
-    }
-    
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(name).append(fields).toHashCode();
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null)
-            return false;
-        if (obj == this)
-            return true;
-        if (obj.getClass() != this.getClass())
-            return false;
-        Model other = (Model) obj;
-        return new EqualsBuilder().append(name, other.name).append(fields, other.fields).isEquals();
-    }
-    
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this).append("name", name).append("fields", fields).toString();
-    }
     
     /*
      * (non-Javadoc)

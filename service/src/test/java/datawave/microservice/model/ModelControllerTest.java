@@ -1,14 +1,8 @@
 package datawave.microservice.model;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import datawave.accumulo.inmemory.InMemoryInstance;
-import datawave.marking.MarkingFunctions;
 import datawave.microservice.ControllerIT;
 import datawave.microservice.model.config.ModelProperties;
-import datawave.webservice.dictionary.data.DefaultDescription;
-import datawave.webservice.dictionary.data.DefaultFields;
 import datawave.webservice.model.FieldMapping;
 import datawave.webservice.model.Model;
 import datawave.webservice.model.ModelKeyParser;
@@ -24,7 +18,6 @@ import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Mutation;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,31 +27,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ModelControllerTest extends ControllerIT {
     
@@ -139,7 +123,8 @@ public class ModelControllerTest extends ControllerIT {
     }
     
     @Test
-    public void testImport() {
+    public void testImportAKAInsert() {
+        // the "/insert" and "/import" paths are the same endpoint, so this test effectively tests both
         // Verify that there is only one model so far (the model that is seeded before the test)
         // @formatter:off
         UriComponents uri = UriComponentsBuilder.newInstance()
@@ -181,6 +166,50 @@ public class ModelControllerTest extends ControllerIT {
     }
     
     @Test
+    public void testClone() {
+        // Verify that there is only one model so far (the model that is seeded before the test)
+        // @formatter:off
+        UriComponents uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/list")
+                .build();
+        // @formatter:on
+        
+        ResponseEntity<ModelList> modelListResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
+        assertEquals(1, modelListResponse.getBody().getNames().size());
+        
+        // clone it and name the clone "TEST_MODEL"
+        String newName = "TEST_MODEL";
+        // @formatter:off
+        uri = UriComponentsBuilder.newInstance()
+                .scheme("https").host("localhost").port(webServicePort)
+                .path("/dictionary/model/clone")
+                .queryParam("name", MODEL_ONE.getName())
+                .queryParam("newName", newName)
+                .build();
+        // @formatter:on
+        
+        HttpHeaders additionalHeaders = new HttpHeaders();
+        additionalHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        RequestEntity<Model> postEntity = jwtRestTemplate.createRequestEntity(adminUser, MODEL_TWO, additionalHeaders, HttpMethod.POST, uri);
+        ResponseEntity<VoidResponse> imprtResponse = jwtRestTemplate.exchange(postEntity, VoidResponse.class);
+        
+        assertEquals(HttpStatus.OK, imprtResponse.getStatusCode());
+        
+        // There should now be 2 models....
+        uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/dictionary/model/list").build();
+        // @formatter:on
+        
+        ResponseEntity<ModelList> modelListResponse2 = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse2.getStatusCode());
+        HashSet<String> models = modelListResponse2.getBody().getNames();
+        assertEquals(2, models.size());
+        assertTrue(models.contains(MODEL_ONE.getName()));
+        assertTrue(models.contains(newName));
+    }
+    
+    @Test
     public void testGet() {
         // Verify that there is only one model so far (the model that is seeded before the test)
         // @formatter:off
@@ -207,7 +236,7 @@ public class ModelControllerTest extends ControllerIT {
         assertEquals(MODEL_ONE.getName(), modelResponse.getBody().getName());
     }
     
-    // @Test
+    @Test
     public void testDelete() {
         // Verify that there is only one model so far (the model that is seeded before the test)
         // @formatter:off
@@ -228,5 +257,18 @@ public class ModelControllerTest extends ControllerIT {
                 .path("/dictionary/model/delete")
                 .build();
         // @formatter:on
+        HttpHeaders additionalHeaders = new HttpHeaders();
+        additionalHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        RequestEntity<Model> deleteEntity = jwtRestTemplate.createRequestEntity(adminUser, MODEL_ONE, additionalHeaders, HttpMethod.DELETE, uri);
+        ResponseEntity<VoidResponse> imprtResponse = jwtRestTemplate.exchange(deleteEntity, VoidResponse.class);
+        assertEquals(HttpStatus.OK, imprtResponse.getStatusCode());
+        
+        // Verify that it was deleted
+        uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/dictionary/model/list").build();
+        // @formatter:on
+        
+        ResponseEntity<ModelList> modelListResponse2 = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
+        assertEquals(HttpStatus.OK, modelListResponse.getStatusCode());
+        assertTrue(modelListResponse2.getBody().getNames().isEmpty());
     }
 }
