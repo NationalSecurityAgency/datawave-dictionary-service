@@ -12,3 +12,9 @@ spring:
         enabled: false
   main:
     banner-mode: "OFF"
+
+datawave:
+  table:
+    cache:
+      enabled: false
+
