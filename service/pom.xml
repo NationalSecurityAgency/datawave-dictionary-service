@@ -5,7 +5,7 @@
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
         <version>2.1-SNAPSHOT</version>
-        <relativePath />
+        <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>dictionary-service</artifactId>
     <version>1.3-SNAPSHOT</version>
@@ -43,7 +43,7 @@
                 <version>2.3.3</version>
             </dependency>
             <dependency>
-                <groupId>gov.nsa.datawave.contrib</groupId>
+                <groupId>gov.nsa.datawave</groupId>
                 <artifactId>datawave-in-memory-accumulo</artifactId>
                 <version>${version.in-memory-accumulo}</version>
                 <scope>compile</scope>
@@ -144,7 +144,7 @@
             <artifactId>jaxb-impl</artifactId>
         </dependency>
         <dependency>
-            <groupId>gov.nsa.datawave.contrib</groupId>
+            <groupId>gov.nsa.datawave</groupId>
             <artifactId>datawave-in-memory-accumulo</artifactId>
         </dependency>
         <dependency>

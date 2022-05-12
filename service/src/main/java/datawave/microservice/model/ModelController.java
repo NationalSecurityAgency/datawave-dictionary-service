@@ -40,8 +40,9 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @RestController
-@RequestMapping(path = "/model", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
-        ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+@RequestMapping(path = "/model",
+                produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
+                        ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @Secured({"AuthorizedUser", "AuthorizedQueryServer", "InternalUser", "Administrator", "JBossAdministrator"})
 @EnableConfigurationProperties(ModelProperties.class)
 public class ModelController {
@@ -66,7 +67,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return ModelList
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
+     *            
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
@@ -111,7 +112,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return datawave.webservice.result.VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
+     *            
      * @HTTP 200 success
      * @HTTP 404 model not found
      * @HTTP 500 internal server error
@@ -142,7 +143,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return datawave.webservice.result.VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
+     *            
      * @HTTP 200 success
      * @HTTP 204 model not found
      * @HTTP 500 internal server error
@@ -169,7 +170,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return Model
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
+     *            
      * @HTTP 200 success
      * @HTTP 404 model not found
      * @HTTP 500 internal server error
@@ -204,7 +205,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return datawave.webservice.result.VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
+     *            
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
@@ -239,7 +240,7 @@ public class ModelController {
      *            name of the table that contains the model
      * @return datawave.webservice.result.VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
-     *
+     *            
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */

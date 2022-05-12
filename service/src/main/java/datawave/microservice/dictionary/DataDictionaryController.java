@@ -43,8 +43,9 @@ import java.util.function.Consumer;
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
 @RestController
-@RequestMapping(path = "/data/v1", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
-        MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+@RequestMapping(path = "/data/v1",
+                produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
+                        MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @EnableConfigurationProperties(DataDictionaryProperties.class)
 public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT extends DataDictionaryBase<DICT,META>,META extends MetadataFieldBase<META,DESC>,FIELD extends DictionaryFieldBase<FIELD,DESC>,FIELDS extends FieldsBase<FIELDS,FIELD,DESC>> {
     

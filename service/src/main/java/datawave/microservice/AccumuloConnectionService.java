@@ -79,7 +79,7 @@ public class AccumuloConnectionService {
      *            the name of the model to use in the connection
      * @param user
      *            the user (and the authorities and other security aspects related to the user)
-     *
+     *            
      * @return a Connection representing the connection to accumulo
      */
     public Connection getConnection(String modelTable, String modelName, ProxiedUserDetails user) {
@@ -97,7 +97,7 @@ public class AccumuloConnectionService {
      *            the name of the model to use in the connection
      * @param user
      *            the user (and the authorities and other security aspects related to the user)
-     *
+     *            
      * @return a Connection representing the connection to accumulo
      */
     public Connection getConnection(String metadataTable, String modelTable, String modelName, ProxiedUserDetails user) {
@@ -119,7 +119,7 @@ public class AccumuloConnectionService {
      *
      * @param currentUser
      *            the user for whom to get the authorizations
-     *
+     *            
      * @return the accumulo authorizations for the user
      */
     public Set<Authorizations> getAuths(ProxiedUserDetails currentUser) {
@@ -138,7 +138,7 @@ public class AccumuloConnectionService {
      *            the level of authorizations to downgrade to
      * @param currentUser
      *            the user for whom to downgrade the authorizations
-     *
+     *            
      * @return the authorizations for the specified user downgraded to the specified level
      */
     public Set<Authorizations> getDowngradedAuthorizations(String requestedAuthorizations, ProxiedUserDetails currentUser) {
@@ -157,7 +157,7 @@ public class AccumuloConnectionService {
      *            the user requesting the keys. Used for authorizations purposes
      * @param regexTerm
      *            the regex (can be just a string) to apply to the IteratorSetting
-     *
+     *            
      * @return the keys of hte specified table that the specified user has the authorzations to access.
      * @throws TableNotFoundException
      *             Thrown if the table is not found
@@ -185,7 +185,7 @@ public class AccumuloConnectionService {
      *            the model name
      * @param user
      *            the user requesting the changes
-     *
+     *            
      * @return A QueryException if anything is unsuccessful, and null if everything is successful.
      */
     public QueryException modifyMappings(List<Mutation> mutations, String modelTable, String modelName, ProxiedUserDetails user) {
