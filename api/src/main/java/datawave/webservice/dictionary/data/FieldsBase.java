@@ -1,8 +1,8 @@
 package datawave.webservice.dictionary.data;
 
 import com.google.common.collect.Multimap;
-import io.protostuff.Message;
 import datawave.webservice.result.BaseResponse;
+import io.protostuff.Message;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

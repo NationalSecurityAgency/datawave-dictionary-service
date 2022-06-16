@@ -2,12 +2,12 @@ package datawave.webservice.dictionary.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.TotalResultsAware;
 import io.protostuff.Input;
 import io.protostuff.Message;
 import io.protostuff.Output;
 import io.protostuff.Schema;
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.TotalResultsAware;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

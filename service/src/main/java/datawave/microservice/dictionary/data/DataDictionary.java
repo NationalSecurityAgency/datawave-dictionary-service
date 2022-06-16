@@ -2,9 +2,9 @@ package datawave.microservice.dictionary.data;
 
 import com.google.common.collect.Multimap;
 import datawave.microservice.Connection;
-import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.dictionary.data.DescriptionBase;
 import datawave.webservice.dictionary.data.DictionaryFieldBase;
+import datawave.webservice.metadata.MetadataFieldBase;
 
 import java.util.Collection;
 import java.util.Map;

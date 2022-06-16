@@ -13,11 +13,11 @@ import datawave.query.model.QueryModel;
 import datawave.query.util.MetadataEntry;
 import datawave.query.util.MetadataHelper;
 import datawave.query.util.MetadataHelperFactory;
-import datawave.webservice.metadata.DefaultMetadataField;
 import datawave.webservice.dictionary.data.DefaultDataDictionary;
 import datawave.webservice.dictionary.data.DefaultDescription;
 import datawave.webservice.dictionary.data.DefaultDictionaryField;
 import datawave.webservice.dictionary.data.DefaultFields;
+import datawave.webservice.metadata.DefaultMetadataField;
 import org.apache.accumulo.core.client.TableNotFoundException;
 
 import java.util.Collection;

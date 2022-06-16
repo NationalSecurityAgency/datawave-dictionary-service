@@ -6,10 +6,9 @@ import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.data.ColumnFamilyConstants;
 import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
 import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
-import datawave.webservice.dictionary.edge.EventField;
 import datawave.webservice.dictionary.edge.DefaultMetadata;
+import datawave.webservice.dictionary.edge.EventField;
 import datawave.webservice.dictionary.edge.MetadataBase;
-
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
