@@ -8,6 +8,8 @@ import datawave.microservice.dictionary.config.EdgeDictionaryProperties;
 import datawave.microservice.dictionary.edge.EdgeDictionary;
 import datawave.webservice.dictionary.edge.EdgeDictionaryBase;
 import datawave.webservice.dictionary.edge.MetadataBase;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,6 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
+@Tag(name = "Edge Dictionary Controller /v1", description = "DataWave Edge Dictionary Operations",
+                externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",
+                                url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @Slf4j
 @RestController
 @RequestMapping(path = "/edge/v1",
@@ -48,7 +53,7 @@ public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>
      *            Name of metadata table (Optional)
      * @param queryAuthorizations
      *            Authorizations to use
-     * @return the {@link EdgeDictionaryBase} class (extended) that contains the edge dictionary fields
+     * @return the EdgeDictionaryBase class (extended) that contains the edge dictionary fields
      * @throws Exception
      *             if there is any problem retrieving the edge dictionary from Accumulo
      */

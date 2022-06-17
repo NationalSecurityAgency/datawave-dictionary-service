@@ -12,6 +12,9 @@ import datawave.webservice.model.ModelList;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.result.VoidResponse;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
@@ -38,6 +41,9 @@ import java.util.stream.Collectors;
 /**
  * Service that supports manipulation of models. The models are contained in the data dictionary table.
  */
+@Tag(name = "Model Controller /v1", description = "DataWave Model Operations",
+                externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",
+                                url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @Slf4j
 @RestController
 @RequestMapping(path = "/model",
@@ -65,7 +71,7 @@ public class ModelController {
      *
      * @param modelTableName
      *            name of the table that contains the model
-     * @return ModelList
+     * @return the ModelList
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      *            
      * @HTTP 200 success
@@ -110,13 +116,14 @@ public class ModelController {
      *            model name to delete
      * @param modelTableName
      *            name of the table that contains the model
-     * @return datawave.webservice.result.VoidResponse
+     * @return a VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      *            
      * @HTTP 200 success
      * @HTTP 404 model not found
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Delete a model with the supplied name.")
     @DeleteMapping("/{name}")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse deleteModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
@@ -141,13 +148,15 @@ public class ModelController {
      *            name of copied model
      * @param modelTableName
      *            name of the table that contains the model
-     * @return datawave.webservice.result.VoidResponse
+     * @return a VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      *            
      * @HTTP 200 success
      * @HTTP 204 model not found
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Copy a model.")
+    
     @PostMapping("/clone")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse cloneModel(@RequestParam String name, @RequestParam String newName,
@@ -168,7 +177,7 @@ public class ModelController {
      *            model name
      * @param modelTableName
      *            name of the table that contains the model
-     * @return Model
+     * @return the Model
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      *            
      * @HTTP 200 success
@@ -203,12 +212,13 @@ public class ModelController {
      *            list of new field mappings to insert
      * @param modelTableName
      *            name of the table that contains the model
-     * @return datawave.webservice.result.VoidResponse
+     * @return a VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      *            
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Insert a new field mapping into an existing model.")
     @PostMapping(value = {"/insert", "/import"}) // If we get to change to standard REST, this would just be / and rely on the
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse insertMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
@@ -238,12 +248,13 @@ public class ModelController {
      *            list of field mappings to delete
      * @param modelTableName
      *            name of the table that contains the model
-     * @return datawave.webservice.result.VoidResponse
+     * @return a VoidResponse
      * @RequestHeader X-ProxiedEntitiesChain use when proxying request for user
      *            
      * @HTTP 200 success
      * @HTTP 500 internal server error
      */
+    @Operation(summary = "Delete field mappings from an existing model.")
     @DeleteMapping("/delete")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse deleteMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,

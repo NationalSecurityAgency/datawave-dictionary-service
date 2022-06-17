@@ -16,6 +16,8 @@ import datawave.webservice.dictionary.data.DictionaryFieldBase;
 import datawave.webservice.dictionary.data.FieldsBase;
 import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.result.VoidResponse;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
@@ -42,6 +44,9 @@ import java.util.function.Consumer;
 
 import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
+@Tag(name = "Data Dictionary Controller /v1", description = "DataWave Dictionary Operations",
+                externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",
+                                url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @RestController
 @RequestMapping(path = "/data/v1",
                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
@@ -69,6 +74,25 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         dataDictionary.setNormalizationMap(dataDictionaryConfiguration.getNormalizerMap());
     }
     
+    /**
+     * Returns the DataDictionary for the given parameters.
+     *
+     * @param modelName
+     *            Optional model name
+     * @param modelTableName
+     *            Optional model table name
+     * @param metadataTableName
+     *            Optional metadata table name
+     * @param queryAuthorizations
+     *            Optional query authorizations
+     * @param dataTypeFilters
+     *            Optional data type filters
+     * @param currentUser
+     *            the current user
+     * @return the DataDictionaryBase class (extended) that contains the data dictionary fields
+     * @throws Exception
+     *             if there is any problem fetching the entries
+     */
     @GetMapping("/")
     @Timed(name = "dw.dictionary.data.get", absolute = true)
     public DataDictionaryBase<DICT,META> get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
@@ -135,7 +159,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      *            ColumnVisibility of the description
      * @param currentUser
      *            The user sending the request
-     * @return a {@link VoidResponse}
+     * @return a VoidResponse
      * @throws Exception
      *             if there is any problem updating the description
      */
@@ -287,7 +311,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      *            the column visibility
      * @param currentUser
      *            The user sending the request
-     * @return a {@link VoidResponse} with operation time and error information
+     * @return a VoidResponse with operation time and error information
      * @throws Exception
      *             if there is any problem removing the description from Accumulo
      */
