@@ -1,10 +1,10 @@
 package datawave.webservice.dictionary.data;
 
-import io.protostuff.Message;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.TotalResultsAware;
+import io.protostuff.Message;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

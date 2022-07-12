@@ -1,8 +1,8 @@
 package datawave.webservice.dictionary.data;
 
-import io.protostuff.Message;
 import datawave.webservice.query.result.event.HasMarkings;
 import datawave.webservice.query.util.StringMapAdapter;
+import io.protostuff.Message;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

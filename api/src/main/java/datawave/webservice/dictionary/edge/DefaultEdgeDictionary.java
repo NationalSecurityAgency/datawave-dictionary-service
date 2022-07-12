@@ -1,11 +1,13 @@
 package datawave.webservice.dictionary.edge;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.query.result.util.protostuff.FieldAccessor;
+import datawave.webservice.query.result.util.protostuff.ProtostuffField;
+import datawave.webservice.result.TotalResultsAware;
+import io.protostuff.Input;
+import io.protostuff.Message;
+import io.protostuff.Output;
+import io.protostuff.Schema;
 
 import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,15 +17,12 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
-import io.protostuff.Input;
-import io.protostuff.Message;
-import io.protostuff.Output;
-import io.protostuff.Schema;
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.query.result.util.protostuff.FieldAccessor;
-import datawave.webservice.query.result.util.protostuff.ProtostuffField;
-import datawave.webservice.result.TotalResultsAware;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 @XmlRootElement(name = "EdgeDictionary")
 @XmlAccessorType(XmlAccessType.NONE)

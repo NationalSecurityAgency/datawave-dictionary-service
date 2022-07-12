@@ -1,21 +1,21 @@
 package datawave.webservice.dictionary.edge;
 
-import java.io.IOException;
-import java.io.Serializable;
+import com.google.common.base.Objects;
+import datawave.webservice.query.result.util.protostuff.FieldAccessor;
+import datawave.webservice.query.result.util.protostuff.ProtostuffField;
+import io.protostuff.Input;
+import io.protostuff.Message;
+import io.protostuff.Output;
+import io.protostuff.Schema;
+import org.apache.commons.lang.StringUtils;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-
-import com.google.common.base.Objects;
-import io.protostuff.Input;
-import io.protostuff.Message;
-import io.protostuff.Output;
-import io.protostuff.Schema;
-import datawave.webservice.query.result.util.protostuff.FieldAccessor;
-import datawave.webservice.query.result.util.protostuff.ProtostuffField;
-import org.apache.commons.lang.StringUtils;
+import java.io.IOException;
+import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlType(propOrder = {"sourceField", "sinkField", "enrichmentField", "enrichmentIndex", "jexlPrecondition"})

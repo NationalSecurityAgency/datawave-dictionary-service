@@ -1,8 +1,8 @@
 package datawave.webservice.metadata;
 
-import datawave.webservice.query.result.event.MapSchema;
 import datawave.webservice.dictionary.data.DefaultDescription;
 import datawave.webservice.dictionary.data.DescriptionBase;
+import datawave.webservice.query.result.event.MapSchema;
 import io.protostuff.Input;
 import io.protostuff.Message;
 import io.protostuff.Output;

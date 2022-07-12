@@ -1,8 +1,7 @@
 package datawave.webservice.model;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlEnum;
+import java.io.Serializable;
 
 @XmlEnum
 public enum Direction implements Serializable {

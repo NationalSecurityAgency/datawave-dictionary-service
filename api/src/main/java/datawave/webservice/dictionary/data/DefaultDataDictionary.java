@@ -1,13 +1,13 @@
 package datawave.webservice.dictionary.data;
 
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
+import com.google.common.collect.Lists;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.metadata.DefaultMetadataField;
+import datawave.webservice.result.TotalResultsAware;
+import io.protostuff.Input;
+import io.protostuff.Message;
+import io.protostuff.Output;
+import io.protostuff.Schema;
 
 import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,16 +17,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-
-import com.google.common.collect.Lists;
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.metadata.DefaultMetadataField;
-import datawave.webservice.result.TotalResultsAware;
-
-import io.protostuff.Input;
-import io.protostuff.Message;
-import io.protostuff.Output;
-import io.protostuff.Schema;
+import java.io.IOException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 
 @XmlRootElement(name = "DefaultDataDictionary")
 @XmlAccessorType(XmlAccessType.NONE)

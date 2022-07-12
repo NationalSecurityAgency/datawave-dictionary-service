@@ -1,13 +1,12 @@
 package datawave.webservice.dictionary.edge;
 
-import java.util.List;
+import datawave.webservice.result.BaseResponse;
+import io.protostuff.Message;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
-
-import io.protostuff.Message;
-import datawave.webservice.result.BaseResponse;
+import java.util.List;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultEdgeDictionary.class)

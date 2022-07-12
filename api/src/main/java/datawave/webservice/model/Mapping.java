@@ -1,14 +1,13 @@
 package datawave.webservice.model;
 
-import java.io.Serializable;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang.builder.CompareToBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang.builder.CompareToBuilder;
+import java.io.Serializable;
 
 @Data
 @NoArgsConstructor
