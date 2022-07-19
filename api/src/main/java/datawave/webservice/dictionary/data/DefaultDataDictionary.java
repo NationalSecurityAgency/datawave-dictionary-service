@@ -32,7 +32,7 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
                 implements TotalResultsAware, Message<DefaultDataDictionary>, HtmlProvider {
     
     private static final long serialVersionUID = 1L;
-    private static final String TITLE = "Data Dictionary", EMPTY_STR = "", SEP = ", ", NEWLINE = "\n";
+    private static final String TITLE = "Data Dictionary", EMPTY_STR = "", SEP = ", ";
     
     /*
      * Loads jQuery, DataTables, some CSS elements for DataTables, and executes `.dataTables()` on the HTML table in the payload.
@@ -44,10 +44,8 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
                     + "<script type=''text/javascript'' src=''{1}jquery.dataTables.min.js''></script>\n" + "<script type=''text/javascript''>\n"
                     + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}'); $(''#myTable'').find(\"td\").css(\"word-break\", \"break-word\"); '}');\n"
                     + "</script>\n";
-    // JS script to make the table column widths resizable
-    private static final String RESIZEABLE_TABLE = resizeableTable();
-    // JS script to display how the table is being sorted (i.e., by which column and in ascending or descending order)
-    private static final String SORTED_BY = sortedBy();
+    // JS to make the table columns dynamically resizable, and to display how the table is being sorted
+    private static final String TABLE_ENHANCEMENTS = "<script src='/dictionary/js/table-enhancements.js'></script>";
     
     private final String dataTablesHeader;
     
@@ -63,7 +61,7 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
     }
     
     public DefaultDataDictionary(String jqueryUri, String datatablesUri) {
-        this.dataTablesHeader = MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, datatablesUri) + RESIZEABLE_TABLE + SORTED_BY;
+        this.dataTablesHeader = MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, datatablesUri) + TABLE_ENHANCEMENTS;
     }
     
     public DefaultDataDictionary(Collection<DefaultMetadataField> fields) {
@@ -265,153 +263,6 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
     @Override
     public void transformFields(Consumer<DefaultMetadataField> transformer) {
         fields.forEach(transformer);
-    }
-    
-    private static String resizeableTable() {
-        StringBuilder script = new StringBuilder();
-        
-        script.append("<script>");
-        
-        script.append("$( document ).ready(function() {" + NEWLINE);
-        // Function to resize the divs that are used to resize the columns (make divs same height as table).
-        // This needs to be done when a search filter is applied or the column widths are changed (both may change table height)
-        script.append("function resizeColumnResizers() {" + NEWLINE);
-        script.append("let divsToResize = document.getElementsByClassName('column-resizer-div');" + NEWLINE);
-        script.append("for (let i = 0; i < divsToResize.length; i++) {" + NEWLINE);
-        script.append("divsToResize[i].style.height = document.getElementById('myTable').offsetHeight - 5 + 'px';" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("}" + NEWLINE);
-        // Function to make the table columns resizeable
-        script.append("function resizeableTable() {" + NEWLINE);
-        script.append("var table = document.getElementById('myTable');" + NEWLINE); // get the table
-        script.append("var row = table.getElementsByTagName('tr')[0];" + NEWLINE); // get the first row (the table headers)
-        script.append("var cols = row.children;" + NEWLINE);
-        script.append("var tableHeight = table.offsetHeight;" + NEWLINE);
-        script.append("for (let i = 0; i < cols.length; i++) {" + NEWLINE);
-        script.append("var div = createDiv(tableHeight);" + NEWLINE); // create a div to the right of each column
-        script.append("cols[i].appendChild(div);" + NEWLINE);
-        script.append("cols[i].style.position = 'relative';" + NEWLINE);
-        script.append("setListeners(div);" + NEWLINE); // add the event listeners to each div
-        script.append("}" + NEWLINE);
-        script.append("}" + NEWLINE);
-        // Function to add the event listeners for mousedown, mouseup, moveover, mouseout, and mousemove events
-        script.append("function setListeners(div) {" + NEWLINE);
-        script.append("var pageX, curCol, nxtCol, curColWidth, nxtColWidth;" + NEWLINE);
-        script.append("div.addEventListener('mousedown', function (e) {" + NEWLINE); // mousedown event
-        script.append("curCol = e.target.parentElement;" + NEWLINE); // current column
-        script.append("nxtCol = curCol.nextElementSibling;" + NEWLINE); // sibling column
-        script.append("pageX = e.pageX;" + NEWLINE); // x coord of mouse pointer
-        script.append("var padding = paddingDiff(curCol);" + NEWLINE);
-        script.append("curColWidth = curCol.offsetWidth - padding;" + NEWLINE);
-        script.append("if (nxtCol)" + NEWLINE);
-        script.append("nxtColWidth = nxtCol.offsetWidth - padding;" + NEWLINE);
-        script.append("});" + NEWLINE);
-        script.append("div.addEventListener('mouseover', function (e) {" + NEWLINE); // mouseover event: creates a line to indicate that it can be resized
-        script.append("e.target.style.borderRight = '1.5px dashed #000000';" + NEWLINE);
-        script.append("})" + NEWLINE);
-        script.append("div.addEventListener('mouseout', function (e) {" + NEWLINE); // mouseout event: removes line
-        script.append("e.target.style.borderRight = '';" + NEWLINE);
-        script.append("})" + NEWLINE);
-        script.append("document.addEventListener('mousemove', function (e) {" + NEWLINE); // mousemove event
-        script.append("resizeColumnResizers();" + NEWLINE); // Resize all of the column resizer divs to be the same size as the table
-        script.append("if (curCol) {" + NEWLINE);
-        script.append("var diffX = e.pageX - pageX;" + NEWLINE);
-        script.append("if (nxtCol)" + NEWLINE);
-        script.append("nxtCol.style.width = (nxtColWidth - (diffX)) + 'px';" + NEWLINE); // set the new sibling column width
-        script.append("curCol.style.width = (curColWidth + diffX) + 'px';" + NEWLINE); // set the new current column width
-        script.append("}" + NEWLINE);
-        script.append("});" + NEWLINE);
-        script.append("document.addEventListener('mouseup', function (e) { " + NEWLINE); // mouseup event: clear all values
-        script.append("curCol = undefined;" + NEWLINE);
-        script.append("nxtCol = undefined;" + NEWLINE);
-        script.append("pageX = undefined;" + NEWLINE);
-        script.append("nxtColWidth = undefined;" + NEWLINE);
-        script.append("curColWidth = undefined;" + NEWLINE);
-        script.append("});" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("function createDiv(height) {" + NEWLINE); // Creates a div which can be interacted with to change the column size
-        script.append("var div = document.createElement('div');" + NEWLINE);
-        script.append("div.setAttribute('class', 'column-resizer-div');" + NEWLINE);
-        script.append("div.style.top = 0;" + NEWLINE);
-        script.append("div.style.right = 0;" + NEWLINE);
-        script.append("div.style.width = '5px';" + NEWLINE);
-        script.append("div.style.position = 'absolute';" + NEWLINE);
-        script.append("div.style.cursor = 'col-resize';" + NEWLINE);
-        script.append("div.style.userSelect = 'none';" + NEWLINE);
-        script.append("div.style.height = height - 5 + 'px';" + NEWLINE);
-        script.append("return div;" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("function paddingDiff(col) {" + NEWLINE);
-        script.append("if (getStyleVal(col, 'box-sizing') == 'border-box') {" + NEWLINE);
-        script.append("return 0;" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("var padLeft = getStyleVal(col, 'padding-left');" + NEWLINE);
-        script.append("var padRight = getStyleVal(col, 'padding-right');" + NEWLINE);
-        script.append("return (parseInt(padLeft) + parseInt(padRight));" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("function getStyleVal(elm, css) {" + NEWLINE);
-        script.append("return (window.getComputedStyle(elm, null).getPropertyValue(css));" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("resizeableTable();" + NEWLINE);
-        script.append("});" + NEWLINE);
-        
-        script.append("</script>");
-        
-        return script.toString();
-    }
-    
-    private static String sortedBy() {
-        StringBuilder script = new StringBuilder();
-        
-        script.append("<script>");
-        
-        script.append("$( document ).ready(function() {" + NEWLINE);
-        script.append("function createSortedByDiv() {" + NEWLINE); // create a new div under the filter search div. Contains the info for how the table is
-                                                                   // sorted
-        script.append("var sortedByDiv = document.createElement('div');" + NEWLINE);
-        script.append("const textContent = document.createTextNode('Table sorted by ');" + NEWLINE);
-        script.append("const sortingInfo = document.createElement('span');" + NEWLINE);
-        script.append("sortingInfo.setAttribute('id', 'sortedBy');" + NEWLINE);
-        script.append("sortedByDiv.appendChild(textContent);" + NEWLINE);
-        script.append("sortedByDiv.appendChild(sortingInfo);" + NEWLINE);
-        script.append("sortedByDiv.setAttribute('style', 'padding: 10px;');" + NEWLINE);
-        script.append("const tableFilterDiv = document.getElementById('myTable_filter');" + NEWLINE);
-        script.append("tableFilterDiv.parentNode.insertBefore(sortedByDiv, tableFilterDiv.nextSibling);" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("window.updateSortingInfo = function updateSortingInfo() {" + NEWLINE); // Update the text to display which column is currently being used
-                                                                                              // to sort the table
-        script.append("var table = document.getElementById('myTable');" + NEWLINE);
-        script.append("var tableHeaders = table.getElementsByTagName('tr')[0];" + NEWLINE);
-        script.append("var cols = tableHeaders.children;" + NEWLINE);
-        script.append("for (let i = 0; i < cols.length; i++) {" + NEWLINE);
-        script.append("let className = cols[i].getAttribute('class');" + NEWLINE);
-        script.append("let header = cols[i].innerHTML;" + NEWLINE);
-        script.append("if (className === 'sorting sorting_asc') {" + NEWLINE);
-        script.append("document.getElementById('sortedBy').innerHTML = `${header} in ascending order:`;" + NEWLINE);
-        script.append("break;" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("else if (className === 'sorting sorting_desc') {" + NEWLINE);
-        script.append("document.getElementById('sortedBy').innerHTML = `${header} in descending order:`;" + NEWLINE);
-        script.append("break;" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("function addOnClickEvents() {" + NEWLINE); // Add onclick events for each of the table headers to call updateSortingInfo()
-        script.append("var table = document.getElementById('myTable');" + NEWLINE);
-        script.append("var tableHeaders = table.getElementsByTagName('tr')[0];" + NEWLINE);
-        script.append("var cols = tableHeaders.children;" + NEWLINE);
-        script.append("for (let i = 0; i < cols.length; i++){" + NEWLINE);
-        script.append("cols[i].setAttribute('onclick', 'updateSortingInfo();');" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("}" + NEWLINE);
-        script.append("createSortedByDiv();" + NEWLINE);
-        script.append("addOnClickEvents();" + NEWLINE);
-        script.append("updateSortingInfo();" + NEWLINE);
-        script.append("});" + NEWLINE);
-        
-        script.append("</script>");
-        
-        return script.toString();
     }
     
     @Override
