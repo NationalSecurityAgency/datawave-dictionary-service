@@ -9,36 +9,17 @@
 	and a cookie is saved in the browser that will leave the last sort in place upon revisit of the page.
 	*/-->
 	<link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
-	
+	<script type="text/javascript" th:src="${jqueryUri}"></script>
+	<script type="text/javascript" th:src="${datatablesUri}"></script>
 	<script type="text/javascript">
-		const jqueryScript = document.createElement('script');
-		const datatablesScript = document.createElement('script');
-		
-		jqueryScript.type = "text/javascript";
-		jqueryScript.src = "[[${jqueryUri}]]jquery.min.js";
-
-		document.head.appendChild(jqueryScript);
-
-		// Wait for jqueryScript to fully load before loading the datatables script
-		// (execution of jquery.dataTables.min.js may fail otherwise)
-		jqueryScript.addEventListener("load", function() {
-			datatablesScript.type = "text/javascript";
-			datatablesScript.src = "[[${datatablesUri}]]jquery.dataTables.min.js";
-
-			document.head.appendChild(datatablesScript);
-		});
-		// Wait for datatables script to fully load before calling the dataTable() function on the table
-		// (execution of $(document).ready or $('#myTable').dataTable may fail otherwise)
-		datatablesScript.addEventListener("load", function() {
-			$(document).ready(function() { 
-				$('#myTable').dataTable({
-					"bPaginate": false, 
-					"bStateSave": true
-				});
-				setTimeout( function() { 
-					$('#myTable').find("td").css("word-break", "break-word"); 
-				}, 4000); 
+		$(document).ready(function() { 
+			$('#myTable').dataTable({
+				"bPaginate": false, 
+				"bStateSave": true
 			});
+			setTimeout( function() { 
+				$('#myTable').find("td").css("word-break", "break-word"); 
+			}, 4000); 
 		});
 	</script>
 </head>
