@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http:/>/www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>DATAWAVE - Data Dictionary</title>
+	<!--/*
+    Loads jQuery, DataTables, some CSS elements for DataTables, and executes `.dataTable()` on the HTML table in the payload.
+    Pagination on the table is turned off, we do an ascending sort on the 1st column (field name) (this is done by default), 
+	and a cookie is saved in the browser that will leave the last sort in place upon revisit of the page.
+	*/-->
+	<link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
+	
+	<script type="text/javascript">
+		const jqueryScript = document.createElement('script');
+		const datatablesScript = document.createElement('script');
+		
+		jqueryScript.type = "text/javascript";
+		jqueryScript.src = "[[${jqueryUri}]]jquery.min.js";
+
+		document.head.appendChild(jqueryScript);
+
+		// Wait for jqueryScript to fully load before loading the datatables script
+		// (execution of jquery.dataTables.min.js may fail otherwise)
+		jqueryScript.addEventListener("load", function() {
+			datatablesScript.type = "text/javascript";
+			datatablesScript.src = "[[${datatablesUri}]]jquery.dataTables.min.js";
+
+			document.head.appendChild(datatablesScript);
+		});
+		// Wait for datatables script to fully load before calling the dataTable() function on the table
+		// (execution of $(document).ready or $('#myTable').dataTable may fail otherwise)
+		datatablesScript.addEventListener("load", function() {
+			$(document).ready(function() { 
+				$('#myTable').dataTable({
+					"bPaginate": false, 
+					"bStateSave": true
+				});
+				setTimeout( function() { 
+					$('#myTable').find("td").css("word-break", "break-word"); 
+				}, 4000); 
+			});
+		});
+	</script>
+</head>
+<body>
+	<h1>Data Dictionary</h1>
+	<div>
+		<p style="width:60%; margin-left: auto; margin-right: auto;">
+		When a value is present in the forward index types, this means that a field is indexed and informs you how your query terms will be treated 
+		(e.g. text, number, IPv4 address, etc). The same applies for the reverse index types with the caveat that you can also query these fields using 
+		leading wildcards. Fields that are marked as 'Index only' will not appear in a result set unless explicitly queried on. Index only fields are 
+		typically composite fields, derived from actual data, created by the software to make querying easier.
+		</p>
+	</div>
+		<table id="myTable">
+			<thead>
+				<tr>
+					<th>FieldName</th>
+					<th>Internal FieldName</th>
+					<th>DataType</th>
+					<th>Index only</th>
+					<th>Forward Indexed</th>
+					<th>Reverse Indexed</th>
+					<th>Normalized</th>
+					<th>Types</th>
+					<th>Tokenized</th>
+					<th>Description</th>
+					<th>LastUpdated</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="row : ${tableContent}">
+					<td th:text="${row[0]}"></td>
+					<td th:text="${row[1]}"></td>
+					<td th:text="${row[2]}"></td>
+					<td th:text="${row[3]}"></td>
+					<td th:text="${row[4]}"></td>
+					<td th:text="${row[5]}"></td>
+					<td th:text="${row[6]}"></td>
+					<td th:text="${row[7]}"></td>
+					<td th:text="${row[8]}"></td>
+					<td th:text="${row[9]}"></td>
+					<td th:text="${row[10]}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<br>
+</body>
+</html>

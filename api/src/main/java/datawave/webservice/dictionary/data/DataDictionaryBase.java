@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultDataDictionary.class)
-public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends BaseResponse implements TotalResultsAware, Message<T>, HtmlProvider {
+public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends BaseResponse implements TotalResultsAware, Message<T> {
     
     public abstract List<M> getFields();
     
@@ -25,13 +25,9 @@ public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends 
     
     public abstract long getTotalResults();
     
-    public abstract String getTitle();
+    public abstract String getJqueryUri();
     
-    public abstract String getHeadContent();
-    
-    public abstract String getPageHeader();
-    
-    public abstract String getMainContent();
+    public abstract String getDatatablesUri();
     
     public abstract void transformFields(final Consumer<M> transformer);
 }
