@@ -20,12 +20,4 @@ public abstract class EdgeDictionaryBase<T,F extends MetadataBase<F>> extends Ba
     
     public abstract long getTotalResults();
     
-    public abstract String getTitle();
-    
-    public abstract String getHeadContent();
-    
-    public abstract String getPageHeader();
-    
-    public abstract String getMainContent();
-    
 }

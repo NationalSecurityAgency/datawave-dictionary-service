@@ -1,6 +1,5 @@
 package datawave.webservice.dictionary.data;
 
-import datawave.webservice.HtmlProvider;
 import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.TotalResultsAware;

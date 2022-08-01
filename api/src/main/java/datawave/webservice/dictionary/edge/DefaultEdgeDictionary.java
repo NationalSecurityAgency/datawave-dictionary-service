@@ -1,6 +1,5 @@
 package datawave.webservice.dictionary.edge;
 
-import datawave.webservice.HtmlProvider;
 import datawave.webservice.query.result.util.protostuff.FieldAccessor;
 import datawave.webservice.query.result.util.protostuff.ProtostuffField;
 import datawave.webservice.result.TotalResultsAware;
@@ -28,10 +27,9 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlAccessorOrder(XmlAccessOrder.ALPHABETICAL)
 public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDictionary,DefaultMetadata>
-                implements TotalResultsAware, Message<DefaultEdgeDictionary>, HtmlProvider {
+                implements TotalResultsAware, Message<DefaultEdgeDictionary> {
     
     private static final long serialVersionUID = 1L;
-    private static final String TITLE = "Edge Dictionary", SEP = ", ";
     
     @XmlElementWrapper(name = "EdgeMetadata")
     @XmlElement(name = "Metadata")
@@ -167,70 +165,5 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
     @Override
     public long getTotalResults() {
         return this.totalResults;
-    }
-    
-    @Override
-    public String getTitle() {
-        return TITLE;
-    }
-    
-    @Override
-    public String getHeadContent() {
-        return "";
-    }
-    
-    public String getPageHeader() {
-        return getTitle();
-    }
-    
-    @Override
-    public String getMainContent() {
-        StringBuilder builder = new StringBuilder(2048);
-        builder.append("<div><ul>").append("<li class=\"left\">Edge Type: Defined either by Datawave Configuration files or Edge enrichment field.</li>")
-                        .append("<li class=\"left\">Edge Relationship: Defined by Datawave Configuration files</li>")
-                        .append("<li class=\"left\">Edge Attribute1 Source: Defined by Datawave Configuration files and optional attributes Attribute2 and Attribute3</li>")
-                        .append("<li class=\"left\">Fields: List of Field Name pairs used to generate this edge type.</li>")
-                        .append("<li class=\"left\">Fields Format:<pre>[Source Field, Target Field | Enrichment Field=Enrichment Field Value]</pre></li>")
-                        .append("<li class=\"left\">Date: start date of edge type creation, format: yyyyMMdd</li>").append("</ul></div>");
-        
-        builder.append("<table id=\"myTable\" class=\"creds\">\n")
-                        .append("<thead><tr><th>Edge Type</th><th>Edge Relationship</th><th>Edge Attribute1 Source</th>")
-                        .append("<th>Fields</th><th>Date</th></tr></thead>");
-        
-        builder.append("<tbody>");
-        int x = 0;
-        for (MetadataBase<DefaultMetadata> metadata : this.getMetadataList()) {
-            // highlight alternating rows
-            if (x % 2 == 0) {
-                builder.append("<tr class=\"highlight\">");
-            } else {
-                builder.append("<tr>");
-            }
-            x++;
-            
-            String type = metadata.getEdgeType();
-            String relationship = metadata.getEdgeRelationship();
-            String collect = metadata.getEdgeAttribute1Source();
-            StringBuilder fieldBuilder = new StringBuilder();
-            for (EventField field : metadata.getEventFields()) {
-                fieldBuilder.append(field).append(SEP);
-            }
-            
-            String fieldNames = fieldBuilder.toString().substring(0, fieldBuilder.length() - 2);
-            String date = metadata.getStartDate();
-            
-            builder.append("<td>").append(type).append("</td>");
-            builder.append("<td>").append(relationship).append("</td>");
-            builder.append("<td>").append(collect).append("</td>");
-            builder.append("<td>").append(fieldNames).append("</td>");
-            builder.append("<td>").append(date).append("</td>");
-            
-            builder.append("</td>").append("</tr>");
-        }
-        builder.append("</tbody>");
-        
-        builder.append("</table>\n");
-        
-        return builder.toString();
     }
 }
