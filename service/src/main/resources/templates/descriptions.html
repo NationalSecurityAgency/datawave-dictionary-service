@@ -1,0 +1,24 @@
+<html xmlns:th="http:/>/www.thymeleaf.org">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>DATAWAVE - Field Descriptions</title>
+    <link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
+</head>
+<body>
+    <h1>Field Descriptions</h1>
+    <table>
+        <tr>
+            <th>Datatype</th>
+            <th>FieldName</th>
+            <th>Description</th>
+        </tr>
+
+        <tr th:class="${row[0]}" th:each="row : ${tableContent}">
+            <td th:text="${row[1]}"></td>
+            <td th:text="${row[2]}"></td>
+            <td th:text="${row[3]}"></td>
+        </tr>
+        
+    </table>
+</body>
+</html>

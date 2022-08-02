@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang.StringUtils;
@@ -13,11 +15,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 import datawave.microservice.AccumuloConnectionService;
 import datawave.microservice.Connection;
@@ -64,6 +70,25 @@ public class DataDictionaryWebController<DESC extends DescriptionBase<DESC>,DICT
         dataDictionary.setNormalizationMap(dataDictionaryConfiguration.getNormalizerMap());
     }
     
+    /**
+     * Returns the DataDictionary for the given parameters.
+     *
+     * @param modelName
+     *            Optional model name
+     * @param modelTableName
+     *            Optional model table name
+     * @param metadataTableName
+     *            Optional metadata table name
+     * @param queryAuthorizations
+     *            Optional query authorizations
+     * @param dataTypeFilters
+     *            Optional data type filters
+     * @param currentUser
+     *            the current user
+     * @return The ModelAndView for datadictionary.html which contains the data dictionary fields.
+     * @throws Exception
+     *             if there is any problem fetching the entries
+     */
     @GetMapping("/")
     @Timed(name = "dw.dictionary.data.get", absolute = true)
     public ModelAndView get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
@@ -126,6 +151,122 @@ public class DataDictionaryWebController<DESC extends DescriptionBase<DESC>,DICT
             row.add(f.getLastUpdated());
             
             tableContent.add(row);
+        }
+        mav.addObject("tableContent", tableContent);
+        
+        return mav;
+    }
+    
+    /**
+     * Fetch all descriptions stored in the database, optionally applying a model.
+     *
+     * @param modelName
+     *            Optional model name
+     * @param modelTable
+     *            Optional model table name
+     * @param currentUser
+     *            The user sending the request
+     * @return the dictionary descriptions
+     * @throws Exception
+     *             if there is any problem retrieving the descriptions from Accumulo
+     */
+    @GetMapping("/Descriptions")
+    @Timed(name = "dw.dictionary.data.allDescriptions", absolute = true)
+    public ModelAndView allDescriptions(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable,
+                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+        Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
+        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection);
+        FIELDS fields = this.responseObjectFactory.getFields();
+        fields.setDescriptions(descriptions);
+        
+        return getDescriptionsMAV(fields);
+    }
+    
+    /**
+     * Fetch all descriptions for a datatype, optionally applying a model to the field names.
+     *
+     * @param datatype
+     *            Name of datatype
+     * @param modelName
+     *            Optional model name
+     * @param modelTable
+     *            Optional model table name
+     * @param currentUser
+     *            The user sending the request
+     * @return the dictionary descriptions for {@code datatype}
+     * @throws Exception
+     *             if there is any problem retrieving the descriptions from Accumulo
+     */
+    @GetMapping("/Descriptions/{datatype}")
+    @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
+    public ModelAndView datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
+                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+        Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
+        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection, datatype);
+        FIELDS fields = this.responseObjectFactory.getFields();
+        fields.setDescriptions(descriptions);
+        
+        return getDescriptionsMAV(fields);
+    }
+    
+    /**
+     * Fetch the description for a field in a datatype, optionally applying a model.
+     *
+     * @param fieldName
+     *            Name of field
+     * @param datatype
+     *            Name of datatype
+     * @param modelName
+     *            Optional model name
+     * @param modelTable
+     *            Optional model table name
+     * @param currentUser
+     *            The user sending the request
+     * @return the dictionary descriptions for field {@code fieldName} in the type {@code dataType}
+     * @throws Exception
+     *             if there is any problem retrieving the descriptions from Accumulo
+     */
+    @GetMapping("/Descriptions/{datatype}/{fieldName}")
+    @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
+    public ModelAndView fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
+                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+        Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
+        Set<DESC> descriptions = dataDictionary.getDescriptions(connection, fieldName, datatype);
+        FIELDS fields = responseObjectFactory.getFields();
+        if (!descriptions.isEmpty()) {
+            Multimap<Entry<String,String>,DESC> mmap = HashMultimap.create();
+            for (DESC desc : descriptions) {
+                mmap.put(Maps.immutableEntry(fieldName, datatype), desc);
+            }
+            fields.setDescriptions(mmap);
+        }
+        return getDescriptionsMAV(fields);
+    }
+    
+    private ModelAndView getDescriptionsMAV(FIELDS fields) {
+        ModelAndView mav = new ModelAndView();
+        mav.setViewName("descriptions");
+        
+        int x = 0;
+        String highlight;
+        List<List<String>> tableContent = new ArrayList<List<String>>();
+        for (FIELD field : fields.getFields()) {
+            List<String> row = new ArrayList<String>(); // "highlight" or "", Datatype, FieldName, and Description
+            for (DESC desc : field.getDescriptions()) {
+                // highlight alternating rows
+                if (x % 2 == 0) {
+                    highlight = "highlight";
+                } else {
+                    highlight = "";
+                }
+                x++;
+                row.add(highlight);
+                row.add(field.getDatatype());
+                row.add(field.getFieldName());
+                row.add(desc.getDescription());
+            }
+            tableContent.add(row);
+            
         }
         mav.addObject("tableContent", tableContent);
         

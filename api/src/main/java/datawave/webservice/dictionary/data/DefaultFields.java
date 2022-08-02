@@ -2,7 +2,6 @@ package datawave.webservice.dictionary.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.TotalResultsAware;
 import io.protostuff.Input;
 import io.protostuff.Message;
@@ -21,8 +20,7 @@ import java.util.Map.Entry;
 
 @XmlRootElement(name = "DefaultFieldsResponse")
 @XmlAccessorType(XmlAccessType.NONE)
-public class DefaultFields extends FieldsBase<DefaultFields,DefaultDictionaryField,DefaultDescription>
-                implements TotalResultsAware, Message<DefaultFields>, HtmlProvider {
+public class DefaultFields extends FieldsBase<DefaultFields,DefaultDictionaryField,DefaultDescription> implements TotalResultsAware, Message<DefaultFields> {
     
     private static final long serialVersionUID = 1L;
     private static final String TITLE = "Field Descriptions", EMPTY = "";
@@ -175,53 +173,4 @@ public class DefaultFields extends FieldsBase<DefaultFields,DefaultDictionaryFie
             fieldMap.put("descriptions", 2);
         }
     };
-    
-    @Override
-    public String getTitle() {
-        return TITLE;
-    }
-    
-    @Override
-    public String getPageHeader() {
-        return getTitle();
-    }
-    
-    @Override
-    public String getHeadContent() {
-        return EMPTY;
-    }
-    
-    @Override
-    public String getMainContent() {
-        StringBuilder builder = new StringBuilder();
-        
-        builder.append("<table>\n");
-        builder.append("<tr><th>Datatype</th><th>FieldName</th><th>Description</th></tr>");
-        
-        int x = 0;
-        for (DefaultDictionaryField field : this.getFields()) {
-            for (DefaultDescription desc : field.getDescriptions()) {
-                addDescriptionRow(field, desc, x, builder);
-                x++;
-            }
-        }
-        
-        builder.append("</table>\n");
-        
-        return builder.toString();
-    }
-    
-    public static void addDescriptionRow(DictionaryFieldBase<?,? extends DescriptionBase> field, DescriptionBase desc, int rowNum, StringBuilder builder) {
-        // highlight alternating rows
-        if (rowNum % 2 == 0) {
-            builder.append("<tr class=\"highlight\">");
-        } else {
-            builder.append("<tr>");
-        }
-        
-        builder.append("<td>").append(field.getDatatype()).append("</td>");
-        builder.append("<td>").append(field.getFieldName()).append("</td>");
-        builder.append("<td>").append(desc.getDescription()).append("</td>");
-        builder.append("</tr>");
-    }
 }
