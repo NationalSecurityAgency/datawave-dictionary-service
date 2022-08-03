@@ -8,17 +8,66 @@
 	and a cookie is saved in the browser that will leave the last sort in place upon revisit of the page.
 	*/-->
 	<link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
-	<script type="text/javascript" th:src="${jqueryUri}"></script>
-	<script type="text/javascript" th:src="${datatablesUri}"></script>
+	<script type="text/javascript" th:src="@{{baseUri}/dictionary/webjars/jquery/jquery.min.js(baseUri=${@environment.getProperty('server.cdnUri')})}"></script>
+	<!--/*
+	jquery-ui script and css needed for allowing the table columns to be resized by the user
+	*/-->
+	<script type="text/javascript" src="https://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+	<link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css">
+	<script type="text/javascript" th:src="@{{baseUri}/dictionary/webjars/datatables/js/jquery.dataTables.min.js(baseUri=${@environment.getProperty('server.cdnUri')})}"></script>
 	<script type="text/javascript">
 		$(document).ready(function() { 
 			$('#myTable').dataTable({
 				"bPaginate": false, 
 				"bStateSave": true
 			});
-			setTimeout( function() { 
-				$('#myTable').find("td").css("word-break", "break-word"); 
-			}, 4000); 
+			$('table th').resizable({
+				handles: 'e'
+			});
+			$('#myTable').find("td").css("word-break", "break-word");
+			// Create a new div under the filter search div. Contains the info for how the table is sorted
+			function createSortedByDiv() {
+				var sortedByDiv = document.createElement('div');
+				const textContent = document.createTextNode('Table sorted by ');
+				const sortingInfo = document.createElement('span');
+				sortingInfo.setAttribute('id', 'sortedBy');
+				sortedByDiv.appendChild(textContent);
+				sortedByDiv.appendChild(sortingInfo);
+				sortedByDiv.setAttribute('style', 'padding: 5px;');
+				const tableFilterDiv = document.getElementById('myTable_filter');
+				tableFilterDiv.parentNode.insertBefore(sortedByDiv, tableFilterDiv.nextSibling);
+			}
+			// Update the text to display which column is currently being used to sort the table and in which order
+			window.updateSortingInfo = function updateSortingInfo() {
+				var table = document.getElementById('myTable');
+				var tableHeaders = table.getElementsByTagName('tr')[0];
+				var cols = tableHeaders.children;
+				for (let i = 0; i < cols.length; i++) {
+					let className = cols[i].getAttribute('class');
+					let header = cols[i].innerHTML;
+					if (className.includes('sorting_asc')) {
+						document.getElementById('sortedBy').innerHTML = `<strong>${header}</strong> in <strong>ascending</strong> order`;
+						break;
+					}
+					else if (className.includes('sorting_desc')) {
+						document.getElementById('sortedBy').innerHTML = `<strong>${header}</strong> in <strong>descending</strong> order`;
+						break;
+					}
+				}
+			}
+			// Add onclick events for each of the table headers to call updateSortingInfo()
+			function addOnClickEvents() {
+				var table = document.getElementById('myTable');
+				var tableHeaders = table.getElementsByTagName('tr')[0];
+				var cols = tableHeaders.children;
+				for (let i = 0; i < cols.length; i++) {
+					cols[i].setAttribute('onclick', 'updateSortingInfo();');
+				}
+			}
+			// Initial calls for inital page setup
+			createSortedByDiv();
+			addOnClickEvents();
+			updateSortingInfo();
 		});
 	</script>
 </head>

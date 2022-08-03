@@ -70,8 +70,7 @@ public class DictionaryServiceConfiguration {
         return new ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields>() {
             @Override
             public DefaultDataDictionary getDataDictionary() {
-                return new DefaultDataDictionary(datawaveServerProperties.getCdnUri() + "webjars/jquery/",
-                                datawaveServerProperties.getCdnUri() + "webjars/datatables/js/");
+                return new DefaultDataDictionary();
             }
             
             @Override

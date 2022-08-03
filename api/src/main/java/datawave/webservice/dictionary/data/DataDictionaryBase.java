@@ -24,9 +24,5 @@ public abstract class DataDictionaryBase<T,M extends MetadataFieldBase> extends 
     
     public abstract long getTotalResults();
     
-    public abstract String getJqueryUri();
-    
-    public abstract String getDatatablesUri();
-    
     public abstract void transformFields(final Consumer<M> transformer);
 }

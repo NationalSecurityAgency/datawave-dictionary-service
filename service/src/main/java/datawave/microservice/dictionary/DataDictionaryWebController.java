@@ -108,8 +108,6 @@ public class DataDictionaryWebController<DESC extends DescriptionBase<DESC>,DICT
         
         ModelAndView mav = new ModelAndView();
         mav.setViewName("datadictionary");
-        mav.addObject("jqueryUri", dataDictionary.getJqueryUri() + "jquery.min.js");
-        mav.addObject("datatablesUri", dataDictionary.getDatatablesUri() + "jquery.dataTables.min.js");
         
         // To be passed to the MAV. Contains all the table content
         List<List<String>> tableContent = new ArrayList<List<String>>();

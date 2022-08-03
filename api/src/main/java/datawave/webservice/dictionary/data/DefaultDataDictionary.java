@@ -30,8 +30,6 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
                 implements TotalResultsAware, Message<DefaultDataDictionary> {
     
     private static final long serialVersionUID = 1L;
-    private final String jqueryUri;
-    private final String datatablesUri;
     
     @XmlElementWrapper(name = "MetadataFields")
     @XmlElement(name = "MetadataField")
@@ -40,14 +38,7 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
     @XmlElement(name = "TotalResults")
     private Long totalResults = null;
     
-    public DefaultDataDictionary() {
-        this("/webjars/jquery/", "/webjars/datatables/");
-    }
-    
-    public DefaultDataDictionary(String jqueryUri, String datatablesUri) {
-        this.jqueryUri = jqueryUri;
-        this.datatablesUri = datatablesUri;
-    }
+    public DefaultDataDictionary() {}
     
     public DefaultDataDictionary(Collection<DefaultMetadataField> fields) {
         this();
@@ -59,14 +50,6 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
             setTotalResults(this.fields.size());
             this.setHasResults(true);
         }
-    }
-    
-    public String getJqueryUri() {
-        return jqueryUri;
-    }
-    
-    public String getDatatablesUri() {
-        return datatablesUri;
     }
     
     public List<DefaultMetadataField> getFields() {
