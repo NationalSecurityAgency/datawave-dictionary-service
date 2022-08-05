@@ -4,7 +4,7 @@
 	<title>DATAWAVE - Data Dictionary</title>
 	<!--/*
     Loads jQuery, DataTables, some CSS elements for DataTables, and executes `.dataTable()` on the HTML table in the payload.
-    Pagination on the table is turned off, we do an ascending sort on the 1st column (field name) (this is done by default), 
+    Pagination on the table is turned off, we do an ascending sort on the 1st column (field name), 
 	and a cookie is saved in the browser that will leave the last sort in place upon revisit of the page.
 	*/-->
 	<link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
@@ -19,6 +19,9 @@
 		$(document).ready(function() { 
 			$('#myTable').dataTable({
 				"bPaginate": false, 
+				"aaSorting": [
+					[0, "asc"]
+				],
 				"bStateSave": true
 			});
 			$('table th').resizable({
