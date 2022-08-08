@@ -1,0 +1,43 @@
+<html xmlns:th="http:/>/www.thymeleaf.org">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>DATAWAVE - Model Description</title>
+    <link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
+    <script type="text/javascript" th:src="@{{baseUri}/dictionary/webjars/jquery/jquery.min.js(baseUri=${@environment.getProperty('server.cdnUri')})}"></script>
+    <script type="text/javascript" th:src="@{{baseUri}/dictionary/webjars/datatables/js/jquery.dataTables.min.js(baseUri=${@environment.getProperty('server.cdnUri')})}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#myTable').dataTable({
+                "bPaginate": false,
+                "aaSorting": [
+                    [3, "asc"]
+                ],
+                "bStateSave": true
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Model Description</h1>
+    <table id="myTable">
+        <thead>
+            <tr>
+                <th>Visibility</th>
+                <th>FieldName</th>
+                <th>DataType</th>
+                <th>ModelFieldName</th>
+                <th>Direction</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="row : ${tableContent}">
+                <td th:text="${row[0]}"></td>
+                <td th:text="${row[1]}"></td>
+                <td th:text="${row[2]}"></td>
+                <td th:text="${row[3]}"></td>
+                <td th:text="${row[4]}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(path = "/model",
                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
-                        ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
+                        ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, "text/x-yaml", "application/x-yaml"})
 @Secured({"AuthorizedUser", "AuthorizedQueryServer", "InternalUser", "Administrator", "JBossAdministrator"})
 @EnableConfigurationProperties(ModelProperties.class)
 public class ModelController {
@@ -81,7 +81,7 @@ public class ModelController {
     public ModelList listModelNames(@RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
         
-        ModelList response = new ModelList(jqueryUri, dataTablesUri, modelTableName);
+        ModelList response = new ModelList(modelTableName);
         HashSet<String> modelNames = new HashSet<>();
         List<Key> keys;
         try {
@@ -187,7 +187,7 @@ public class ModelController {
     @GetMapping("/{name}")
     public Model getModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal ProxiedUserDetails currentUser) {
-        Model response = new Model(jqueryUri, dataTablesUri);
+        Model response = new Model();
         List<Key> keys;
         try {
             keys = accumloConnectionService.getKeys(modelTableName, currentUser, name);

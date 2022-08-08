@@ -1,0 +1,42 @@
+<html xmlns:th="http:/>/www.thymeleaf.org">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>DATAWAVE - Model Names</title>
+    <link rel="stylesheet" type="text/css" href="/dictionary/css/screen.css" media="screen">
+    <script type="text/javascript" th:src="@{{baseUri}/dictionary/webjars/jquery/jquery.min.js(baseUri=${@environment.getProperty('server.cdnUri')})}"></script>
+    <script type="text/javascript" th:src="@{{baseUri}/dictionary/webjars/datatables/js/jquery.dataTables.min.js(baseUri=${@environment.getProperty('server.cdnUri')})}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#myTable').dataTable({ 
+                "bPaginate": false, 
+                "aaSorting": [
+                    [0, "asc"]
+                ],
+                "bStateSave": true 
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Model Names</h1>
+    <div>
+        <table id="myTable">
+            <thead>
+                <tr>
+                    <th>Model Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="name : ${names}">
+                    <td>
+                        <!--/*
+                            Link to "/model/<name>?name=<name>&modelTableName=<modelTableName>"
+                        */-->
+                        <a th:text="${name}" th:href="@{/model/{name1}(name1=${name},name=${name},modelTableName=${modelTableName})}"></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
