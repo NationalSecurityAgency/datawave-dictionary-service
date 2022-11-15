@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
-        <version>2.0</version>
+        <version>2.1-SNAPSHOT</version>
         <relativePath />
     </parent>
     <artifactId>dictionary-service</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <description>DATAWAVE Dictionary Service</description>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
     <scm>
@@ -19,10 +19,14 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
-        <version.microservice.dictionary-api>2.0.1-SNAPSHOT</version.microservice.dictionary-api>
-        <version.microservice.starter>2.0.0</version.microservice.starter>
-        <version.webjars.datatables>1.10.20</version.webjars.datatables>
-        <version.webjars.jquery>3.4.1</version.webjars.jquery>
+        <version.accumulo>2.1.0</version.accumulo>
+        <version.microservice.dictionary-api>2.1.0-SNAPSHOT</version.microservice.dictionary-api>
+        <version.microservice.metadata-utils>2.1.0</version.microservice.metadata-utils>
+        <version.microservice.starter>2.1.0-SNAPSHOT</version.microservice.starter>
+        <version.webjars.datatables>1.11.4</version.webjars.datatables>
+        <version.webjars.jquery>3.6.0</version.webjars.jquery>
+        <version.webjars.locator>0.50</version.webjars.locator>
+        <version.zookeeper>3.8.0</version.zookeeper>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -33,8 +37,53 @@
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
+                <artifactId>metadata-utils</artifactId>
+                <version>${version.microservice.metadata-utils}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>servlet-api</artifactId>
+                        <groupId>javax.servlet</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave</artifactId>
                 <version>${version.microservice.starter}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.accumulo</groupId>
+                <artifactId>accumulo-core</artifactId>
+                <version>${version.accumulo}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>servlet-api</artifactId>
+                        <groupId>javax.servlet</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>*</artifactId>
+                        <groupId>ch.qos.logback</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>netty-tcnative</artifactId>
+                        <groupId>io.netty</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>${version.zookeeper}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>*</artifactId>
+                        <groupId>ch.qos.logback</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>netty-tcnative</artifactId>
+                        <groupId>io.netty</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.webjars</groupId>
@@ -45,6 +94,11 @@
                 <groupId>org.webjars</groupId>
                 <artifactId>jquery</artifactId>
                 <version>${version.webjars.jquery}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars</groupId>
+                <artifactId>webjars-locator-core</artifactId>
+                <version>${version.webjars.locator}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>

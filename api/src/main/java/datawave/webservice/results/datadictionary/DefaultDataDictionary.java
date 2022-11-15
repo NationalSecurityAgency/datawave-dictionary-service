@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.xml.bind.annotation.XmlAccessOrder;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -43,7 +44,7 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
      */
     private static final String DATA_TABLES_TEMPLATE = "<script type=''text/javascript'' src=''{0}jquery.min.js''></script>\n"
                     + "<script type=''text/javascript'' src=''{1}jquery.dataTables.min.js''></script>\n" + "<script type=''text/javascript''>\n"
-                    + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}') '}')\n"
+                    + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[0, \"asc\"]], \"bStateSave\": true'}'); setTimeout( function() '{' $(''#myTable'').find(\"td\").css(\"word-break\", \"break-word\"); '}', 4000); '}');\n"
                     + "</script>\n";
     
     private final String dataTablesHeader;
@@ -257,6 +258,11 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
         builder.append("</table>\n");
         
         return builder.toString();
+    }
+    
+    @Override
+    public void transformFields(Consumer<DefaultMetadataField> transformer) {
+        fields.forEach(transformer);
     }
     
     @Override
