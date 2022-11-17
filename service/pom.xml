@@ -4,7 +4,7 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
-        <version>2.1-SNAPSHOT</version>
+        <version>2.1</version>
         <relativePath />
     </parent>
     <artifactId>dictionary-service</artifactId>
@@ -22,7 +22,7 @@
         <version.accumulo>2.1.0</version.accumulo>
         <version.microservice.dictionary-api>2.1.0-SNAPSHOT</version.microservice.dictionary-api>
         <version.microservice.metadata-utils>2.1.0</version.microservice.metadata-utils>
-        <version.microservice.starter>2.1.0-SNAPSHOT</version.microservice.starter>
+        <version.microservice.starter>2.1.0</version.microservice.starter>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
         <version.webjars.locator>0.50</version.webjars.locator>
