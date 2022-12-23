@@ -3,7 +3,7 @@ package datawave.microservice.dictionary;
 import com.codahale.metrics.annotation.Timed;
 import datawave.accumulo.util.security.UserAuthFunctions;
 import datawave.microservice.AccumuloConnectionService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.dictionary.config.EdgeDictionaryProperties;
 import datawave.microservice.dictionary.edge.EdgeDictionary;
 import datawave.webservice.dictionary.edge.EdgeDictionaryBase;
@@ -60,7 +60,7 @@ public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>
     @GetMapping("/")
     @Timed(name = "dw.dictionary.edge.get", absolute = true)
     public EdgeDictionaryBase<EDGE,META> get(@RequestParam(required = false) String metadataTableName,
-                    @RequestParam(name = "auths", required = false) String queryAuthorizations, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @RequestParam(name = "auths", required = false) String queryAuthorizations, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws Exception {
         log.info("EDGEDICTIONARY: entered rest endpoint");
         if (null == metadataTableName || StringUtils.isBlank(metadataTableName)) {

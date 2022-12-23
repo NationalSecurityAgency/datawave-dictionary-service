@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import datawave.microservice.AccumuloConnectionService;
 import datawave.microservice.Connection;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
 import datawave.microservice.dictionary.data.DataDictionary;
@@ -97,7 +97,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.get", absolute = true)
     public DataDictionaryBase<DICT,META> get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
                     @RequestParam(required = false) String metadataTableName, @RequestParam(name = "auths", required = false) String queryAuthorizations,
-                    @RequestParam(defaultValue = "") String dataTypeFilters, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @RequestParam(defaultValue = "") String dataTypeFilters, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         
         Connection connection = accumuloConnectionService.getConnection(metadataTableName, modelTableName, modelName, currentUser);
         // If the user provides authorizations, intersect it with their actual authorizations
@@ -131,7 +131,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @PostMapping(path = "/Descriptions", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Timed(name = "dw.dictionary.data.uploadDescriptions", absolute = true)
     public VoidResponse uploadDescriptions(@RequestBody FIELDS fields, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         List<FIELD> list = fields.getFields();
         for (FIELD desc : list) {
@@ -168,7 +168,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.setDescriptionPut", absolute = true)
     public VoidResponse setDescriptionPut(@PathVariable String fieldName, @PathVariable String datatype, @PathVariable String description,
                     @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         return setDescriptionPost(fieldName, datatype, description, modelName, modelTable, columnVisibility, currentUser);
     }
     
@@ -198,7 +198,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.setDescriptionPost", absolute = true)
     public VoidResponse setDescriptionPost(@RequestParam String fieldName, @RequestParam String datatype, @RequestParam String description,
                     @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         DESC desc = this.responseObjectFactory.getDescription();
         Map<String,String> markings = Maps.newHashMap();
         markings.put("columnVisibility", columnVisibility);
@@ -228,7 +228,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @GetMapping("/Descriptions")
     @Timed(name = "dw.dictionary.data.allDescriptions", absolute = true)
     public FIELDS allDescriptions(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection);
         FIELDS response = this.responseObjectFactory.getFields();
@@ -254,7 +254,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @GetMapping("/Descriptions/{datatype}")
     @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
     public FIELDS datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection, datatype);
         FIELDS response = this.responseObjectFactory.getFields();
@@ -282,7 +282,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @GetMapping("/Descriptions/{datatype}/{fieldName}")
     @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
     public FIELDS fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         Set<DESC> descriptions = dataDictionary.getDescriptions(connection, fieldName, datatype);
         FIELDS response = responseObjectFactory.getFields();
@@ -320,7 +320,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
     @Timed(name = "dw.dictionary.data.deleteDescription", absolute = true)
     public VoidResponse deleteDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
                     @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws Exception {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
         Map<String,String> markings = Maps.newHashMap();
         markings.put("columnVisibility", columnVisibility);
         DESC desc = this.responseObjectFactory.getDescription();

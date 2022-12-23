@@ -2,7 +2,7 @@ package datawave.microservice.model;
 
 import com.google.common.collect.Sets;
 import datawave.microservice.AccumuloConnectionService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter;
 import datawave.microservice.model.config.ModelProperties;
 import datawave.webservice.model.FieldMapping;
@@ -79,7 +79,7 @@ public class ModelController {
      */
     @GetMapping("/list") // If we get to change to follow true REST standard, this would just be / and remain a GET
     public ModelList listModelNames(@RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         
         ModelList response = new ModelList(jqueryUri, dataTablesUri, modelTableName);
         HashSet<String> modelNames = new HashSet<>();
@@ -127,7 +127,7 @@ public class ModelController {
     @DeleteMapping("/{name}")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse deleteModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         VoidResponse response = new VoidResponse();
         ModelList models = listModelNames(modelTableName, currentUser);
         if (models.getNames().contains(name)) {
@@ -160,7 +160,7 @@ public class ModelController {
     @PostMapping("/clone")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse cloneModel(@RequestParam String name, @RequestParam String newName,
-                    @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName, @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName, @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         VoidResponse response = new VoidResponse();
         
         Model model = getModel(name, modelTableName, currentUser);
@@ -186,7 +186,7 @@ public class ModelController {
      */
     @GetMapping("/{name}")
     public Model getModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         Model response = new Model(jqueryUri, dataTablesUri);
         List<Key> keys;
         try {
@@ -222,7 +222,7 @@ public class ModelController {
     @PostMapping(value = {"/insert", "/import"}) // If we get to change to standard REST, this would just be / and rely on the
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse insertMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         if (log.isDebugEnabled()) {
             log.debug("modelTableName: " + (null == modelTableName ? "" : modelTableName));
         }
@@ -258,7 +258,7 @@ public class ModelController {
     @DeleteMapping("/delete")
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse deleteMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         if (log.isDebugEnabled()) {
             log.debug("Deleting model name: " + model.getName() + "from modelTableName " + modelTableName);
         }

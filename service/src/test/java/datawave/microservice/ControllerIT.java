@@ -3,7 +3,7 @@ package datawave.microservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import datawave.microservice.authorization.jwt.JWTRestTemplate;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.SubjectIssuerDNPair;
 import org.apache.accumulo.core.client.Connector;
@@ -39,8 +39,8 @@ public class ControllerIT {
     @Qualifier("warehouse")
     protected Connector connector;
     
-    protected ProxiedUserDetails adminUser;
-    protected ProxiedUserDetails regularUser;
+    protected DatawaveUserDetails adminUser;
+    protected DatawaveUserDetails regularUser;
     
     @Autowired
     private RestTemplateBuilder restTemplateBuilder;
@@ -67,8 +67,9 @@ public class ControllerIT {
         HashSet<String> auths = Sets.newHashSet("PUBLIC", "PRIVATE");
         HashSet<String> roles = Sets.newHashSet("AuthorizedUser", "Administrator");
         long createTime = System.currentTimeMillis();
-        adminUser = new ProxiedUserDetails(Collections.singleton(new DatawaveUser(dn, DatawaveUser.UserType.USER, auths, roles, null, createTime)), createTime);
-        regularUser = new ProxiedUserDetails(
+        adminUser = new DatawaveUserDetails(Collections.singleton(new DatawaveUser(dn, DatawaveUser.UserType.USER, auths, roles, null, createTime)),
+                        createTime);
+        regularUser = new DatawaveUserDetails(
                         Collections.singleton(
                                         new DatawaveUser(dn, DatawaveUser.UserType.USER, auths, Collections.singleton("AuthorizedUser"), null, createTime)),
                         createTime);

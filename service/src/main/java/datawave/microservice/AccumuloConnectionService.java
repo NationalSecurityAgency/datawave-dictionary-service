@@ -1,7 +1,7 @@
 package datawave.microservice;
 
 import datawave.accumulo.util.security.UserAuthFunctions;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.dictionary.config.DataDictionaryProperties;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.util.ScannerHelper;
@@ -82,7 +82,7 @@ public class AccumuloConnectionService {
      *            
      * @return a Connection representing the connection to accumulo
      */
-    public Connection getConnection(String modelTable, String modelName, ProxiedUserDetails user) {
+    public Connection getConnection(String modelTable, String modelName, DatawaveUserDetails user) {
         return getConnection(dataDictionaryConfiguration.getMetadataTableName(), modelTable, modelName, user);
     }
     
@@ -100,7 +100,7 @@ public class AccumuloConnectionService {
      *            
      * @return a Connection representing the connection to accumulo
      */
-    public Connection getConnection(String metadataTable, String modelTable, String modelName, ProxiedUserDetails user) {
+    public Connection getConnection(String metadataTable, String modelTable, String modelName, DatawaveUserDetails user) {
         Connection connection = new Connection();
         connection.setMetadataTable(getSupplierValueIfBlank(metadataTable, dataDictionaryConfiguration::getMetadataTableName));
         connection.setModelTable(getSupplierValueIfBlank(modelTable, dataDictionaryConfiguration::getModelTableName));
@@ -122,7 +122,7 @@ public class AccumuloConnectionService {
      *            
      * @return the accumulo authorizations for the user
      */
-    public Set<Authorizations> getAuths(ProxiedUserDetails currentUser) {
+    public Set<Authorizations> getAuths(DatawaveUserDetails currentUser) {
         //@formatter:off
         return currentUser.getProxiedUsers().stream()
                 .map(DatawaveUser::getAuths)
@@ -141,7 +141,7 @@ public class AccumuloConnectionService {
      *            
      * @return the authorizations for the specified user downgraded to the specified level
      */
-    public Set<Authorizations> getDowngradedAuthorizations(String requestedAuthorizations, ProxiedUserDetails currentUser) {
+    public Set<Authorizations> getDowngradedAuthorizations(String requestedAuthorizations, DatawaveUserDetails currentUser) {
         DatawaveUser primaryUser = currentUser.getPrimaryUser();
         return userAuthFunctions.mergeAuthorizations(userAuthFunctions.getRequestedAuthorizations(requestedAuthorizations, currentUser.getPrimaryUser()),
                         currentUser.getProxiedUsers(), u -> u != primaryUser);
@@ -162,7 +162,7 @@ public class AccumuloConnectionService {
      * @throws TableNotFoundException
      *             Thrown if the table is not found
      */
-    public List<Key> getKeys(String modelTable, ProxiedUserDetails currentUser, String regexTerm) throws TableNotFoundException {
+    public List<Key> getKeys(String modelTable, DatawaveUserDetails currentUser, String regexTerm) throws TableNotFoundException {
         Scanner scanner = ScannerHelper.createScanner(this.accumuloConnector, modelTable, this.getAuths(currentUser));
         if (!regexTerm.isEmpty()) {
             IteratorSetting cfg = new IteratorSetting(21, "colfRegex", RegExFilter.class.getName());
@@ -188,7 +188,7 @@ public class AccumuloConnectionService {
      *            
      * @return A QueryException if anything is unsuccessful, and null if everything is successful.
      */
-    public QueryException modifyMappings(List<Mutation> mutations, String modelTable, String modelName, ProxiedUserDetails user) {
+    public QueryException modifyMappings(List<Mutation> mutations, String modelTable, String modelName, DatawaveUserDetails user) {
         QueryException exception = null;
         Mutation mute = null;
         
@@ -211,7 +211,7 @@ public class AccumuloConnectionService {
         return exception;
     }
     
-    private BatchWriter getDefaultBatchWriter(String modelTable, String modelName, ProxiedUserDetails user) throws TableNotFoundException {
+    private BatchWriter getDefaultBatchWriter(String modelTable, String modelName, DatawaveUserDetails user) throws TableNotFoundException {
         Connector connector = getConnection(modelTable, modelName, user).getConnector();
         // TODO Do we need a new instance of BatchWriterConfig each time, or can this be a static or bean object?
         return connector.createBatchWriter(modelTable, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
