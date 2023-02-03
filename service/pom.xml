@@ -22,7 +22,7 @@
         <version.accumulo>1.9.3</version.accumulo>
         <version.microservice.dictionary-api>1.2</version.microservice.dictionary-api>
         <version.microservice.metadata-utils>1.9</version.microservice.metadata-utils>
-        <version.microservice.starter>1.6.7</version.microservice.starter>
+        <version.microservice.starter>1.6.8</version.microservice.starter>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
         <version.webjars.locator>0.50</version.webjars.locator>
