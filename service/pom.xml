@@ -21,8 +21,8 @@
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.accumulo>2.1.0</version.accumulo>
         <version.microservice.dictionary-api>2.1.1-SNAPSHOT</version.microservice.dictionary-api>
-        <version.microservice.metadata-utils>2.1.0</version.microservice.metadata-utils>
-        <version.microservice.starter>2.1.0</version.microservice.starter>
+        <version.microservice.metadata-utils>2.1.1</version.microservice.metadata-utils>
+        <version.microservice.starter>2.1.1</version.microservice.starter>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
         <version.webjars.locator>0.50</version.webjars.locator>
