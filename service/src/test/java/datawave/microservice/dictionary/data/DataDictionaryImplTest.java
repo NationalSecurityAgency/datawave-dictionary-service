@@ -18,7 +18,7 @@ import datawave.webservice.dictionary.data.DefaultDescription;
 import datawave.webservice.dictionary.data.DefaultDictionaryField;
 import datawave.webservice.dictionary.data.DefaultFields;
 import datawave.webservice.metadata.DefaultMetadataField;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.security.Authorizations;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +54,7 @@ public class DataDictionaryImplTest {
     private Connection connectionConfig;
     
     @Mock
-    private Connector connector;
+    private AccumuloClient accumuloClient;
     
     @Mock
     private MarkingFunctions markingFunctions;
@@ -76,7 +76,7 @@ public class DataDictionaryImplTest {
     @BeforeEach
     public void setUp() {
         connectionConfig = new Connection();
-        connectionConfig.setConnector(connector);
+        connectionConfig.setAccumuloClient(accumuloClient);
         connectionConfig.setAuths(AUTHS);
         connectionConfig.setMetadataTable(METADATA_TABLE);
         connectionConfig.setModelTable(MODEL_TABLE);
@@ -102,7 +102,7 @@ public class DataDictionaryImplTest {
         
         // Verify expected calls.
         Set<DefaultDescription> descriptions = Collections.singleton(description);
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry(FIELD_NAME, DATATYPE), descriptions);
     }
     
@@ -130,7 +130,7 @@ public class DataDictionaryImplTest {
         dataDictionary.setDescription(connectionConfig, dictionaryField);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry(FIELD_NAME, DATATYPE), descriptions);
     }
     
@@ -153,7 +153,7 @@ public class DataDictionaryImplTest {
         dataDictionary.setDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry(FIELD_NAME, DATATYPE), descriptions);
     }
     
@@ -176,7 +176,7 @@ public class DataDictionaryImplTest {
         dataDictionary.setDescriptions(connectionConfig, FIELD_NAME, DATATYPE, descriptions);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         verify(metadataDescriptionsHelper).setDescriptions(new MetadataEntry("alias", DATATYPE), descriptions);
     }
     
@@ -205,7 +205,7 @@ public class DataDictionaryImplTest {
         Multimap<Map.Entry<String,String>,DefaultDescription> result = dataDictionary.getDescriptions(connectionConfig);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         
         // Verify the result.
         Map<Map.Entry<String,String>,Collection<DefaultDescription>> resultMap = result.asMap();
@@ -240,7 +240,7 @@ public class DataDictionaryImplTest {
         Multimap<Map.Entry<String,String>,DefaultDescription> result = dataDictionary.getDescriptions(connectionConfig, DATATYPE);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         
         // Verify the result.
         Map<Map.Entry<String,String>,Collection<DefaultDescription>> resultMap = result.asMap();
@@ -264,7 +264,7 @@ public class DataDictionaryImplTest {
         Set<DefaultDescription> descriptions = dataDictionary.getDescriptions(connectionConfig, FIELD_NAME, DATATYPE);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         
         // Verify the result.
         assertThat(descriptions).containsExactly(description);
@@ -284,7 +284,7 @@ public class DataDictionaryImplTest {
         Set<DefaultDescription> descriptions = dataDictionary.getDescriptions(connectionConfig, FIELD_NAME, DATATYPE);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         
         // Verify the result.
         assertThat(descriptions).containsExactly(description);
@@ -307,7 +307,7 @@ public class DataDictionaryImplTest {
         dataDictionary.deleteDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         verify(metadataDescriptionsHelper).removeDescription(new MetadataEntry(FIELD_NAME, DATATYPE), description);
     }
     
@@ -328,7 +328,7 @@ public class DataDictionaryImplTest {
         dataDictionary.deleteDescription(connectionConfig, FIELD_NAME, DATATYPE, description);
         
         // Verify expected calls.
-        verify(metadataDescriptionsHelper).initialize(connector, METADATA_TABLE, AUTHS);
+        verify(metadataDescriptionsHelper).initialize(accumuloClient, METADATA_TABLE, AUTHS);
         verify(metadataDescriptionsHelper).removeDescription(new MetadataEntry("alias", DATATYPE), description);
     }
     

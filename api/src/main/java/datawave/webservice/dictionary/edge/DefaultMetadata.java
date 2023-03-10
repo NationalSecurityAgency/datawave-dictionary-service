@@ -7,7 +7,7 @@ import io.protostuff.Input;
 import io.protostuff.Message;
 import io.protostuff.Output;
 import io.protostuff.Schema;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

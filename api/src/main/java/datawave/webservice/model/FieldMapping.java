@@ -3,7 +3,7 @@ package datawave.webservice.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

@@ -8,7 +8,7 @@ import io.protostuff.Message;
 import io.protostuff.Output;
 import io.protostuff.Schema;
 import lombok.Data;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;

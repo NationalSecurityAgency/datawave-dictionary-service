@@ -2,6 +2,7 @@ package datawave.microservice.dictionary.edge;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.data.ColumnFamilyConstants;
 import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
@@ -9,14 +10,12 @@ import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
 import datawave.webservice.dictionary.edge.DefaultMetadata;
 import datawave.webservice.dictionary.edge.EventField;
 import datawave.webservice.dictionary.edge.MetadataBase;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.io.Text;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +37,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(SpringExtension.class)
@@ -58,8 +59,6 @@ public class EdgeDictionaryImplTest {
     private static final List<Key> EDGE_KEYS = createEdgeKeys();
     private static final Value EDGE_VALUE = createEdgeValue();
     private static final Collection<DefaultMetadata> METADATA = createMetadata();
-    
-    private static InMemoryInstance instance = new InMemoryInstance();
     
     SetMultimap<Key,Value> edgeMetadataRows;
     Method transformResultsMethod;
@@ -91,17 +90,17 @@ public class EdgeDictionaryImplTest {
         if (null == transformResultsMethod)
             fail();
         DefaultEdgeDictionary dictionary = (DefaultEdgeDictionary) transformResultsMethod.invoke(impl, HashMultimap.create());
-        Assertions.assertEquals(0L, dictionary.getTotalResults(), "Should be empty");
+        assertEquals(dictionary.getTotalResults(), 0L, "Should be empty");
     }
     
     @Test
     public void testWorked() throws InvocationTargetException, IllegalAccessException {
         if (null == transformResultsMethod)
             fail();
-        Assertions.assertEquals(EDGE_KEYS.size(), edgeMetadataRows.keySet().size(), "data to be inserted contains as many rows as keys");
+        assertEquals(edgeMetadataRows.keySet().size(), EDGE_KEYS.size(), "data to be inserted contains as many rows as keys");
         DefaultEdgeDictionary dictionary = (DefaultEdgeDictionary) transformResultsMethod.invoke(impl, edgeMetadataRows);
-        Assertions.assertEquals(EDGE_KEYS.size(), dictionary.getTotalResults(), "Dictionary should now have some entries");
-        Assertions.assertTrue(dictionary.getMetadataList().containsAll(METADATA),
+        assertEquals(dictionary.getTotalResults(), EDGE_KEYS.size(), "Dictionary should now have some entries");
+        assertTrue(dictionary.getMetadataList().containsAll(METADATA),
                         "METADATA not in list.  returned list: " + dictionary.getMetadataList() + " expected: " + METADATA);
     }
     
@@ -116,8 +115,7 @@ public class EdgeDictionaryImplTest {
         
         // Make sure that all Metadata in EdgeDictionary have the start date set to the EARLY_DATE_FIELD
         for (MetadataBase<DefaultMetadata> meta : metadata) {
-            Assertions.assertEquals(EARLY_DATE_FIELD, meta.getStartDate(),
-                            "Incorrect start date. Expected: " + EARLY_DATE_FIELD + " Found: " + meta.getStartDate());
+            assertEquals(EARLY_DATE_FIELD, meta.getStartDate(), "Incorrect start date. Expected: " + EARLY_DATE_FIELD + " Found: " + meta.getStartDate());
             
         }
     }
@@ -192,8 +190,8 @@ public class EdgeDictionaryImplTest {
     public static class DefaultDatawaveEdgeDictionaryImplTestConfiguration {
         @Bean
         @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return instance.getConnector("root", new PasswordToken(""));
+        public AccumuloClient warehouseClient() throws AccumuloSecurityException, AccumuloException {
+            return new InMemoryAccumuloClient("root", new InMemoryInstance());
         }
     }
 }

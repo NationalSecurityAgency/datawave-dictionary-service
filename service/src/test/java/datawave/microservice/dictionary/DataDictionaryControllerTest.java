@@ -2,6 +2,7 @@ package datawave.microservice.dictionary;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.ControllerIT;
@@ -10,11 +11,9 @@ import datawave.webservice.dictionary.data.DefaultDataDictionary;
 import datawave.webservice.dictionary.data.DefaultDescription;
 import datawave.webservice.dictionary.data.DefaultFields;
 import datawave.webservice.result.VoidResponse;
-import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.TableExistsException;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,15 +48,15 @@ public class DataDictionaryControllerTest extends ControllerIT {
     public static class DataDictionaryImplTestConfiguration {
         @Bean
         @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return new InMemoryInstance().getConnector("root", new PasswordToken(""));
+        public AccumuloClient warehouseClient() throws AccumuloSecurityException {
+            return new InMemoryAccumuloClient("root", new InMemoryInstance());
         }
     }
     
     @BeforeAll
     public void setUp() throws Exception {
         try {
-            connector.tableOperations().create(dataDictionaryProperties.getMetadataTableName());
+            accumuloClient.tableOperations().create(dataDictionaryProperties.getMetadataTableName());
         } catch (TableExistsException e) {
             // ignore
         }

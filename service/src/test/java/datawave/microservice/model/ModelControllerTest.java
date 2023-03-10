@@ -1,5 +1,6 @@
 package datawave.microservice.model;
 
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.microservice.ControllerIT;
 import datawave.microservice.model.config.ModelProperties;
@@ -8,14 +9,12 @@ import datawave.webservice.model.Model;
 import datawave.webservice.model.ModelKeyParser;
 import datawave.webservice.model.ModelList;
 import datawave.webservice.result.VoidResponse;
-import org.apache.accumulo.core.client.AccumuloException;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.TableExistsException;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Mutation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,8 +57,8 @@ public class ModelControllerTest extends ControllerIT {
     public static class DataDictionaryImplTestConfiguration {
         @Bean
         @Qualifier("warehouse")
-        public Connector warehouseConnector() throws AccumuloSecurityException, AccumuloException {
-            return new InMemoryInstance().getConnector("root", new PasswordToken(""));
+        public AccumuloClient warehouseClient() throws AccumuloSecurityException {
+            return new InMemoryAccumuloClient("root", new InMemoryInstance());
         }
     }
     
@@ -75,7 +74,7 @@ public class ModelControllerTest extends ControllerIT {
     @BeforeEach
     public void setUp() throws Exception {
         try {
-            connector.tableOperations().create(modelProperties.getDefaultTableName());
+            accumuloClient.tableOperations().create(modelProperties.getDefaultTableName());
         } catch (TableExistsException e) {
             // ignore
         }
@@ -85,7 +84,7 @@ public class ModelControllerTest extends ControllerIT {
         MODEL_ONE = (datawave.webservice.model.Model) u.unmarshal(model1.getInputStream());
         MODEL_TWO = (datawave.webservice.model.Model) u.unmarshal(model2.getInputStream());
         
-        BatchWriter writer = connector.createBatchWriter(modelProperties.getDefaultTableName(),
+        BatchWriter writer = accumuloClient.createBatchWriter(modelProperties.getDefaultTableName(),
                         new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS).setMaxMemory(BATCH_WRITER_MAX_MEMORY)
                                         .setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
         
@@ -103,7 +102,7 @@ public class ModelControllerTest extends ControllerIT {
     @AfterEach
     public void teardown() {
         try {
-            connector.tableOperations().delete(modelProperties.getDefaultTableName());
+            accumuloClient.tableOperations().delete(modelProperties.getDefaultTableName());
         } catch (Exception e) {}
     }
     

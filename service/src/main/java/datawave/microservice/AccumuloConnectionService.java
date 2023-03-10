@@ -9,9 +9,9 @@ import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.IteratorSetting;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.Scanner;
@@ -43,7 +43,7 @@ import java.util.stream.StreamSupport;
 @Service
 public class AccumuloConnectionService {
     
-    private final Connector accumuloConnector;
+    private final AccumuloClient accumuloClient;
     private final DataDictionaryProperties dataDictionaryConfiguration;
     private final UserAuthFunctions userAuthFunctions;
     
@@ -53,10 +53,10 @@ public class AccumuloConnectionService {
     private static final int BATCH_WRITER_MAX_THREADS = 2;
     
     public AccumuloConnectionService(DataDictionaryProperties dataDictionaryConfiguration, UserAuthFunctions userAuthFunctions,
-                    @Qualifier("warehouse") Connector accumuloConnector) {
+                    @Qualifier("warehouse") AccumuloClient accumuloClient) {
         this.dataDictionaryConfiguration = dataDictionaryConfiguration;
         this.userAuthFunctions = userAuthFunctions;
-        this.accumuloConnector = accumuloConnector;
+        this.accumuloClient = accumuloClient;
     }
     
     /**
@@ -66,7 +66,7 @@ public class AccumuloConnectionService {
      */
     public Connection getConnection() {
         Connection connection = new Connection();
-        connection.setConnector(accumuloConnector);
+        connection.setAccumuloClient(accumuloClient);
         return connection;
     }
     
@@ -106,7 +106,7 @@ public class AccumuloConnectionService {
         connection.setModelTable(getSupplierValueIfBlank(modelTable, dataDictionaryConfiguration::getModelTableName));
         connection.setModelName(getSupplierValueIfBlank(modelName, dataDictionaryConfiguration::getModelName));
         connection.setAuths(getAuths(user));
-        connection.setConnector(accumuloConnector);
+        connection.setAccumuloClient(accumuloClient);
         return connection;
     }
     
@@ -163,7 +163,7 @@ public class AccumuloConnectionService {
      *             Thrown if the table is not found
      */
     public List<Key> getKeys(String modelTable, DatawaveUserDetails currentUser, String regexTerm) throws TableNotFoundException {
-        Scanner scanner = ScannerHelper.createScanner(this.accumuloConnector, modelTable, this.getAuths(currentUser));
+        Scanner scanner = ScannerHelper.createScanner(this.accumuloClient, modelTable, this.getAuths(currentUser));
         if (!regexTerm.isEmpty()) {
             IteratorSetting cfg = new IteratorSetting(21, "colfRegex", RegExFilter.class.getName());
             cfg.addOption(RegExFilter.COLF_REGEX, "^" + regexTerm + "(\\x00.*)?");
@@ -212,9 +212,9 @@ public class AccumuloConnectionService {
     }
     
     private BatchWriter getDefaultBatchWriter(String modelTable, String modelName, DatawaveUserDetails user) throws TableNotFoundException {
-        Connector connector = getConnection(modelTable, modelName, user).getConnector();
+        AccumuloClient accumuloClient = getConnection(modelTable, modelName, user).getAccumuloClient();
         // TODO Do we need a new instance of BatchWriterConfig each time, or can this be a static or bean object?
-        return connector.createBatchWriter(modelTable, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
+        return accumuloClient.createBatchWriter(modelTable, new BatchWriterConfig().setMaxLatency(BATCH_WRITER_MAX_LATENCY, TimeUnit.MILLISECONDS)
                         .setMaxMemory(BATCH_WRITER_MAX_MEMORY).setMaxWriteThreads(BATCH_WRITER_MAX_THREADS));
     }
 }

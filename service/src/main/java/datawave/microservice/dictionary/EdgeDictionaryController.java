@@ -67,7 +67,7 @@ public class EdgeDictionaryController<EDGE extends EdgeDictionaryBase<EDGE,META>
             metadataTableName = edgeDictionaryProperties.getMetadataTableName();
         }
         
-        EDGE edgeDict = edgeDictionary.getEdgeDictionary(metadataTableName, accumuloConnectionService.getConnection().getConnector(),
+        EDGE edgeDict = edgeDictionary.getEdgeDictionary(metadataTableName, accumuloConnectionService.getConnection().getAccumuloClient(),
                         accumuloConnectionService.getDowngradedAuthorizations(queryAuthorizations, currentUser), edgeDictionaryProperties.getNumThreads());
         
         log.info("EDGEDICTIONARY: returning edge dictionary");

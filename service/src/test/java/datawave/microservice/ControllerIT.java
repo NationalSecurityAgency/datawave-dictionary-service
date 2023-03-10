@@ -6,7 +6,7 @@ import datawave.microservice.authorization.jwt.JWTRestTemplate;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.SubjectIssuerDNPair;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +37,7 @@ public class ControllerIT {
     
     @Autowired
     @Qualifier("warehouse")
-    protected Connector connector;
+    protected AccumuloClient accumuloClient;
     
     protected DatawaveUserDetails adminUser;
     protected DatawaveUserDetails regularUser;

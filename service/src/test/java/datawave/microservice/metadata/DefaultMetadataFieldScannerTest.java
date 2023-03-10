@@ -1,5 +1,6 @@
 package datawave.microservice.metadata;
 
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
 import datawave.accumulo.inmemory.InMemoryInstance;
 import datawave.data.ColumnFamilyConstants;
 import datawave.marking.MarkingFunctions;
@@ -10,11 +11,11 @@ import datawave.webservice.dictionary.data.DefaultDescription;
 import datawave.webservice.dictionary.data.DefaultDictionaryField;
 import datawave.webservice.dictionary.data.DefaultFields;
 import datawave.webservice.metadata.DefaultMetadataField;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchWriter;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.BatchWriterConfig;
 import org.apache.accumulo.core.client.MutationsRejectedException;
 import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,14 +63,14 @@ public class DefaultMetadataFieldScannerTest {
         }
     };
     
-    private Connector connector;
+    private AccumuloClient connector;
     
     private DefaultMetadataFieldScanner scanner;
     
     @BeforeEach
     public void setUp() throws Exception {
         InMemoryInstance instance = new InMemoryInstance();
-        connector = instance.getConnector("root", new PasswordToken(""));
+        connector = new InMemoryAccumuloClient("root", instance);
         connector.securityOperations().changeUserAuthorizations("root", new Authorizations(AUTH));
         connector.tableOperations().create(METADATA_TABLE);
         connector.tableOperations().create(MODEL_TABLE);
@@ -79,7 +81,7 @@ public class DefaultMetadataFieldScannerTest {
         normalizerMapping.put("datawave.data.type.NumberType", "Number");
         
         Connection connectionConfig = new Connection();
-        connectionConfig.setConnector(connector);
+        connectionConfig.setAccumuloClient(connector);
         connectionConfig.setMetadataTable(METADATA_TABLE);
         connectionConfig.setAuths(AUTHS);
         
@@ -204,7 +206,8 @@ public class DefaultMetadataFieldScannerTest {
         name.put(new Text(ColumnFamilyConstants.COLF_RI), new Text("tvmaze"), TIMESTAMP, new Value());
         name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0not.a.known.type"), TIMESTAMP, new Value());
         
-        BatchWriter writer = connector.createBatchWriter(METADATA_TABLE, 10, 1024, 1);
+        BatchWriterConfig bwConfig = new BatchWriterConfig().setMaxMemory(10L).setMaxLatency(1, TimeUnit.SECONDS).setMaxWriteThreads(1);
+        BatchWriter writer = connector.createBatchWriter(METADATA_TABLE, bwConfig);
         writer.addMutation(barField);
         writer.addMutation(contributorId);
         writer.addMutation(name);

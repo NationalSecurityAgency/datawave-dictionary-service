@@ -10,7 +10,7 @@ import datawave.util.StringUtils;
 import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
 import datawave.webservice.dictionary.edge.DefaultMetadata;
 import datawave.webservice.dictionary.edge.EventField;
-import org.apache.accumulo.core.client.Connector;
+import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-// TODO Check if something else implements the EdgeDictionary interface, and if not, remove it and rename this class to just EdgeDictionary.
 public class EdgeDictionaryImpl implements EdgeDictionary<DefaultEdgeDictionary,DefaultMetadata> {
     private static final Logger log = LoggerFactory.getLogger(EdgeDictionaryImpl.class);
     
@@ -35,9 +34,10 @@ public class EdgeDictionaryImpl implements EdgeDictionary<DefaultEdgeDictionary,
     }
     
     @Override
-    public DefaultEdgeDictionary getEdgeDictionary(String metadataTableName, Connector connector, Set<Authorizations> auths, int numThreads) throws Exception {
+    public DefaultEdgeDictionary getEdgeDictionary(String metadataTableName, AccumuloClient accumuloClient, Set<Authorizations> auths, int numThreads)
+                    throws Exception {
         
-        MetadataHelper metadataHelper = this.metadataHelperFactory.createMetadataHelper(connector, metadataTableName, auths);
+        MetadataHelper metadataHelper = this.metadataHelperFactory.createMetadataHelper(accumuloClient, metadataTableName, auths);
         
         // Convert them into a response object
         

@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-// TODO Check if something else implements the DataDictionary interface, and if not, remove it and rename this class to just DataDictionary.
 public class DataDictionaryImpl implements DataDictionary<DefaultMetadataField,DefaultDescription,DefaultDictionaryField> {
     
     private final MarkingFunctions markingFunctions;
@@ -256,13 +255,13 @@ public class DataDictionaryImpl implements DataDictionary<DefaultMetadataField,D
     // Return a new, initialized metadata description helper.
     private MetadataDescriptionsHelper<DefaultDescription> getInitializedDescriptionsHelper(Connection connectionConfig) {
         MetadataDescriptionsHelper<DefaultDescription> helper = metadataDescriptionsHelperFactory.createMetadataDescriptionsHelper();
-        helper.initialize(connectionConfig.getConnector(), connectionConfig.getMetadataTable(), connectionConfig.getAuths());
+        helper.initialize(connectionConfig.getAccumuloClient(), connectionConfig.getMetadataTable(), connectionConfig.getAuths());
         return helper;
     }
     
     // Return the alias map for the query model in the specified connection config.
     private Map<String,String> getAliases(Connection connectionConfig) throws ExecutionException, TableNotFoundException {
-        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connectionConfig.getConnector(), connectionConfig.getMetadataTable(),
+        MetadataHelper helper = metadataHelperFactory.createMetadataHelper(connectionConfig.getAccumuloClient(), connectionConfig.getMetadataTable(),
                         connectionConfig.getAuths());
         QueryModel model = helper.getQueryModel(connectionConfig.getModelTable(), connectionConfig.getModelName());
         return model != null ? model.getReverseQueryMapping() : Collections.emptyMap();

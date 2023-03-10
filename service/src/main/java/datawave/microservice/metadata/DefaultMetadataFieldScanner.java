@@ -71,7 +71,7 @@ public class DefaultMetadataFieldScanner {
      *             if the metadata table is not found
      */
     private BatchScanner createScanner() throws TableNotFoundException {
-        BatchScanner scanner = ScannerHelper.createBatchScanner(connectionConfig.getConnector(), connectionConfig.getMetadataTable(),
+        BatchScanner scanner = ScannerHelper.createBatchScanner(connectionConfig.getAccumuloClient(), connectionConfig.getMetadataTable(),
                         connectionConfig.getAuths(), numThreads);
         // Ensure rows for the same field are grouped into a single iterator entry.
         scanner.addScanIterator(new IteratorSetting(21, WholeRowIterator.class));
