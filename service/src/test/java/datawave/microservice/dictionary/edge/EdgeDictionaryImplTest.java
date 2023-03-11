@@ -38,6 +38,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(SpringExtension.class)
@@ -91,17 +93,17 @@ public class EdgeDictionaryImplTest {
         if (null == transformResultsMethod)
             fail();
         DefaultEdgeDictionary dictionary = (DefaultEdgeDictionary) transformResultsMethod.invoke(impl, HashMultimap.create());
-        Assertions.assertEquals(0L, dictionary.getTotalResults(), "Should be empty");
+        assertEquals(0L, dictionary.getTotalResults(), "Should be empty");
     }
     
     @Test
     public void testWorked() throws InvocationTargetException, IllegalAccessException {
         if (null == transformResultsMethod)
             fail();
-        Assertions.assertEquals(EDGE_KEYS.size(), edgeMetadataRows.keySet().size(), "data to be inserted contains as many rows as keys");
+        assertEquals(EDGE_KEYS.size(), edgeMetadataRows.keySet().size(), "data to be inserted contains as many rows as keys");
         DefaultEdgeDictionary dictionary = (DefaultEdgeDictionary) transformResultsMethod.invoke(impl, edgeMetadataRows);
-        Assertions.assertEquals(EDGE_KEYS.size(), dictionary.getTotalResults(), "Dictionary should now have some entries");
-        Assertions.assertTrue(dictionary.getMetadataList().containsAll(METADATA),
+        assertEquals(EDGE_KEYS.size(), dictionary.getTotalResults(), "Dictionary should now have some entries");
+        assertTrue(dictionary.getMetadataList().containsAll(METADATA),
                         "METADATA not in list.  returned list: " + dictionary.getMetadataList() + " expected: " + METADATA);
     }
     
@@ -116,8 +118,7 @@ public class EdgeDictionaryImplTest {
         
         // Make sure that all Metadata in EdgeDictionary have the start date set to the EARLY_DATE_FIELD
         for (MetadataBase<DefaultMetadata> meta : metadata) {
-            Assertions.assertEquals(EARLY_DATE_FIELD, meta.getStartDate(),
-                            "Incorrect start date. Expected: " + EARLY_DATE_FIELD + " Found: " + meta.getStartDate());
+            assertEquals(EARLY_DATE_FIELD, meta.getStartDate(), "Incorrect start date. Expected: " + EARLY_DATE_FIELD + " Found: " + meta.getStartDate());
             
         }
     }

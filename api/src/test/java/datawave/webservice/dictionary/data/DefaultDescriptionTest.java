@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class DefaultDescriptionTest {
     
     @Test
@@ -53,9 +56,9 @@ public class DefaultDescriptionTest {
         
         String result = out.toString();
         
-        Assertions.assertTrue(result.contains("<key>columnVisibility</key>"));
-        Assertions.assertTrue(result.contains("<value>PRIVATE</value>"));
-        Assertions.assertTrue(result.contains("<description>my description</description>"));
+        assertTrue(result.contains("<key>columnVisibility</key>"));
+        assertTrue(result.contains("<value>PRIVATE</value>"));
+        assertTrue(result.contains("<description>my description</description>"));
     }
     
     @Test
@@ -101,19 +104,19 @@ public class DefaultDescriptionTest {
         int markingCount = 0;
         
         for (DefaultDictionaryField f : resp.getFields()) {
-            Assertions.assertEquals("myType", f.getDatatype());
+            assertEquals("myType", f.getDatatype());
             for (DefaultDescription d : f.getDescriptions()) {
-                Assertions.assertEquals("my description", d.getDescription());
+                assertEquals("my description", d.getDescription());
                 Map<String,String> m = d.getMarkings();
-                Assertions.assertEquals("PRIVATE", m.get("columnVisibility"));
+                assertEquals("PRIVATE", m.get("columnVisibility"));
                 markingCount = m.size();
                 descriptionCount++;
             }
             fieldCount++;
         }
         
-        Assertions.assertEquals(1, fieldCount);
-        Assertions.assertEquals(1, descriptionCount);
-        Assertions.assertEquals(1, markingCount);
+        assertEquals(1, fieldCount);
+        assertEquals(1, descriptionCount);
+        assertEquals(1, markingCount);
     }
 }
