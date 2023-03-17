@@ -143,7 +143,7 @@ public class AccumuloConnectionService {
      */
     public Set<Authorizations> getDowngradedAuthorizations(String requestedAuthorizations, DatawaveUserDetails currentUser) {
         DatawaveUser primaryUser = currentUser.getPrimaryUser();
-        return userAuthFunctions.mergeAuthorizations(userAuthFunctions.getRequestedAuthorizations(requestedAuthorizations, currentUser.getPrimaryUser()),
+        return userAuthFunctions.mergeAuthorizations(userAuthFunctions.getRequestedAuthorizations(requestedAuthorizations, primaryUser),
                         currentUser.getProxiedUsers(), u -> u != primaryUser);
     }
     

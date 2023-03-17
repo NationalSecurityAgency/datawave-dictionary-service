@@ -1,5 +1,6 @@
 package datawave.webservice.model;
 
+import datawave.query.model.Direction;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.builder.CompareToBuilder;

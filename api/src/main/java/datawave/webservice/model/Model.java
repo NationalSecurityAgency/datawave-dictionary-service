@@ -1,5 +1,6 @@
 package datawave.webservice.model;
 
+import datawave.query.model.FieldMapping;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
 import lombok.Data;

@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-// TODO if nothing other than DefaultMetadataField extends this class, remove this class and rename DefaultMetadataField to MetadataField
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultMetadataField.class)
 public abstract class MetadataFieldBase<T,D extends DescriptionBase> implements Serializable, Message<T> {

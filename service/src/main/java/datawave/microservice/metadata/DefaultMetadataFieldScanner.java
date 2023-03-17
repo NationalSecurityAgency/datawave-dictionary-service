@@ -24,6 +24,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -271,7 +275,8 @@ public class DefaultMetadataFieldScanner {
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
         private void setLastUpdated() {
-            currField.setLastUpdated(new SimpleDateFormat(TIMESTAMP_FORMAT).format(new Date(currKey.getTimestamp())));
+            currField.setLastUpdated(Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                            .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)));
         }
     }
 }

@@ -5,9 +5,9 @@ import datawave.microservice.AccumuloConnectionService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter;
 import datawave.microservice.model.config.ModelProperties;
-import datawave.webservice.model.FieldMapping;
+import datawave.query.model.FieldMapping;
+import datawave.query.model.ModelKeyParser;
 import datawave.webservice.model.Model;
-import datawave.webservice.model.ModelKeyParser;
 import datawave.webservice.model.ModelList;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.QueryException;
@@ -61,7 +61,7 @@ public class ModelController {
     private static final HashSet<String> RESERVED_COLF_VALUES = Sets.newHashSet("e", "i", "ri", "f", "tf", "m", "desc", "edge", "t", "n", "h");
     
     public ModelController(ModelProperties modelProperties, AccumuloConnectionService accumloConnectionService) {
-        this.dataTablesUri = modelProperties.getDefaultTableName();
+        this.dataTablesUri = modelProperties.getDataTablesUri();
         this.jqueryUri = modelProperties.getJqueryUri();
         this.accumloConnectionService = accumloConnectionService;
     }
@@ -198,9 +198,8 @@ public class ModelController {
             return response;
         }
         
-        Set<Authorizations> auths = accumloConnectionService.getConnection(modelTableName, name, currentUser).getAuths();
         TreeSet<FieldMapping> fields = response.getFields();
-        keys.forEach(k -> fields.add(ModelKeyParser.parseKey(k, auths)));
+        keys.forEach(k -> fields.add(ModelKeyParser.parseKey(k)));
         response.setName(name);
         return response;
     }
@@ -219,7 +218,7 @@ public class ModelController {
      * @HTTP 500 internal server error
      */
     @Operation(summary = "Insert a new field mapping into an existing model.")
-    @PostMapping(value = {"/insert", "/import"}) // If we get to change to standard REST, this would just be / and rely on the
+    @PostMapping(value = {"/insert", "/import"})
     @Secured({"Administrator", "JBossAdministrator"})
     public VoidResponse insertMapping(@RequestBody Model model, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) {
