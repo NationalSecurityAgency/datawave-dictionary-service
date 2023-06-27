@@ -1,8 +1,19 @@
 package datawave.microservice.dictionary.data;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
+import org.apache.accumulo.core.client.TableNotFoundException;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.Connection;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
@@ -18,15 +29,6 @@ import datawave.webservice.dictionary.data.DefaultDescription;
 import datawave.webservice.dictionary.data.DefaultDictionaryField;
 import datawave.webservice.dictionary.data.DefaultFields;
 import datawave.webservice.metadata.DefaultMetadataField;
-import org.apache.accumulo.core.client.TableNotFoundException;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class DataDictionaryImpl implements DataDictionary<DefaultMetadataField,DefaultDescription,DefaultDictionaryField> {
     

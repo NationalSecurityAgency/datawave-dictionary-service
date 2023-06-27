@@ -1,6 +1,15 @@
 package datawave.microservice.dictionary.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import datawave.accumulo.util.security.UserAuthFunctions;
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.config.accumulo.AccumuloProperties;
@@ -18,13 +27,6 @@ import datawave.webservice.dictionary.data.DefaultDictionaryField;
 import datawave.webservice.dictionary.data.DefaultFields;
 import datawave.webservice.dictionary.data.FieldsBase;
 import datawave.webservice.metadata.DefaultMetadataField;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 @Configuration
 @EnableConfigurationProperties(DictionaryServiceProperties.class)

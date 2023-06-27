@@ -1,9 +1,8 @@
 package datawave.webservice.model;
 
-import datawave.query.model.FieldMapping;
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.BaseResponse;
-import lombok.Data;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -11,9 +10,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.TreeSet;
+
+import datawave.query.model.FieldMapping;
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.BaseResponse;
+import lombok.Data;
 
 @Data
 @XmlRootElement(name = "Model")

@@ -1,14 +1,14 @@
 package datawave.microservice.model;
 
-import datawave.accumulo.inmemory.InMemoryAccumuloClient;
-import datawave.accumulo.inmemory.InMemoryInstance;
-import datawave.microservice.ControllerIT;
-import datawave.microservice.model.config.ModelProperties;
-import datawave.query.model.FieldMapping;
-import datawave.query.model.ModelKeyParser;
-import datawave.webservice.model.Model;
-import datawave.webservice.model.ModelList;
-import datawave.webservice.result.VoidResponse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchWriter;
@@ -35,13 +35,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import java.util.HashSet;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
+import datawave.accumulo.inmemory.InMemoryInstance;
+import datawave.microservice.ControllerIT;
+import datawave.microservice.model.config.ModelProperties;
+import datawave.query.model.FieldMapping;
+import datawave.query.model.ModelKeyParser;
+import datawave.webservice.model.Model;
+import datawave.webservice.model.ModelList;
+import datawave.webservice.result.VoidResponse;
 
 public class ModelControllerTest extends ControllerIT {
     

@@ -1,6 +1,18 @@
 package datawave.microservice.dictionary;
 
+import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
+
+import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.codahale.metrics.annotation.Timed;
+
 import datawave.accumulo.util.security.UserAuthFunctions;
 import datawave.microservice.AccumuloConnectionService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
@@ -11,16 +23,6 @@ import datawave.webservice.dictionary.edge.MetadataBase;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
 
 @Tag(name = "Edge Dictionary Controller /v1", description = "DataWave Edge Dictionary Operations",
                 externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",

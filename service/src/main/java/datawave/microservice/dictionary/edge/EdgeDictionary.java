@@ -1,11 +1,12 @@
 package datawave.microservice.dictionary.edge;
 
-import datawave.webservice.dictionary.edge.EdgeDictionaryBase;
-import datawave.webservice.dictionary.edge.MetadataBase;
+import java.util.Set;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.security.Authorizations;
 
-import java.util.Set;
+import datawave.webservice.dictionary.edge.EdgeDictionaryBase;
+import datawave.webservice.dictionary.edge.MetadataBase;
 
 public interface EdgeDictionary<EDGE extends EdgeDictionaryBase<EDGE,META>,META extends MetadataBase<META>> {
     char COL_SEPARATOR = '/';

@@ -1,13 +1,8 @@
 package datawave.webservice.dictionary.data;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.TotalResultsAware;
-import io.protostuff.Input;
-import io.protostuff.Message;
-import io.protostuff.Output;
-import io.protostuff.Schema;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -15,9 +10,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map.Entry;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.TotalResultsAware;
+import io.protostuff.Input;
+import io.protostuff.Message;
+import io.protostuff.Output;
+import io.protostuff.Schema;
 
 @XmlRootElement(name = "DefaultFieldsResponse")
 @XmlAccessorType(XmlAccessType.NONE)

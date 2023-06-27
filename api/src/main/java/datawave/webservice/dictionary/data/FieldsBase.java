@@ -1,14 +1,16 @@
 package datawave.webservice.dictionary.data;
 
-import com.google.common.collect.Multimap;
-import datawave.webservice.result.BaseResponse;
-import io.protostuff.Message;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import java.util.List;
-import java.util.Map;
+
+import com.google.common.collect.Multimap;
+
+import datawave.webservice.result.BaseResponse;
+import io.protostuff.Message;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultFields.class)

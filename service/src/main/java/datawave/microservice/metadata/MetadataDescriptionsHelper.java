@@ -1,14 +1,14 @@
 package datawave.microservice.metadata;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
-import datawave.data.ColumnFamilyConstants;
-import datawave.marking.MarkingFunctions;
-import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.query.util.MetadataEntry;
-import datawave.security.util.ScannerHelper;
-import datawave.webservice.dictionary.data.DescriptionBase;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
@@ -28,14 +28,16 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import datawave.data.ColumnFamilyConstants;
+import datawave.marking.MarkingFunctions;
+import datawave.microservice.dictionary.config.ResponseObjectFactory;
+import datawave.query.util.MetadataEntry;
+import datawave.security.util.ScannerHelper;
+import datawave.webservice.dictionary.data.DescriptionBase;
 
 /**
  * Helper class to handle get/set of descriptions on the metadata table.

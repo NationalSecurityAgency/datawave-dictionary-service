@@ -1,16 +1,18 @@
 package datawave.microservice.metadata;
 
-import datawave.accumulo.inmemory.InMemoryAccumuloClient;
-import datawave.accumulo.inmemory.InMemoryInstance;
-import datawave.data.ColumnFamilyConstants;
-import datawave.marking.MarkingFunctions;
-import datawave.microservice.Connection;
-import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.webservice.dictionary.data.DefaultDataDictionary;
-import datawave.webservice.dictionary.data.DefaultDescription;
-import datawave.webservice.dictionary.data.DefaultDictionaryField;
-import datawave.webservice.dictionary.data.DefaultFields;
-import datawave.webservice.metadata.DefaultMetadataField;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
@@ -24,18 +26,17 @@ import org.apache.hadoop.io.Text;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
+import datawave.accumulo.inmemory.InMemoryInstance;
+import datawave.data.ColumnFamilyConstants;
+import datawave.marking.MarkingFunctions;
+import datawave.microservice.Connection;
+import datawave.microservice.dictionary.config.ResponseObjectFactory;
+import datawave.webservice.dictionary.data.DefaultDataDictionary;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultDictionaryField;
+import datawave.webservice.dictionary.data.DefaultFields;
+import datawave.webservice.metadata.DefaultMetadataField;
 
 public class DefaultMetadataFieldScannerTest {
     

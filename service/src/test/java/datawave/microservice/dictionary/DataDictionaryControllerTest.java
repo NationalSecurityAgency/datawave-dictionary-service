@@ -1,16 +1,11 @@
 package datawave.microservice.dictionary;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import datawave.accumulo.inmemory.InMemoryAccumuloClient;
-import datawave.accumulo.inmemory.InMemoryInstance;
-import datawave.marking.MarkingFunctions;
-import datawave.microservice.ControllerIT;
-import datawave.microservice.dictionary.config.DataDictionaryProperties;
-import datawave.webservice.dictionary.data.DefaultDataDictionary;
-import datawave.webservice.dictionary.data.DefaultDescription;
-import datawave.webservice.dictionary.data.DefaultFields;
-import datawave.webservice.result.VoidResponse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.TableExistsException;
@@ -32,11 +27,18 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
+import datawave.accumulo.inmemory.InMemoryInstance;
+import datawave.marking.MarkingFunctions;
+import datawave.microservice.ControllerIT;
+import datawave.microservice.dictionary.config.DataDictionaryProperties;
+import datawave.webservice.dictionary.data.DefaultDataDictionary;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultFields;
+import datawave.webservice.result.VoidResponse;
 
 public class DataDictionaryControllerTest extends ControllerIT {
     

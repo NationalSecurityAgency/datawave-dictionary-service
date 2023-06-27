@@ -1,11 +1,8 @@
 package datawave.microservice;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
-import datawave.microservice.authorization.jwt.JWTRestTemplate;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.authorization.SubjectIssuerDNPair;
+import java.util.Collections;
+import java.util.HashSet;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -20,8 +17,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.ResponseErrorHandler;
 
-import java.util.Collections;
-import java.util.HashSet;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
+
+import datawave.microservice.authorization.jwt.JWTRestTemplate;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.authorization.SubjectIssuerDNPair;
 
 /**
  * Provides a default setup for controller integration tests (specifically). Contains properties and setup that are common to controller integration tests. The

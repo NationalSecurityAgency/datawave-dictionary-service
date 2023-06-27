@@ -1,14 +1,14 @@
 package datawave.microservice;
 
-import datawave.accumulo.util.security.UserAuthFunctions;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.dictionary.config.DataDictionaryProperties;
-import datawave.security.authorization.DatawaveUser;
-import datawave.security.util.ScannerHelper;
-import datawave.webservice.query.exception.DatawaveErrorCode;
-import datawave.webservice.query.exception.QueryException;
-import lombok.Cleanup;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
@@ -24,14 +24,15 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import datawave.accumulo.util.security.UserAuthFunctions;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.dictionary.config.DataDictionaryProperties;
+import datawave.security.authorization.DatawaveUser;
+import datawave.security.util.ScannerHelper;
+import datawave.webservice.query.exception.DatawaveErrorCode;
+import datawave.webservice.query.exception.QueryException;
+import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Provides accumlo functionality for use by the dictionary controllers. Keeps the accumulo interface separate from the controllers.

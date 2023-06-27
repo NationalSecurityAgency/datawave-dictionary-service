@@ -1,11 +1,12 @@
 package datawave.webservice.dictionary.data;
 
-import io.protostuff.Message;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import java.util.Set;
+
+import io.protostuff.Message;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultDictionaryField.class)

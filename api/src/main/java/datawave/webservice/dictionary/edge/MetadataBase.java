@@ -1,14 +1,16 @@
 package datawave.webservice.dictionary.edge;
 
-import com.google.common.collect.Maps;
-import datawave.webservice.query.result.event.HasMarkings;
-import io.protostuff.Message;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import java.util.List;
-import java.util.Map;
+
+import com.google.common.collect.Maps;
+
+import datawave.webservice.query.result.event.HasMarkings;
+import io.protostuff.Message;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultMetadata.class)

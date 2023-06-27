@@ -1,15 +1,16 @@
 package datawave.microservice.dictionary.data;
 
-import com.google.common.collect.Multimap;
-import datawave.microservice.Connection;
-import datawave.webservice.dictionary.data.DescriptionBase;
-import datawave.webservice.dictionary.data.DictionaryFieldBase;
-import datawave.webservice.metadata.MetadataFieldBase;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import com.google.common.collect.Multimap;
+
+import datawave.microservice.Connection;
+import datawave.webservice.dictionary.data.DescriptionBase;
+import datawave.webservice.dictionary.data.DictionaryFieldBase;
+import datawave.webservice.metadata.MetadataFieldBase;
 
 public interface DataDictionary<META extends MetadataFieldBase<META,DESC>,DESC extends DescriptionBase<DESC>,FIELD extends DictionaryFieldBase<FIELD,DESC>> {
     

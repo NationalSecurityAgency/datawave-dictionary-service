@@ -1,23 +1,16 @@
 package datawave.microservice.dictionary;
 
-import com.codahale.metrics.annotation.Timed;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import datawave.microservice.AccumuloConnectionService;
-import datawave.microservice.Connection;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.dictionary.config.DataDictionaryProperties;
-import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.microservice.dictionary.data.DataDictionary;
-import datawave.webservice.dictionary.data.DataDictionaryBase;
-import datawave.webservice.dictionary.data.DescriptionBase;
-import datawave.webservice.dictionary.data.DictionaryFieldBase;
-import datawave.webservice.dictionary.data.FieldsBase;
-import datawave.webservice.metadata.MetadataFieldBase;
-import datawave.webservice.result.VoidResponse;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
@@ -33,16 +26,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.function.Consumer;
+import com.codahale.metrics.annotation.Timed;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
-import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
+import datawave.microservice.AccumuloConnectionService;
+import datawave.microservice.Connection;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.dictionary.config.DataDictionaryProperties;
+import datawave.microservice.dictionary.config.ResponseObjectFactory;
+import datawave.microservice.dictionary.data.DataDictionary;
+import datawave.webservice.dictionary.data.DataDictionaryBase;
+import datawave.webservice.dictionary.data.DescriptionBase;
+import datawave.webservice.dictionary.data.DictionaryFieldBase;
+import datawave.webservice.dictionary.data.FieldsBase;
+import datawave.webservice.metadata.MetadataFieldBase;
+import datawave.webservice.result.VoidResponse;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Data Dictionary Controller /v1", description = "DataWave Dictionary Operations",
                 externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",

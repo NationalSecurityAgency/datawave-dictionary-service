@@ -1,15 +1,19 @@
 package datawave.microservice.dictionary.edge;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
-import datawave.accumulo.inmemory.InMemoryAccumuloClient;
-import datawave.accumulo.inmemory.InMemoryInstance;
-import datawave.data.ColumnFamilyConstants;
-import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
-import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
-import datawave.webservice.dictionary.edge.DefaultMetadata;
-import datawave.webservice.dictionary.edge.EventField;
-import datawave.webservice.dictionary.edge.MetadataBase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -27,19 +31,17 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import datawave.accumulo.inmemory.InMemoryAccumuloClient;
+import datawave.accumulo.inmemory.InMemoryInstance;
+import datawave.data.ColumnFamilyConstants;
+import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
+import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
+import datawave.webservice.dictionary.edge.DefaultMetadata;
+import datawave.webservice.dictionary.edge.EventField;
+import datawave.webservice.dictionary.edge.MetadataBase;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "spring.main.allow-bean-definition-overriding=true")

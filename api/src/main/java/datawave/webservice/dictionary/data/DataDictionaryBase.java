@@ -1,17 +1,18 @@
 package datawave.webservice.dictionary.data;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.TotalResultsAware;
 import io.protostuff.Message;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Consumer;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultDataDictionary.class)

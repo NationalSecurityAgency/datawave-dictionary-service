@@ -1,21 +1,11 @@
 package datawave.microservice.model;
 
-import com.google.common.collect.Sets;
-import datawave.microservice.AccumuloConnectionService;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter;
-import datawave.microservice.model.config.ModelProperties;
-import datawave.query.model.FieldMapping;
-import datawave.query.model.ModelKeyParser;
-import datawave.webservice.model.Model;
-import datawave.webservice.model.ModelList;
-import datawave.webservice.query.exception.DatawaveErrorCode;
-import datawave.webservice.query.exception.QueryException;
-import datawave.webservice.result.VoidResponse;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Mutation;
@@ -32,11 +22,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import com.google.common.collect.Sets;
+
+import datawave.microservice.AccumuloConnectionService;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter;
+import datawave.microservice.model.config.ModelProperties;
+import datawave.query.model.FieldMapping;
+import datawave.query.model.ModelKeyParser;
+import datawave.webservice.model.Model;
+import datawave.webservice.model.ModelList;
+import datawave.webservice.query.exception.DatawaveErrorCode;
+import datawave.webservice.query.exception.QueryException;
+import datawave.webservice.result.VoidResponse;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Service that supports manipulation of models. The models are contained in the data dictionary table.

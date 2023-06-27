@@ -1,15 +1,16 @@
 package datawave.webservice.metadata;
 
-import datawave.webservice.dictionary.data.DescriptionBase;
-import io.protostuff.Message;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSeeAlso;
+
+import datawave.webservice.dictionary.data.DescriptionBase;
+import io.protostuff.Message;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(DefaultMetadataField.class)

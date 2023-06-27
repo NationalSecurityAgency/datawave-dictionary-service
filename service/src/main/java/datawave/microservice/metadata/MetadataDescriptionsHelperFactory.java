@@ -1,8 +1,9 @@
 package datawave.microservice.metadata;
 
-import datawave.webservice.dictionary.data.DescriptionBase;
 import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.stereotype.Component;
+
+import datawave.webservice.dictionary.data.DescriptionBase;
 
 @Component
 public class MetadataDescriptionsHelperFactory<DESC extends DescriptionBase<DESC>> {

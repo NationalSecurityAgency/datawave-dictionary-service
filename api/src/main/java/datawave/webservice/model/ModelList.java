@@ -1,16 +1,17 @@
 package datawave.webservice.model;
 
-import datawave.webservice.HtmlProvider;
-import datawave.webservice.result.BaseResponse;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.HashSet;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
-import java.text.MessageFormat;
-import java.util.HashSet;
+
+import datawave.webservice.HtmlProvider;
+import datawave.webservice.result.BaseResponse;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor

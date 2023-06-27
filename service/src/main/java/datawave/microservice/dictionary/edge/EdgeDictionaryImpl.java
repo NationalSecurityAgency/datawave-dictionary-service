@@ -1,15 +1,11 @@
 package datawave.microservice.dictionary.edge;
 
-import com.google.common.collect.SetMultimap;
-import com.google.protobuf.InvalidProtocolBufferException;
-import datawave.metadata.protobuf.EdgeMetadata;
-import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
-import datawave.query.util.MetadataHelper;
-import datawave.query.util.MetadataHelperFactory;
-import datawave.util.StringUtils;
-import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
-import datawave.webservice.dictionary.edge.DefaultMetadata;
-import datawave.webservice.dictionary.edge.EventField;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.apache.accumulo.core.client.AccumuloClient;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
@@ -18,11 +14,17 @@ import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
+import com.google.common.collect.SetMultimap;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import datawave.metadata.protobuf.EdgeMetadata;
+import datawave.metadata.protobuf.EdgeMetadata.MetadataValue;
+import datawave.query.util.MetadataHelper;
+import datawave.query.util.MetadataHelperFactory;
+import datawave.util.StringUtils;
+import datawave.webservice.dictionary.edge.DefaultEdgeDictionary;
+import datawave.webservice.dictionary.edge.DefaultMetadata;
+import datawave.webservice.dictionary.edge.EventField;
 
 public class EdgeDictionaryImpl implements EdgeDictionary<DefaultEdgeDictionary,DefaultMetadata> {
     private static final Logger log = LoggerFactory.getLogger(EdgeDictionaryImpl.class);

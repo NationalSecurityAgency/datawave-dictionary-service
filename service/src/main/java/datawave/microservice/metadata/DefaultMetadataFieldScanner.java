@@ -1,27 +1,5 @@
 package datawave.microservice.metadata;
 
-import com.google.common.collect.Maps;
-import datawave.data.ColumnFamilyConstants;
-import datawave.marking.MarkingFunctions;
-import datawave.microservice.Connection;
-import datawave.microservice.dictionary.config.ResponseObjectFactory;
-import datawave.security.util.ScannerHelper;
-import datawave.webservice.dictionary.data.DefaultDataDictionary;
-import datawave.webservice.dictionary.data.DefaultDescription;
-import datawave.webservice.dictionary.data.DefaultDictionaryField;
-import datawave.webservice.dictionary.data.DefaultFields;
-import datawave.webservice.metadata.DefaultMetadataField;
-import org.apache.accumulo.core.client.BatchScanner;
-import org.apache.accumulo.core.client.IteratorSetting;
-import org.apache.accumulo.core.client.TableNotFoundException;
-import org.apache.accumulo.core.data.Key;
-import org.apache.accumulo.core.data.Range;
-import org.apache.accumulo.core.data.Value;
-import org.apache.accumulo.core.iterators.user.WholeRowIterator;
-import org.apache.hadoop.io.Text;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -37,6 +15,30 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+
+import org.apache.accumulo.core.client.BatchScanner;
+import org.apache.accumulo.core.client.IteratorSetting;
+import org.apache.accumulo.core.client.TableNotFoundException;
+import org.apache.accumulo.core.data.Key;
+import org.apache.accumulo.core.data.Range;
+import org.apache.accumulo.core.data.Value;
+import org.apache.accumulo.core.iterators.user.WholeRowIterator;
+import org.apache.hadoop.io.Text;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+
+import datawave.data.ColumnFamilyConstants;
+import datawave.marking.MarkingFunctions;
+import datawave.microservice.Connection;
+import datawave.microservice.dictionary.config.ResponseObjectFactory;
+import datawave.security.util.ScannerHelper;
+import datawave.webservice.dictionary.data.DefaultDataDictionary;
+import datawave.webservice.dictionary.data.DefaultDescription;
+import datawave.webservice.dictionary.data.DefaultDictionaryField;
+import datawave.webservice.dictionary.data.DefaultFields;
+import datawave.webservice.metadata.DefaultMetadataField;
 
 public class DefaultMetadataFieldScanner {
     
