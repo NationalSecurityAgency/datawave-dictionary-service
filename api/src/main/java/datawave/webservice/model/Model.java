@@ -11,12 +11,17 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import datawave.query.model.FieldMapping;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
-import lombok.Data;
 
-@Data
 @XmlRootElement(name = "Model")
 @XmlAccessorType(XmlAccessType.NONE)
 public class Model extends BaseResponse implements Serializable, HtmlProvider {
@@ -40,15 +45,53 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
     public Model() {};
     
     @XmlAttribute(name = "name", required = true)
-    private String name;
+    private String name = null;
     
     @XmlElementWrapper(name = "Mappings")
     @XmlElement(name = "Mapping")
     private TreeSet<FieldMapping> fields = new TreeSet<FieldMapping>();
     
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public TreeSet<FieldMapping> getFields() {
+        return fields;
+    }
+    
+    public void setFields(TreeSet<FieldMapping> fields) {
+        this.fields = fields;
+    }
+    
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(name).append(fields).toHashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != this.getClass())
+            return false;
+        Model other = (Model) obj;
+        return new EqualsBuilder().append(name, other.name).append(fields, other.fields).isEquals();
+    }
+    
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).append("name", name).append("fields", fields).toString();
+    }
+    
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see datawave.webservice.HtmlProvider#getTitle()
      */
     @Override
@@ -58,7 +101,7 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
     
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see datawave.webservice.HtmlProvider#getPageHeader()
      */
     @Override
@@ -68,7 +111,7 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
     
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see datawave.webservice.HtmlProvider#getHeadContent()
      */
     @Override
@@ -78,7 +121,7 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
     
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see datawave.webservice.HtmlProvider#getMainContent()
      */
     @Override
@@ -89,16 +132,32 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
         builder.append("<div id=\"myTable_wrapper\" class=\"dataTables_wrapper no-footer\">\n");
         builder.append("<table id=\"myTable\" class=\"dataTable no-footer\" role=\"grid\" aria-describedby=\"myTable_info\">\n");
         
-        builder.append("<thead><tr><th>Visibility</th><th>FieldName</th><th>DataType</th><th>ModelFieldName</th><th>Direction</th></tr></thead>");
+        builder.append("<thead><tr><th>Visibility</th><th>FieldName</th><th>DataType</th><th>ModelFieldName</th><th>Direction</th><th>Attributes</th></tr></thead>");
         builder.append("<tbody>");
         
+        // first gather the model fields that are deemed "lenient" (i.e. where the model field name has a lenient attribute)
+        Multimap<String,String> modelFieldAttributes = HashMultimap.create();
+        for (FieldMapping field : this.getFields()) {
+            if (!field.isFieldMapping()) {
+                modelFieldAttributes.putAll(field.getModelFieldName(), field.getAttributes());
+            }
+        }
+        
         for (FieldMapping f : this.getFields()) {
-            builder.append("<td>").append(f.getColumnVisibility()).append("</td>");
-            builder.append("<td>").append(f.getFieldName()).append("</td>");
-            builder.append("<td>").append(f.getDatatype()).append("</td>");
-            builder.append("<td>").append(f.getModelFieldName()).append("</td>");
-            builder.append("<td>").append(f.getDirection()).append("</td>");
-            builder.append("</tr>");
+            // don't include model field attributes
+            if (f.isFieldMapping()) {
+                builder.append("<td>").append(f.getColumnVisibility()).append("</td>");
+                builder.append("<td>").append(f.getFieldName()).append("</td>");
+                builder.append("<td>").append(f.getDatatype()).append("</td>");
+                builder.append("<td>").append(f.getModelFieldName()).append("</td>");
+                builder.append("<td>").append(f.getDirection()).append("</td>");
+                TreeSet<String> attributes = new TreeSet<>(f.getAttributes());
+                if (modelFieldAttributes.containsKey(f.getModelFieldName())) {
+                    attributes.addAll(modelFieldAttributes.get(f.getModelFieldName()));
+                }
+                builder.append("<td>").append(attributes).append("</td>");
+                builder.append("</tr>");
+            }
         }
         
         builder.append("</tbody>");
