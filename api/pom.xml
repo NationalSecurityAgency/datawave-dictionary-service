@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-parent</artifactId>
-        <version>3.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
         <relativePath>../../../microservice-parent/pom.xml</relativePath>
     </parent>
     <artifactId>dictionary-api</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-dictionary-service.git</connection>
@@ -18,9 +18,9 @@
     </scm>
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
-        <version.base-responses>3.0-SNAPSHOT</version.base-responses>
+        <version.base-responses>3.0.0-SNAPSHOT</version.base-responses>
         <version.guava>31.1-jre</version.guava>
-        <version.microservice.metadata-utils>3.0-SNAPSHOT</version.microservice.metadata-utils>
+        <version.microservice.metadata-utils>3.0.0-SNAPSHOT</version.microservice.metadata-utils>
     </properties>
     <dependencyManagement>
         <dependencies>
