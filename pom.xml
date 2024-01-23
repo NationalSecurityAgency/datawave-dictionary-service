@@ -32,7 +32,7 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-            <id>datawave-github-mvn-repo</id>
+            <id>datawave-mvn-repo</id>
             <url>https://raw.githubusercontent.com/NationalSecurityAgency/datawave-mvn-repo/mvn-repo</url>
         </repository>
     </repositories>
