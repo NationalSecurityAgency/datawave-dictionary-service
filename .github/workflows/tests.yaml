@@ -31,11 +31,13 @@ jobs:
           ${{ runner.os }}-maven-
     - name: Format code
       run: |
-        mvn -V -B -e clean formatter:format sortpom:sort -Pautoformat
+        mvn -s $GITHUB_WORKSPACE/.github/workflows/settings.xml -V -B -e clean formatter:format sortpom:sort -Pautoformat
         git status
         git diff-index --quiet HEAD || (echo "Error! There are modified files after formatting." && false)
       env:
         MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Djava.awt.headless=true"
+        USER_NAME: ${{ secrets.USER_NAME }}
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
   # Build the code and run the unit/integration tests.
   build-and-test:
@@ -56,9 +58,11 @@ jobs:
           ${{ runner.os }}-maven-format-
           ${{ runner.os }}-maven-
     - name: Build and Run Unit Tests
-      run: mvn -V -B -e -Ddist clean verify
+      run: mvn -s $GITHUB_WORKSPACE/.github/workflows/settings.xml -V -B -e -Ddist clean verify
       env:
         MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Djava.awt.headless=true"
+        USER_NAME: ${{ secrets.USER_NAME }}
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
 
     # Here's an example of how you'd deploy the image to the github package registry.
     # We don't want to do this by default since packages on github cannot be deleted
@@ -68,11 +72,13 @@ jobs:
     #   env:
     #     IMAGE_REGISTRY: "docker.pkg.github.com"
     #     IMAGE_USERNAME: "NationalSecurityAgency"
+    #     USER_NAME: ${{ secrets.USER_NAME }}
+    #     ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
     #   run: |
     #     # Set up env vars
-    #     IMAGE_NAME=$(mvn -q -N -Pdocker -f service/pom.xml -Dexec.executable='echo' -Dexec.args='${project.version}' exec:exec)
-    #     IMAGE_PREFIX=$(mvn -q -N -Pdocker -f service/pom.xml -Dexec.executable='echo' -Dexec.args='${docker.image.prefix}' exec:exec)
-    #     IMAGE_TAG=$(mvn -q -N -Pdocker -f service/pom.xml -Dexec.executable='echo' -Dexec.args='${project.artifactId}' exec:exec)
+    #     IMAGE_NAME=$(mvn -s $GITHUB_WORKSPACE/.github/workflows/settings.xml -q -N -Pdocker -f service/pom.xml -Dexec.executable='echo' -Dexec.args='${project.version}' exec:exec)
+    #     IMAGE_PREFIX=$(mvn -s $GITHUB_WORKSPACE/.github/workflows/settings.xml -q -N -Pdocker -f service/pom.xml -Dexec.executable='echo' -Dexec.args='${docker.image.prefix}' exec:exec)
+    #     IMAGE_TAG=$(mvn -s $GITHUB_WORKSPACE/.github/workflows/settings.xml -q -N -Pdocker -f service/pom.xml -Dexec.executable='echo' -Dexec.args='${project.artifactId}' exec:exec)
     #     REMOTE_IMAGE_NAME="${IMAGE_REGISTRY}/${IMAGE_USERNAME}/${IMAGE_PREFIX}${IMAGE_NAME}"
     #     # Log in to the package registry
     #     echo ${{ secrets.GITHUB_TOKEN }} | docker login docker.pkg.github.com --username ${GITHUB_ACTOR} --password-stdin
