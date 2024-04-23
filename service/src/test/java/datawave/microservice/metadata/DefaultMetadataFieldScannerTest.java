@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -109,12 +110,17 @@ public class DefaultMetadataFieldScannerTest {
         contributorId.setDescription(Collections.singleton(createDescription("ContributorId Description")));
         contributorId.setLastUpdated(DATE);
         
+        ArrayList<String> expectedTypes = new ArrayList<>();
+        expectedTypes.add("TestLcNoCookies*");
+        expectedTypes.add("TestNumberList*");
+        expectedTypes.add("Testleopard*");
+        
         DefaultMetadataField name = new DefaultMetadataField();
         name.setFieldName("NAME");
         name.setDataType("tvmaze");
         name.setForwardIndexed(true);
         name.setReverseIndexed(true);
-        name.setTypes(Collections.singletonList("Unknown"));
+        name.setTypes(expectedTypes);
         name.setLastUpdated(DATE);
         
         Collection<DefaultMetadataField> fields = scanner.getFields(Collections.emptyMap(), Collections.emptySet());
@@ -170,12 +176,17 @@ public class DefaultMetadataFieldScannerTest {
         contributorId.setDescription(Collections.singleton(createDescription("ContributorId Description")));
         contributorId.setLastUpdated(DATE);
         
+        ArrayList<String> expectedTypes = new ArrayList<>();
+        expectedTypes.add("TestLcNoCookies*");
+        expectedTypes.add("TestNumberList*");
+        expectedTypes.add("Testleopard*");
+        
         DefaultMetadataField name = new DefaultMetadataField();
         name.setFieldName("NAME");
         name.setDataType("tvmaze");
         name.setForwardIndexed(true);
         name.setReverseIndexed(true);
-        name.setTypes(Collections.singletonList("Unknown"));
+        name.setTypes(expectedTypes);
         name.setLastUpdated(DATE);
         
         Map<String,String> aliases = new HashMap<>();
@@ -205,7 +216,9 @@ public class DefaultMetadataFieldScannerTest {
         name.put(new Text(ColumnFamilyConstants.COLF_E), new Text("tvmaze"), TIMESTAMP, new Value());
         name.put(new Text(ColumnFamilyConstants.COLF_I), new Text("tvmaze"), TIMESTAMP, new Value());
         name.put(new Text(ColumnFamilyConstants.COLF_RI), new Text("tvmaze"), TIMESTAMP, new Value());
-        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0not.a.known.type"), TIMESTAMP, new Value());
+        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.testNumberListType"), TIMESTAMP, new Value());
+        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.testLcNoCookiesType"), TIMESTAMP, new Value());
+        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.testleopardType"), TIMESTAMP, new Value());
         
         BatchWriterConfig bwConfig = new BatchWriterConfig().setMaxMemory(10L).setMaxLatency(1, TimeUnit.SECONDS).setMaxWriteThreads(1);
         BatchWriter writer = connector.createBatchWriter(METADATA_TABLE, bwConfig);

@@ -1,14 +1,11 @@
 package datawave.microservice.metadata;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -23,6 +20,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,13 +264,22 @@ public class DefaultMetadataFieldScanner {
             currField.getDescriptions().add(description);
         }
         
+        // Receives a type that does not have a normalized version, which then is processed and returned.
+        // Ensures first letter of the type is always capitalized.
+        // Ensures redundant terminology like 'Type' is removed.
+        // Appends a '*' at the end of the type to signify the type does not have a normalized version.
+        private String determineUknownType(String unknown) {
+            String[] unknownType = unknown.split("\\.");
+            return StringUtils.capitalize(unknownType[unknownType.length - 1].replace("Type", "")) + "*";
+        }
+        
         // Set the normalized type for the current {@link DefaultMetadataField}. If no normalized version can be found for the type, the type will default to
-        // "Unknown".
+        // using a processed version of it's class name.
         private void setType() {
             int nullPos = currColumnQualifier.indexOf('\0');
             String type = currColumnQualifier.substring(nullPos + 1);
             String normalizedType = normalizationMap.get(type);
-            currField.addType(normalizedType != null ? normalizedType : "Unknown");
+            currField.addType(normalizedType != null ? normalizedType : determineUknownType(type));
         }
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
