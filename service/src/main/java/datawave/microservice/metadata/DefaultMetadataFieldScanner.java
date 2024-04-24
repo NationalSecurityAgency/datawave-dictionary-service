@@ -264,22 +264,21 @@ public class DefaultMetadataFieldScanner {
             currField.getDescriptions().add(description);
         }
         
-        // Receives a type that does not have a normalized version, which then is processed and returned.
+        // Receives a type that is not in the normalizationMap, which then is processed and returned.
         // Ensures first letter of the type is always capitalized.
         // Ensures redundant terminology like 'Type' is removed.
-        // Appends a '*' at the end of the type to signify the type does not have a normalized version.
-        private String determineUknownType(String unknown) {
+        private String determineUnknownType(String unknown) {
             String[] unknownType = unknown.split("\\.");
-            return StringUtils.capitalize(unknownType[unknownType.length - 1].replace("Type", "")) + "*";
+            return StringUtils.capitalize(unknownType[unknownType.length - 1].replace("Type", ""));
         }
         
-        // Set the normalized type for the current {@link DefaultMetadataField}. If no normalized version can be found for the type, the type will default to
+        // Set the normalized type for the current {@link DefaultMetadataField}. If the type cannot be found in the normalizationMap, the type will default to
         // using a processed version of it's class name.
         private void setType() {
             int nullPos = currColumnQualifier.indexOf('\0');
             String type = currColumnQualifier.substring(nullPos + 1);
             String normalizedType = normalizationMap.get(type);
-            currField.addType(normalizedType != null ? normalizedType : determineUknownType(type));
+            currField.addType(normalizedType != null ? normalizedType : determineUnknownType(type));
         }
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
