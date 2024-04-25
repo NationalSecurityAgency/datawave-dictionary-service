@@ -206,7 +206,6 @@ public class DefaultDataDictionary extends DataDictionaryBase<DefaultDataDiction
         builder.append("the caveat that you can also query these fields using leading wildcards. Fields that are marked as 'Index only' will not ");
         builder.append("appear in a result set unless explicitly queried on. Index only fields are typically composite fields, derived from actual data, ");
         builder.append("created by the software to make querying easier.</p>");
-        builder.append("<p style=\"width:60%; margin-left: auto; margin-right: auto;\">Note: Types that are designated a '*' signify they are not a normalized type.</p>");
         builder.append("</div>");
         builder.append("<table id=\"myTable\">\n");
         
