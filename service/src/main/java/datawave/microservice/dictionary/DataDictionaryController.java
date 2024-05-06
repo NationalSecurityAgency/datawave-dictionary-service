@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -73,7 +73,6 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         this.dataDictionary = dataDictionary;
         this.responseObjectFactory = responseObjectFactory;
         this.accumuloConnectionService = accumloConnectionService;
-        dataDictionary.setNormalizationMap(dataDictionaryConfiguration.getNormalizerMap());
     }
     
     /**
