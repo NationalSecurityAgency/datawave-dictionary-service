@@ -78,16 +78,12 @@ public class DefaultMetadataFieldScannerTest {
         connector.tableOperations().create(MODEL_TABLE);
         populateMetadataTable();
         
-        Map<String,String> normalizerMapping = new HashMap<>();
-        normalizerMapping.put("datawave.data.type.LcNoDiacriticsType", "Text");
-        normalizerMapping.put("datawave.data.type.NumberType", "Number");
-        
         Connection connectionConfig = new Connection();
         connectionConfig.setAccumuloClient(connector);
         connectionConfig.setMetadataTable(METADATA_TABLE);
         connectionConfig.setAuths(AUTHS);
         
-        scanner = new DefaultMetadataFieldScanner(new MarkingFunctions.Default(), RESPONSE_OBJECT_FACTORY, normalizerMapping, connectionConfig, 1);
+        scanner = new DefaultMetadataFieldScanner(new MarkingFunctions.Default(), RESPONSE_OBJECT_FACTORY, connectionConfig, 1);
     }
     
     @Test
@@ -110,21 +106,24 @@ public class DefaultMetadataFieldScannerTest {
         contributorId.setDescription(Collections.singleton(createDescription("ContributorId Description")));
         contributorId.setLastUpdated(DATE);
         
-        ArrayList<String> expectedTypes = new ArrayList<>();
-        expectedTypes.add("TestLcNoCookies*");
-        expectedTypes.add("TestNumberList*");
-        expectedTypes.add("Testleopard*");
+        DefaultMetadataField ipAddress = new DefaultMetadataField();
+        ipAddress.setFieldName("IP_ADDRESS");
+        ipAddress.setDataType("csv");
+        ipAddress.setForwardIndexed(true);
+        ipAddress.setTypes(Collections.singletonList("IP Address"));
+        ipAddress.setDescription(Collections.singleton(createDescription("IpAddress Description")));
+        ipAddress.setLastUpdated(DATE);
         
         DefaultMetadataField name = new DefaultMetadataField();
         name.setFieldName("NAME");
         name.setDataType("tvmaze");
         name.setForwardIndexed(true);
         name.setReverseIndexed(true);
-        name.setTypes(expectedTypes);
+        name.setTypes(Collections.singletonList("Cat"));
         name.setLastUpdated(DATE);
         
         Collection<DefaultMetadataField> fields = scanner.getFields(Collections.emptyMap(), Collections.emptySet());
-        assertThat(fields).containsExactlyInAnyOrder(barField, contributorId, name);
+        assertThat(fields).containsExactlyInAnyOrder(barField, contributorId, ipAddress, name);
     }
     
     @Test
@@ -147,11 +146,19 @@ public class DefaultMetadataFieldScannerTest {
         contributorId.setDescription(Collections.singleton(createDescription("ContributorId Description")));
         contributorId.setLastUpdated(DATE);
         
+        DefaultMetadataField ipAddress = new DefaultMetadataField();
+        ipAddress.setFieldName("IP_ADDRESS");
+        ipAddress.setDataType("csv");
+        ipAddress.setForwardIndexed(true);
+        ipAddress.setTypes(Collections.singletonList("IP Address"));
+        ipAddress.setDescription(Collections.singleton(createDescription("IpAddress Description")));
+        ipAddress.setLastUpdated(DATE);
+        
         Set<String> dataTypeFilters = new HashSet<>();
         dataTypeFilters.add("csv");
         dataTypeFilters.add("enwiki");
         Collection<DefaultMetadataField> fields = scanner.getFields(Collections.emptyMap(), dataTypeFilters);
-        assertThat(fields).containsExactlyInAnyOrder(barField, contributorId);
+        assertThat(fields).containsExactlyInAnyOrder(barField, contributorId, ipAddress);
     }
     
     @Test
@@ -176,24 +183,29 @@ public class DefaultMetadataFieldScannerTest {
         contributorId.setDescription(Collections.singleton(createDescription("ContributorId Description")));
         contributorId.setLastUpdated(DATE);
         
-        ArrayList<String> expectedTypes = new ArrayList<>();
-        expectedTypes.add("TestLcNoCookies*");
-        expectedTypes.add("TestNumberList*");
-        expectedTypes.add("Testleopard*");
+        DefaultMetadataField ipAddress = new DefaultMetadataField();
+        ipAddress.setFieldName("ip_address");
+        ipAddress.setInternalFieldName("IP_ADDRESS");
+        ipAddress.setDataType("csv");
+        ipAddress.setForwardIndexed(true);
+        ipAddress.setTypes(Collections.singletonList("IP Address"));
+        ipAddress.setDescription(Collections.singleton(createDescription("IpAddress Description")));
+        ipAddress.setLastUpdated(DATE);
         
         DefaultMetadataField name = new DefaultMetadataField();
         name.setFieldName("NAME");
         name.setDataType("tvmaze");
         name.setForwardIndexed(true);
         name.setReverseIndexed(true);
-        name.setTypes(expectedTypes);
+        name.setTypes(Collections.singletonList("Cat"));
         name.setLastUpdated(DATE);
         
         Map<String,String> aliases = new HashMap<>();
         aliases.put("BAR_FIELD", "bar_field_alias");
         aliases.put("CONTRIBUTOR_ID", "contributor_id_alias");
+        aliases.put("IP_ADDRESS", "ip_address");
         Collection<DefaultMetadataField> fields = scanner.getFields(aliases, Collections.emptySet());
-        assertThat(fields).containsExactlyInAnyOrder(barField, contributorId, name);
+        assertThat(fields).containsExactlyInAnyOrder(barField, contributorId, ipAddress, name);
     }
     
     private void populateMetadataTable() throws TableNotFoundException, MutationsRejectedException {
@@ -212,18 +224,24 @@ public class DefaultMetadataFieldScannerTest {
         contributorId.put(new Text(ColumnFamilyConstants.COLF_DESC), new Text("enwiki"), new ColumnVisibility("PRIVATE"), TIMESTAMP,
                         new Value("ContributorId Description"));
         
+        Mutation ipAddress = new Mutation(new Text("IP_ADDRESS"));
+        ipAddress.put(new Text(ColumnFamilyConstants.COLF_E), new Text("csv"), TIMESTAMP, new Value());
+        ipAddress.put(new Text(ColumnFamilyConstants.COLF_I), new Text("csv"), TIMESTAMP, new Value());
+        ipAddress.put(new Text(ColumnFamilyConstants.COLF_T), new Text("csv\0datawave.data.type.IpAddressType"), TIMESTAMP, new Value());
+        ipAddress.put(new Text(ColumnFamilyConstants.COLF_DESC), new Text("csv"), new ColumnVisibility("PRIVATE"), TIMESTAMP,
+                        new Value("IpAddress Description"));
+        
         Mutation name = new Mutation(new Text("NAME"));
         name.put(new Text(ColumnFamilyConstants.COLF_E), new Text("tvmaze"), TIMESTAMP, new Value());
         name.put(new Text(ColumnFamilyConstants.COLF_I), new Text("tvmaze"), TIMESTAMP, new Value());
         name.put(new Text(ColumnFamilyConstants.COLF_RI), new Text("tvmaze"), TIMESTAMP, new Value());
-        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.testNumberListType"), TIMESTAMP, new Value());
-        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.testLcNoCookiesType"), TIMESTAMP, new Value());
-        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.testleopardType"), TIMESTAMP, new Value());
+        name.put(new Text(ColumnFamilyConstants.COLF_T), new Text("tvmaze\0datawave.data.type.catType"), TIMESTAMP, new Value());
         
         BatchWriterConfig bwConfig = new BatchWriterConfig().setMaxMemory(10L).setMaxLatency(1, TimeUnit.SECONDS).setMaxWriteThreads(1);
         BatchWriter writer = connector.createBatchWriter(METADATA_TABLE, bwConfig);
         writer.addMutation(barField);
         writer.addMutation(contributorId);
+        writer.addMutation(ipAddress);
         writer.addMutation(name);
         writer.flush();
         writer.close();
