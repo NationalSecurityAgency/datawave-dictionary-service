@@ -50,7 +50,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
                 externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",
                                 url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @RestController
-@RequestMapping(path = "/data/v1",
+@RequestMapping(path = "/v1/data",
                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
                         MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @EnableConfigurationProperties(DataDictionaryProperties.class)

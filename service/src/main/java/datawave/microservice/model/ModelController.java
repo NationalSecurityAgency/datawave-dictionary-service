@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
                                 url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @Slf4j
 @RestController
-@RequestMapping(path = "/model/v1",
+@RequestMapping(path = "/v1/model",
                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
                         ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @Secured({"AuthorizedUser", "AuthorizedQueryServer", "InternalUser", "Administrator", "JBossAdministrator"})
