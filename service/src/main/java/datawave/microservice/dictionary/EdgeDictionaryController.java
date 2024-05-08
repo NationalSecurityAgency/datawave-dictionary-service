@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
                                 url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @Slf4j
 @RestController
-@RequestMapping(path = "/v1/edge",
+@RequestMapping(path = "/edge/v1",
                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
                         MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @EnableConfigurationProperties(EdgeDictionaryProperties.class)
