@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.0</version>
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>dictionary-service</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>4.0.0</version>
     <description>DATAWAVE Dictionary Service</description>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
     <scm>
@@ -21,10 +21,10 @@
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.accumulo>2.1.1</version.accumulo>
         <version.curator>5.2.0</version.curator>
-        <version.in-memory-accumulo>4.0.0-SNAPSHOT</version.in-memory-accumulo>
-        <version.microservice.dictionary-api>4.0.0-SNAPSHOT</version.microservice.dictionary-api>
-        <version.microservice.starter>4.0.0-SNAPSHOT</version.microservice.starter>
-        <version.microservice.starter-metadata>3.0.0-SNAPSHOT</version.microservice.starter-metadata>
+        <version.in-memory-accumulo>4.0.0</version.in-memory-accumulo>
+        <version.microservice.dictionary-api>4.0.0</version.microservice.dictionary-api>
+        <version.microservice.starter>4.0.0</version.microservice.starter>
+        <version.microservice.starter-metadata>3.0.0</version.microservice.starter-metadata>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
         <version.webjars.locator>0.50</version.webjars.locator>
