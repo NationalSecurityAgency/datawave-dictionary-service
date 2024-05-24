@@ -1,4 +1,3 @@
-
 <template>
   <main class="main">
     <div class="header">
@@ -72,8 +71,16 @@
           </q-tr>
           <q-tr v-show="props.expand" :props="props">
             <q-td colspan="100%">
-              <div class="text-left">
-                This is expand slot for row above: {{ props.row.fieldName }}.
+              <div
+                class="text-left"
+                v-for="vals in duplicateAry"
+                :key="vals.fieldName"
+              >
+                <div v-if="vals.fieldName === props.row.fieldName">
+                  This is expand slot for row above:
+                  {{ vals.lastUpdated }}
+                  <!--FIX THIS FOR EACH VAL-->
+                </div>
               </div>
             </q-td>
           </q-tr>
@@ -151,14 +158,39 @@ const findRecentlyUpdated = () => {
       duplicateAry.value[i] = temp;
     }
   }
-  console.log('after d', duplicateAry.value);
+  //console.log('after d', duplicateAry.value[0].lastUpdated);
+  if (duplicateAry.value[0].lastUpdated === '1970010100000') {
+    console.log('yes');
+  }
   //console.log('after d', newAry.value);
 
-  return newAry;
+  return sortDupArr();
 };
 
 const sortDupArr = () => {
-  return; //3 - sort dupAry
+  var i, j, temp;
+  var swapped;
+  for (i = 0; i < duplicateAry.value.length - 1; i++) {
+    swapped = false;
+    for (j = 0; j < duplicateAry.value.length - i - 1; j++) {
+      if (
+        duplicateAry.value[j].lastUpdated <
+        duplicateAry.value[j + 1].lastUpdated
+      ) {
+        // Swap arr[j] and arr[j+1]
+        temp = duplicateAry.value[j];
+        duplicateAry.value[j] = duplicateAry.value[j + 1];
+        duplicateAry.value[j + 1] = temp;
+        swapped = true;
+      }
+    }
+
+    // IF no two elements were
+    // swapped by inner loop, then break
+    if (swapped == false) break;
+  }
+  console.log('sort', duplicateAry.value);
+  return newAry;
 };
 
 const table = ref();
@@ -258,7 +290,7 @@ axios
   .get('https://localhost:8643/dictionary/data/v1/')
   .then((response) => {
     rows = response.data.MetadataFields;
-    //rows = filterMethod(rows); //filter
+    rows = filterMethod(rows); //filter
 
     loading.value = false;
   })
