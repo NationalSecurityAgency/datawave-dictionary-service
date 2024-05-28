@@ -46,7 +46,7 @@
 
         <template v-slot:header="props">
           <q-tr :props="props">
-            <q-th auto-width />
+            <q-th />
             <q-th v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.label }}
             </q-th>
@@ -55,7 +55,7 @@
 
         <template v-slot:body="props">
           <q-tr :props="props">
-            <q-td auto-width>
+            <q-td>
               <q-btn
                 size="sm"
                 color="accent"
@@ -76,9 +76,21 @@
                 v-for="vals in duplicateAry"
                 :key="vals.fieldName"
               >
-                <div v-if="vals.fieldName === props.row.fieldName">
-                  This is expand slot for row above:
-                  {{ vals.lastUpdated }}
+                <div v-if="vals.fieldName === props.row.fieldName" class="row">
+                  <div class="col">{{ vals.fieldName }}</div>
+                  <div class="col">
+                    {{ vals.internalFieldName }}
+                  </div>
+                  <div class="col">data {{ vals.dataType }}</div>
+                  <div class="col">index {{ vals.indexOnly }}</div>
+                  <div class="col">foward {{ vals.forwardIndexed }}</div>
+                  <div class="col">rev {{ vals.revereseIndexed }}</div>
+                  <div class="col">norm {{ vals.normalized }}</div>
+                  <div class="col">types {{ vals.types }}</div>
+                  <div class="col">token {{ vals.tokenized }}</div>
+                  <div class="col">desc {{ vals.Description }}</div>
+                  <div class="col">update {{ vals.lastUpdated }}</div>
+
                   <!--FIX THIS FOR EACH VAL-->
                 </div>
               </div>
@@ -193,6 +205,22 @@ const sortDupArr = () => {
   return newAry;
 };
 
+const maxSubstring = (str: any) => {
+  console.log('str' + str);
+  if (str == undefined) {
+    return;
+  } else if (str.length > 19) {
+    return str.substring(0, 17) + '...';
+  } else {
+    var whitespace = '';
+    var diff = 19 - str.length + 1;
+    for (var x = 0; x < diff; x++) {
+      whitespace = whitespace.concat('.');
+    }
+    return str + whitespace;
+  }
+};
+
 const table = ref();
 
 const columns: QTableProps['columns'] = [
@@ -202,6 +230,9 @@ const columns: QTableProps['columns'] = [
     field: 'fieldName',
     align: 'left',
     sortable: true,
+    format(val, row) {
+      return maxSubstring(val);
+    },
   },
   {
     label: 'Internal FieldName',
@@ -209,6 +240,9 @@ const columns: QTableProps['columns'] = [
     field: 'internalFieldName',
     align: 'left',
     sortable: true,
+    format(val, row) {
+      return maxSubstring(val);
+    },
   },
   {
     label: 'Data Type',
@@ -233,8 +267,8 @@ const columns: QTableProps['columns'] = [
   },
   {
     label: 'Reverse Index',
-    name: 'revereseIndexed',
-    field: 'fowardIndexed',
+    name: 'reverseIndexed',
+    field: 'reverseIndexed',
     align: 'left',
     sortable: true,
   },
@@ -265,6 +299,9 @@ const columns: QTableProps['columns'] = [
     field: 'Descriptions',
     align: 'left',
     sortable: true,
+    format(val, row) {
+      return maxSubstring(val);
+    },
   },
   {
     label: 'Last Updated',
