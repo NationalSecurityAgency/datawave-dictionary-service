@@ -20,6 +20,7 @@
         :filter="filter"
         v-model:pagination="paginationFront"
         row-key="fieldName"
+        style="padding: 0px; margin: 0px"
       >
         <template v-slot:top-left>
           <q-btn
@@ -69,29 +70,30 @@
               {{ parseVal(col.name, col.value) }}
             </q-td>
           </q-tr>
-          <q-tr v-show="props.expand" :props="props">
+          <q-tr
+            v-show="props.expand"
+            :props="props"
+            style="background-color: greenyellow"
+          >
+            <q-td />
             <q-td colspan="100%">
               <div
                 class="text-left"
                 v-for="vals in duplicateAry"
                 :key="vals.fieldName"
+                style="
+                  background-color: pink;
+                  margin-left: -75px;
+                  margin-right: -16px;
+                "
               >
-                <div v-if="vals.fieldName === props.row.fieldName" class="row">
-                  <div class="col">{{ vals.fieldName }}</div>
-                  <div class="col">
-                    {{ vals.internalFieldName }}
-                  </div>
-                  <div class="col">data {{ vals.dataType }}</div>
-                  <div class="col">index {{ vals.indexOnly }}</div>
-                  <div class="col">foward {{ vals.forwardIndexed }}</div>
-                  <div class="col">rev {{ vals.revereseIndexed }}</div>
-                  <div class="col">norm {{ vals.normalized }}</div>
-                  <div class="col">types {{ vals.types }}</div>
-                  <div class="col">token {{ vals.tokenized }}</div>
-                  <div class="col">desc {{ vals.Description }}</div>
-                  <div class="col">update {{ vals.lastUpdated }}</div>
-
-                  <!--FIX THIS FOR EACH VAL-->
+                <div v-if="vals.fieldName === props.row.fieldName">
+                  <q-table
+                    hide-header
+                    hide-bottom
+                    :rows="duplicateAry"
+                    :columns="columns"
+                  ></q-table>
                 </div>
               </div>
             </q-td>
@@ -119,23 +121,6 @@ function parseVal(colName: any, colValue: any): string {
   }
 }
 
-// const filterMethod = (
-//   rows: readonly any[],
-//   terms: any,
-//   cols: readonly any[]
-// ) => {
-//   console.log('rows', rows);
-//   rows = rows.filter((row) => {
-//     if (row.fieldName === 'BAR_FIELD') {
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   });
-//   return rows;
-// };
-// let filterArr: any = [];
-
 let newAry: any = ref([]);
 let strAry: any = ref([]);
 let updateAry: any = ref([]);
@@ -153,10 +138,6 @@ const filterMethod = (rows: readonly any[]) => {
       return false;
     }
   });
-  //console.log('before d', duplicateAry.value);
-  //console.log('before n', newAry.value);
-  //console.log(newAry.value);
-  //return newAry;
   return findRecentlyUpdated();
 };
 
@@ -164,18 +145,14 @@ const findRecentlyUpdated = () => {
   for (let i = 0; i < duplicateAry.value.length; i++) {
     var index = strAry.value.indexOf(duplicateAry.value[i].fieldName);
     if (newAry.value[index].lastUpdated < duplicateAry.value[i].lastUpdated) {
-      //console.log('newAry', newAry.value[index].lastUpdated);
       let temp = newAry.value[index];
       newAry.value[index] = duplicateAry.value[i];
       duplicateAry.value[i] = temp;
     }
   }
-  //console.log('after d', duplicateAry.value[0].lastUpdated);
   if (duplicateAry.value[0].lastUpdated === '1970010100000') {
     console.log('yes');
   }
-  //console.log('after d', newAry.value);
-
   return sortDupArr();
 };
 
@@ -189,36 +166,16 @@ const sortDupArr = () => {
         duplicateAry.value[j].lastUpdated <
         duplicateAry.value[j + 1].lastUpdated
       ) {
-        // Swap arr[j] and arr[j+1]
         temp = duplicateAry.value[j];
         duplicateAry.value[j] = duplicateAry.value[j + 1];
         duplicateAry.value[j + 1] = temp;
         swapped = true;
       }
     }
-
-    // IF no two elements were
-    // swapped by inner loop, then break
     if (swapped == false) break;
   }
   console.log('sort', duplicateAry.value);
   return newAry;
-};
-
-const maxSubstring = (str: any) => {
-  console.log('str' + str);
-  if (str == undefined) {
-    return;
-  } else if (str.length > 19) {
-    return str.substring(0, 17) + '...';
-  } else {
-    var whitespace = '';
-    var diff = 19 - str.length + 1;
-    for (var x = 0; x < diff; x++) {
-      whitespace = whitespace.concat('.');
-    }
-    return str + whitespace;
-  }
 };
 
 const table = ref();
@@ -230,9 +187,7 @@ const columns: QTableProps['columns'] = [
     field: 'fieldName',
     align: 'left',
     sortable: true,
-    format(val, row) {
-      return maxSubstring(val);
-    },
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Internal FieldName',
@@ -240,9 +195,7 @@ const columns: QTableProps['columns'] = [
     field: 'internalFieldName',
     align: 'left',
     sortable: true,
-    format(val, row) {
-      return maxSubstring(val);
-    },
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Data Type',
@@ -250,6 +203,7 @@ const columns: QTableProps['columns'] = [
     field: 'dataType',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Index Only',
@@ -257,6 +211,7 @@ const columns: QTableProps['columns'] = [
     field: 'indexOnly',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Forward Index',
@@ -264,6 +219,7 @@ const columns: QTableProps['columns'] = [
     field: 'forwardIndexed',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Reverse Index',
@@ -271,6 +227,7 @@ const columns: QTableProps['columns'] = [
     field: 'reverseIndexed',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Normalized',
@@ -278,6 +235,7 @@ const columns: QTableProps['columns'] = [
     field: 'normalized',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Types',
@@ -285,6 +243,7 @@ const columns: QTableProps['columns'] = [
     field: 'Types',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Tokenized',
@@ -292,6 +251,7 @@ const columns: QTableProps['columns'] = [
     field: 'tokenized',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Description',
@@ -299,9 +259,7 @@ const columns: QTableProps['columns'] = [
     field: 'Descriptions',
     align: 'left',
     sortable: true,
-    format(val, row) {
-      return maxSubstring(val);
-    },
+    style: 'max-width: 100px; min-width: 100px',
   },
   {
     label: 'Last Updated',
@@ -309,6 +267,7 @@ const columns: QTableProps['columns'] = [
     field: 'lastUpdated',
     align: 'left',
     sortable: true,
+    style: 'max-width: 100px; min-width: 100px',
   },
 ];
 
@@ -327,6 +286,7 @@ axios
   .get('https://localhost:8643/dictionary/data/v1/')
   .then((response) => {
     rows = response.data.MetadataFields;
+    console.log(rows);
     rows = filterMethod(rows); //filter
 
     loading.value = false;
@@ -397,7 +357,6 @@ function exportTable(this: any) {
 }
 
 .header {
-  font-family: 'Courier New', Courier, monospace;
   display: flex;
   flex-direction: column;
   align-items: center;
