@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <template>
   <main class="main">
     <div class="header">
@@ -65,7 +66,9 @@
                 dense
                 @click="props.expand = !props.expand"
                 :icon="props.expand ? 'remove' : 'add'"
+                v-if="buttonParse(props.cols)"
               />
+              <q-td size="sm" v-else></q-td>
             </q-td>
             <q-td
               v-for="col in props.cols"
@@ -215,6 +218,17 @@ function maxSubstring(str: any): any {
   } else {
     return str;
   }
+}
+
+function buttonParse(col: any): boolean {
+  var render: any = [].concat(duplicateAry.value);
+  console.log('ren', render[0]);
+  for (var i = 0; i < render.length; i++) {
+    if (col[0].value === render[i].fieldName) {
+      return true;
+    }
+  }
+  return false;
 }
 
 let newAry: any = ref([]);
@@ -470,7 +484,7 @@ function exportTable(this: any) {
 
 .subtable {
   font-size: x-small;
-  margin-bottom: 0.3em;
-  margin-top: 0.3em;
+  margin-bottom: 1em;
+  margin-top: 1em;
 }
 </style>
