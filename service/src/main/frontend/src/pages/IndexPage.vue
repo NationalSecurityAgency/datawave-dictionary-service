@@ -154,7 +154,7 @@
                       style="max-width: 100px; min-width: 100px"
                       :title="vals.types"
                     >
-                      type{{ maxSubstring(vals.types) }}
+                      {{ maxSubstring(vals.types) }}
                     </div>
                     <div
                       class="col"
@@ -168,12 +168,7 @@
                       style="max-width: 200px; min-width: 200px"
                       :title="vals.Description"
                     >
-                      {{
-                        maxSubstring(
-                          'desccccccccccccccccccccccccccccccccccccccccccc' +
-                            maxSubstring(vals.Description)
-                        )
-                      }}
+                      {{ maxSubstring(vals.Description) }}
                     </div>
                     <div
                       class="col"
