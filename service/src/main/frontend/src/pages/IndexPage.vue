@@ -20,7 +20,8 @@
         :filter="filter"
         v-model:pagination="paginationFront"
         row-key="fieldName"
-        style="padding: 0px; margin: 0px"
+        dense
+        style="font-size: smaller"
       >
         <template v-slot:top-left>
           <q-btn
@@ -66,14 +67,20 @@
                 :icon="props.expand ? 'remove' : 'add'"
               />
             </q-td>
-            <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              {{ parseVal(col.name, col.value) }}
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              style="font-size: x-small"
+              :title="parseVal(col.name, col.value)"
+            >
+              {{ maxSubstring(parseVal(col.name, col.value)) }}
             </q-td>
           </q-tr>
           <q-tr
             v-show="props.expand"
             :props="props"
-            style="background-color: greenyellow"
+            style="padding: 0px; margin: -50px"
           >
             <q-td />
             <q-td colspan="100%">
@@ -81,19 +88,98 @@
                 class="text-left"
                 v-for="vals in duplicateAry"
                 :key="vals.fieldName"
-                style="
-                  background-color: pink;
-                  margin-left: -75px;
-                  margin-right: -16px;
-                "
               >
-                <div v-if="vals.fieldName === props.row.fieldName">
-                  <q-table
-                    hide-header
-                    hide-bottom
-                    :rows="duplicateAry"
-                    :columns="columns"
-                  ></q-table>
+                <div
+                  v-if="vals.fieldName === props.row.fieldName"
+                  class="subtable"
+                >
+                  <div
+                    v-if="vals.fieldName === props.row.fieldName"
+                    class="row"
+                  >
+                    <div
+                      class="col"
+                      style="max-width: 275px; min-width: 275px"
+                      :title="vals.fieldName"
+                    >
+                      {{ maxSubstring(vals.fieldName) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 275px; min-width: 275px"
+                      :title="vals.internalFieldName"
+                    >
+                      {{ maxSubstring(vals.internalFieldName) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 100px; min-width: 100px"
+                      :title="vals.dataType"
+                    >
+                      {{ maxSubstring(vals.dataType) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 100px; min-width: 100px"
+                      :title="vals.indexOnly"
+                    >
+                      {{ maxSubstring(vals.indexOnly) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 110px; min-width: 110px"
+                      :title="vals.forwardIndexed"
+                    >
+                      {{ maxSubstring(vals.forwardIndexed) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 107px; min-width: 107px"
+                      :title="vals.reverseIndexed"
+                    >
+                      {{ maxSubstring(vals.reverseIndexed) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 100px; min-width: 100px"
+                      :title="vals.normalized"
+                    >
+                      {{ maxSubstring(vals.normalized) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 100px; min-width: 100px"
+                      :title="vals.types"
+                    >
+                      type{{ maxSubstring(vals.types) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 100px; min-width: 100px"
+                      :title="vals.tokenized"
+                    >
+                      {{ maxSubstring(vals.tokenized) }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 200px; min-width: 200px"
+                      :title="vals.Description"
+                    >
+                      {{
+                        maxSubstring(
+                          'desccccccccccccccccccccccccccccccccccccccccccc' +
+                            maxSubstring(vals.Description)
+                        )
+                      }}
+                    </div>
+                    <div
+                      class="col"
+                      style="max-width: 75px; min-width: 75px"
+                      :title="vals.lastUpdated"
+                    >
+                      {{ maxSubstring(vals.lastUpdated) }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </q-td>
@@ -118,6 +204,16 @@ function parseVal(colName: any, colValue: any): string {
     }
   } else {
     return colValue;
+  }
+}
+
+function maxSubstring(str: any): any {
+  if (str == undefined) {
+    return;
+  } else if (str.length > 34) {
+    return str.substring(0, 32) + ' ...';
+  } else {
+    return str;
   }
 }
 
@@ -187,7 +283,7 @@ const columns: QTableProps['columns'] = [
     field: 'fieldName',
     align: 'left',
     sortable: true,
-    style: 'max-width: 100px; min-width: 100px',
+    style: 'max-width: 275px; min-width: 275px',
   },
   {
     label: 'Internal FieldName',
@@ -195,7 +291,7 @@ const columns: QTableProps['columns'] = [
     field: 'internalFieldName',
     align: 'left',
     sortable: true,
-    style: 'max-width: 100px; min-width: 100px',
+    style: 'max-width: 275px; min-width: 275px',
   },
   {
     label: 'Data Type',
@@ -257,9 +353,9 @@ const columns: QTableProps['columns'] = [
     label: 'Description',
     name: 'Descriptions',
     field: 'Descriptions',
-    align: 'left',
+    align: 'center',
     sortable: true,
-    style: 'max-width: 100px; min-width: 100px',
+    style: 'max-width: 200px; min-width: 200px',
   },
   {
     label: 'Last Updated',
@@ -267,7 +363,7 @@ const columns: QTableProps['columns'] = [
     field: 'lastUpdated',
     align: 'left',
     sortable: true,
-    style: 'max-width: 100px; min-width: 100px',
+    style: 'max-width: 75px; min-width: 75px',
   },
 ];
 
@@ -286,7 +382,6 @@ axios
   .get('https://localhost:8643/dictionary/data/v1/')
   .then((response) => {
     rows = response.data.MetadataFields;
-    console.log(rows);
     rows = filterMethod(rows); //filter
 
     loading.value = false;
@@ -360,7 +455,6 @@ function exportTable(this: any) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 12px;
   margin-bottom: 5em;
 }
 
@@ -370,7 +464,13 @@ function exportTable(this: any) {
 }
 
 .information {
-  font-size: 10px;
+  font-size: small;
   text-align: center;
+}
+
+.subtable {
+  font-size: x-small;
+  margin-bottom: 0.3em;
+  margin-top: 0.3em;
 }
 </style>
