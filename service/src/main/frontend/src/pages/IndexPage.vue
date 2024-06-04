@@ -1,16 +1,17 @@
-<!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <template>
   <main class="main col" style="height: 100vh">
     <div
       class="row"
       style="
         width: 60%;
-        height: 10%;
+        height: 4%;
         justify-content: center;
         align-self: center;
       "
     >
       <label class="title">Data Dictionary</label>
+    </div>
+    <div class="row" style="width: 100%; height: 85%">
       <p class="information">
         When a value is present in the forward index types, this means that a
         field is indexed and informs you how your query terms will be treated
@@ -21,8 +22,6 @@
         are typically composite fields, derived from actual data, created by the
         software to make querying easier.
       </p>
-    </div>
-    <div class="row" style="width: 100%; height: 85%">
       <q-table
         ref="table"
         :loading="loading"
@@ -68,14 +67,14 @@
 
         <template v-slot:body="props">
           <q-tr
-            :class="props.row.instance > 1 ? 'bg-accent text-white' : ''"
+            :class="props.row.instance > 1 ? 'bg-grey-2 text-black' : ''"
             :props="props"
             v-if="isVisible(props.row)"
           >
             <q-td style="width: 60px; min-width: 60px">
               <q-btn
                 size="sm"
-                color="accent"
+                color="blue"
                 round
                 dense
                 @click="
@@ -439,12 +438,14 @@ function exportTable(this: any) {
 
 .title {
   font-size: large;
-  margin-bottom: 0.5em;
+  font-weight: bold;
 }
 
 .information {
   font-size: small;
   text-align: center;
+  margin-left: 10%;
+  margin-right: 10%;
 }
 
 .subtable {
