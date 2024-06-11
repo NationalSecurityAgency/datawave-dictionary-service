@@ -1,1 +1,33 @@
-/* app global css */
+/* app global css -> Add here for Data Dictionary to change specific formatting */
+.main {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  margin-left: 5%;
+  margin-right: 5%;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 5em;
+}
+
+.title {
+  font-size: large;
+  font-weight: bold;
+}
+
+.information {
+  font-size: small;
+  text-align: center;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+.subtable {
+  font-size: x-small;
+  margin-bottom: 1em;
+  margin-top: 1em;
+}

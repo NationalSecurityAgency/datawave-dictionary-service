@@ -69,7 +69,7 @@
           <q-tr
             :class="props.row.button == 0 ? 'bg-grey-2 text-black' : ''"
             :props="props"
-            v-if="isVisible(props.row)"
+            v-if="Formatters.isVisible(props.row)"
           >
             <q-td style="width: 60px; min-width: 60px">
               <q-btn
@@ -80,11 +80,11 @@
                 @click="
                   {
                     props.expand = !props.expand;
-                    toggleVisibility(props.row);
+                    Formatters.toggleVisibility(props.row);
                   }
                 "
                 :icon="props.expand ? 'remove' : 'add'"
-                v-if="buttonParse(props.cols, props.row)"
+                v-if="Formatters.buttonParse(props.cols, props.row)"
               />
             </q-td>
             <q-td
@@ -92,9 +92,13 @@
               :key="col.name"
               :props="props"
               style="font-size: x-small"
-              :title="parseVal(col.name, col.value)"
+              :title="Formatters.parseVal(col.name, col.value)"
             >
-              {{ maxSubstring(parseVal(col.name, col.value)) }}
+              {{
+                Formatters.maxSubstring(
+                  Formatters.parseVal(col.name, col.value)
+                )
+              }}
             </q-td>
           </q-tr>
         </template>
@@ -107,92 +111,10 @@
 import { Ref, ref } from 'vue';
 import { QTable, QTableProps, exportFile, useQuasar } from 'quasar';
 import axios from 'axios';
+import * as Formatters from '../functions/formatters';
 
-function parseVal(colName: any, colValue: any): string {
-  if (colName === 'Types' || colName === 'Descriptions') {
-    if (colValue == undefined) {
-      return '';
-    } else {
-      return colValue.toString();
-    }
-  } else {
-    return colValue;
-  }
-}
-
-function maxSubstring(str: any): any {
-  if (str == undefined) {
-    return;
-  } else if (str.length > 34) {
-    return str.substring(0, 32) + ' ...';
-  } else {
-    return str;
-  }
-}
-
-function buttonParse(col: any, row: any): boolean {
-  return row.button == 1;
-}
-
-let newAry: any = ref([]);
-let strAry: any = ref([]);
-let updateAry: any = ref([]);
-let duplicateAry: any = ref([]);
-
-const filterMethod = (rows: readonly any[]) => {
-  rows = rows.filter((row) => {
-    if (!strAry.value.includes(row.fieldName)) {
-      strAry.value.push(row.fieldName);
-      updateAry.value.push(row.lastUpdated);
-      newAry.value.push(row);
-      return true;
-    } else {
-      duplicateAry.value.push(row);
-      return false;
-    }
-  });
-  return findRecentlyUpdated();
-};
-
-const findRecentlyUpdated = () => {
-  for (let i = 0; i < duplicateAry.value.length; i++) {
-    var index = strAry.value.indexOf(duplicateAry.value[i].fieldName);
-    if (newAry.value[index].lastUpdated < duplicateAry.value[i].lastUpdated) {
-      let temp = newAry.value[index];
-      newAry.value[index] = duplicateAry.value[i];
-      duplicateAry.value[i] = temp;
-    }
-  }
-  if (duplicateAry.value[0].lastUpdated === '1970010100000') {
-    console.log('yes');
-  }
-  return sortDupArr();
-};
-
-const sortDupArr = () => {
-  var i, j, temp;
-  var swapped;
-  for (i = 0; i < duplicateAry.value.length - 1; i++) {
-    swapped = false;
-    for (j = 0; j < duplicateAry.value.length - i - 1; j++) {
-      if (
-        duplicateAry.value[j].lastUpdated <
-        duplicateAry.value[j + 1].lastUpdated
-      ) {
-        temp = duplicateAry.value[j];
-        duplicateAry.value[j] = duplicateAry.value[j + 1];
-        duplicateAry.value[j + 1] = temp;
-        swapped = true;
-      }
-    }
-    if (swapped == false) break;
-  }
-  console.log('sort', duplicateAry.value);
-  return newAry;
-};
-
-const table = ref();
-
+// Defines Rows and Columns for the Table.
+let rows: QTableProps['rows'] = [];
 const columns: QTableProps['columns'] = [
   {
     label: 'Field Name',
@@ -284,31 +206,28 @@ const columns: QTableProps['columns'] = [
   },
 ];
 
+// Defines the Table References, loading for axios, search filter, and pagination to sort.
+const table = ref();
 const loading = ref(true);
 const filter = ref('');
-let rows: QTableProps['rows'] = [];
-
-// define pagination for standard table and table collapse
 const paginationFront = ref({
-  // NOTE: row is 28px high
   rowsPerPage: 23,
   sortBy: 'fieldName',
 });
 
-// load the data from the dictionary
+// Confirms the table is full as long as the window's size changes.
+window.onresize = () => {
+  paginationFront.value.rowsPerPage = Math.floor(
+    (table.value.$el.clientHeight - 33 - 52 - 28) / 28
+  );
+};
+
+// AXIOS - Loads from REST endpoint.
 axios
   .get('https://localhost:8643/dictionary/data/v1/')
   .then((response) => {
     rows = response.data.MetadataFields;
-    rows = setVisibility(rows);
-    console.log(rows);
-    // rows = filterMethod(rows); //filter
-
-    // 33 - height of table pagination area
-    // 52 - height of table export/search area
-    // 28 - height of table column header area
-    // table.value.$el.clientHeight - total height of qtable
-    // 28 - height of each row
+    rows = Formatters.setVisibility(rows);
     paginationFront.value.rowsPerPage = Math.floor(
       (table.value.$el.clientHeight - 33 - 52 - 28) / 28
     );
@@ -319,76 +238,10 @@ axios
     console.log('Something went wrong? ' + reason);
   });
 
-// use this if you want to ensure the table is full as the window size changes
-window.onresize = () => {
-  paginationFront.value.rowsPerPage = Math.floor(
-    (table.value.$el.clientHeight - 33 - 52 - 28) / 28
-  );
-};
-
-const toggleVisibility = (row: any) => {
-  row.toggleVisibility();
-};
-
-const setVisibility = (rows: readonly any[]) => {
-  let fieldVisibility: Map<string, Ref<boolean>> = new Map<
-    string,
-    Ref<boolean>
-  >();
-  let buttonValues: Map<string, number> = new Map<string, number>();
-
-  for (var row of rows) {
-    let maxUp: number = row.lastUpdated;
-    let fieldUp: any = row.fieldName;
-    for (var scan of rows) {
-      if (fieldUp === scan.fieldName && maxUp < scan.lastUpdated) {
-        maxUp = scan.lastUpdated;
-        buttonValues.set(fieldUp, maxUp);
-      }
-    }
-  }
-
-  for (var row of rows) {
-    if (
-      buttonValues.has(row.fieldName) &&
-      row.lastUpdated == buttonValues.get(row.fieldName)
-    ) {
-      row['duplicate'] = 0;
-      row['button'] = 1;
-    } else if (
-      buttonValues.has(row.fieldName) &&
-      row.lastUpdated != buttonValues.get(row.fieldName)
-    ) {
-      row['duplicate'] = 1;
-      row['button'] = 0;
-    } else {
-      row['duplicate'] = 0;
-    }
-
-    let fieldName = row.fieldName;
-    if (!fieldVisibility.has(fieldName)) {
-      fieldVisibility.set(fieldName, ref<boolean>(false));
-    }
-
-    let visibility = fieldVisibility.get(fieldName);
-
-    row['toggleVisibility'] = () => {
-      visibility!.value = !visibility?.value;
-    };
-    row['isVisible'] = visibility;
-  }
-
-  return rows;
-};
-
-const isVisible = (row: any) => {
-  console.log(row.duplicate);
-  return row.duplicate == 0 || row.isVisible.value;
-};
-
-// function to export the table to a csv -> Default Functionality and can be modified
+// Used to to export Quasar Data to a CSV and referenced in wrapCsvValue and exportTable.
 const $q = useQuasar();
 
+// Called by exportTable to format the CSV
 function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
   let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
 
@@ -396,20 +249,15 @@ function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
     formatted === void 0 || formatted === null ? '' : String(formatted);
 
   formatted = formatted.split('"').join('""');
-  /**
-   * Excel accepts \n and \r in strings, but some other CSV parsers do not
-   * Uncomment the next two lines to escape new lines
-   */
-  // .split('\n').join('\\n')
-  // .split('\r').join('\\r')
-
   return `"${formatted}"`;
 }
 
+// Attempts to Wrap the CSV and Download.
 function exportTable(this: any) {
-  const rowsToExport = table.value?.filteredSortedRows.filter(isVisible);
+  const rowsToExport = table.value?.filteredSortedRows.filter(
+    Formatters.isVisible
+  );
 
-  // naive encoding to csv format
   const content = [columns!.map((col) => wrapCsvValue(col.label))]
     .concat(
       rowsToExport.map((row: any) =>
@@ -439,38 +287,3 @@ function exportTable(this: any) {
   }
 }
 </script>
-
-<style scoped>
-.main {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  margin-left: 5%;
-  margin-right: 5%;
-}
-
-.header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 5em;
-}
-
-.title {
-  font-size: large;
-  font-weight: bold;
-}
-
-.information {
-  font-size: small;
-  text-align: center;
-  margin-left: 10%;
-  margin-right: 10%;
-}
-
-.subtable {
-  font-size: x-small;
-  margin-bottom: 1em;
-  margin-top: 1em;
-}
-</style>

@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.0.1",
   "description": "Frontend for Data Dictionary",
-  "productName": "Quasar App",
+  "productName": "DATAWAVE - Data Dictionary",
   "author": "Dylan",
   "private": true,
   "scripts": {
