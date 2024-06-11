@@ -67,7 +67,8 @@ module.exports = {
 
   // add your custom rules here
   rules: {
-    "@typescript-eslint/no-unused-vars": "off",
+    // Allows different null assertions and types to be utilized
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
 
     'prefer-promise-reject-errors': 'off',
@@ -77,6 +78,7 @@ module.exports = {
     // this rule, if on, would require explicit return type on the `render` function
     '@typescript-eslint/explicit-function-return-type': 'off',
 
+    // allows to define an 'any' component
     '@typescript-eslint/no-explicit-any': 'off',
 
     // in plain CommonJS modules, you can't use `import foo = require('foo')` to pass this rule, so it has to be disabled
