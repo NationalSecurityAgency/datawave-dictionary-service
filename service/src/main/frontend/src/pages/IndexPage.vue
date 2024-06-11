@@ -67,7 +67,7 @@
 
         <template v-slot:body="props">
           <q-tr
-            :class="props.row.instance > 1 ? 'bg-grey-2 text-black' : ''"
+            :class="props.row.button == 0 ? 'bg-grey-2 text-black' : ''"
             :props="props"
             v-if="isVisible(props.row)"
           >
@@ -131,7 +131,7 @@ function maxSubstring(str: any): any {
 }
 
 function buttonParse(col: any, row: any): boolean {
-  return row.count() > 1 && row.instance == 1;
+  return row.button == 1;
 }
 
 let newAry: any = ref([]);
@@ -301,6 +301,7 @@ axios
   .then((response) => {
     rows = response.data.MetadataFields;
     rows = setVisibility(rows);
+    console.log(rows);
     // rows = filterMethod(rows); //filter
 
     // 33 - height of table pagination area
@@ -334,36 +335,55 @@ const setVisibility = (rows: readonly any[]) => {
     string,
     Ref<boolean>
   >();
-  let fieldNameCounts: Map<string, number> = new Map<string, number>();
+  let buttonValues: Map<string, number> = new Map<string, number>();
+
   for (var row of rows) {
-    let fieldName = row.fieldName;
-
-    let instance = undefined;
-    if (fieldNameCounts.has(fieldName)) {
-      instance = fieldNameCounts.get(fieldName)! + 1;
-    } else {
-      instance = 1;
+    let maxUp: number = row.lastUpdated;
+    let fieldUp: any = row.fieldName;
+    for (var scan of rows) {
+      if (fieldUp === scan.fieldName && maxUp < scan.lastUpdated) {
+        maxUp = scan.lastUpdated;
+        buttonValues.set(fieldUp, maxUp);
+      }
     }
-    fieldNameCounts.set(fieldName, instance);
+  }
 
+  for (var row of rows) {
+    if (
+      buttonValues.has(row.fieldName) &&
+      row.lastUpdated == buttonValues.get(row.fieldName)
+    ) {
+      row['duplicate'] = 0;
+      row['button'] = 1;
+    } else if (
+      buttonValues.has(row.fieldName) &&
+      row.lastUpdated != buttonValues.get(row.fieldName)
+    ) {
+      row['duplicate'] = 1;
+      row['button'] = 0;
+    } else {
+      row['duplicate'] = 0;
+    }
+
+    let fieldName = row.fieldName;
     if (!fieldVisibility.has(fieldName)) {
       fieldVisibility.set(fieldName, ref<boolean>(false));
     }
 
     let visibility = fieldVisibility.get(fieldName);
 
-    row['instance'] = instance;
-    row['count'] = () => fieldNameCounts.get(fieldName);
     row['toggleVisibility'] = () => {
       visibility!.value = !visibility?.value;
     };
     row['isVisible'] = visibility;
   }
+
   return rows;
 };
 
 const isVisible = (row: any) => {
-  return row.instance == 1 || row.isVisible.value;
+  console.log(row.duplicate);
+  return row.duplicate == 0 || row.isVisible.value;
 };
 
 // function to export the table to a csv -> Default Functionality and can be modified
