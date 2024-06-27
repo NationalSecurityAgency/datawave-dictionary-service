@@ -224,7 +224,7 @@ window.onresize = () => {
 
 // AXIOS - Loads from REST endpoint.
 axios
-  .get('https://localhost:8643/dictionary/data/v1/')
+  .get(process.env.ENDPOINT!)
   .then((response) => {
     rows = response.data.MetadataFields;
     rows = Formatters.setVisibility(rows);
