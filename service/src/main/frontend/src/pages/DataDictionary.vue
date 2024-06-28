@@ -47,13 +47,20 @@
             borderless
             dense
             debounce="300"
-            v-model="filter"
+            v-model="changeFilter"
             placeholder="Search"
           >
             <template v-slot:append>
               <q-icon name="search" />
             </template>
           </q-input>
+          <q-btn
+                size="sm"
+                color="blue"
+                round
+                dense
+                @click="filter2"
+              />
         </template>
 
         <template v-slot:header="props">
@@ -108,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
+import { Ref, UnwrapRef, computed, defineComponent, ref } from 'vue';
 import { QTable, QTableProps, exportFile, useQuasar } from 'quasar';
 import axios from 'axios';
 import * as Formatters from '../functions/formatters';
@@ -210,6 +217,7 @@ const columns: QTableProps['columns'] = [
 const table = ref();
 const loading = ref(true);
 const filter = ref('');
+const changeFilter = ref('');
 const paginationFront = ref({
   rowsPerPage: 23,
   sortBy: 'fieldName',
@@ -244,11 +252,13 @@ const $q = useQuasar();
 // Called by exportTable to format the CSV
 function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
   let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
+  console.log(`"${formatted}"`)
 
   formatted =
     formatted === void 0 || formatted === null ? '' : String(formatted);
 
   formatted = formatted.split('"').join('""');
+  console.log(`"${formatted}"`)
   return `"${formatted}"`;
 }
 
@@ -286,4 +296,36 @@ function exportTable(this: any) {
     });
   }
 }
+
+async function filter2(this: any) {
+  await waitUp();
+
+  const rowsToExport = table.value?.filteredSortedRows.filter(
+    Formatters.isVisible
+  );
+
+  const content = [columns!.map((col) => wrapCsvValue(col.label))]
+    .concat(
+      rowsToExport.map((row: any) =>
+        columns!
+          .map((col: any) =>
+            wrapCsvValue(
+              typeof col.field === 'function'
+                ? col.field(row)
+                : row[col.field === void 0 ? col.name : col.field],
+              col.format,
+              row
+            )
+          )
+          .join(',')
+      )
+    )
+    .join('\r\n');
+
+    console.log(content)
+}
+ function waitUp() {
+  filter.value = changeFilter.value;
+}
+
 </script>

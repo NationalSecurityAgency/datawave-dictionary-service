@@ -1,5 +1,5 @@
 /* eslint-disable no-var */
-import { Ref, ref } from 'vue';
+import { Ref, WritableComputedRef, computed, defineComponent, ref } from 'vue';
 
 // Parses a Value to remove uncessessary 'undefined' or empty values.
 export function parseVal(colName: any, colValue: any): string {
@@ -91,3 +91,7 @@ export function setVisibility(rows: readonly any[]) {
 export function isVisible(row: any) {
   return row.duplicate == 0 || row.isVisible.value;
 }
+
+// NEW FUNCTIONS
+
+
