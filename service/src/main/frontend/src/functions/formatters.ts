@@ -30,7 +30,7 @@ export function buttonParse(col: any, row: any): boolean {
   return row.button == 1;
 }
 
-// Toggles how the row collapses based on the DOM. Fitlers visible rows.
+// Toggles how the row collapses based on the DOM. Filters visible rows.
 export function toggleVisibility(row: any) {
   row.toggleVisibility();
 }
@@ -60,15 +60,16 @@ export function setVisibility(rows: readonly any[]) {
       row.lastUpdated == buttonValues.get(row.fieldName)
     ) {
       row['duplicate'] = 0;
-      row['button'] = 1;
+      row['button'] = true;
     } else if (
       buttonValues.has(row.fieldName) &&
       row.lastUpdated != buttonValues.get(row.fieldName)
     ) {
       row['duplicate'] = 1;
-      row['button'] = 0;
+      row['button'] = false;
     } else {
       row['duplicate'] = 0;
+      row['button'] = false;
     }
 
     const fieldName = row.fieldName;
@@ -77,6 +78,7 @@ export function setVisibility(rows: readonly any[]) {
     }
 
     const visibility = fieldVisibility.get(fieldName);
+    const buttonVis: Ref<boolean> = row['button'];
 
     row['toggleVisibility'] = () => {
       visibility!.value = !visibility?.value;
@@ -91,7 +93,3 @@ export function setVisibility(rows: readonly any[]) {
 export function isVisible(row: any) {
   return row.duplicate == 0 || row.isVisible.value;
 }
-
-// NEW FUNCTIONS
-
-

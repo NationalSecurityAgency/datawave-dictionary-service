@@ -59,7 +59,7 @@
                 color="blue"
                 round
                 dense
-                @click="filter2"
+                @click="queryTable"
               />
         </template>
 
@@ -74,12 +74,12 @@
 
         <template v-slot:body="props">
           <q-tr
-            :class="props.row.button == 0 ? 'bg-grey-2 text-black' : ''"
             :props="props"
             v-if="Formatters.isVisible(props.row)"
           >
             <q-td style="width: 60px; min-width: 60px">
               <q-btn
+              class="rowButton"
                 size="sm"
                 color="blue"
                 round
@@ -218,7 +218,7 @@ const table = ref();
 const loading = ref(true);
 const filter = ref('');
 const changeFilter = ref('');
-const paginationFront = ref({
+let paginationFront = ref({
   rowsPerPage: 23,
   sortBy: 'fieldName',
 });
@@ -252,13 +252,11 @@ const $q = useQuasar();
 // Called by exportTable to format the CSV
 function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
   let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
-  console.log(`"${formatted}"`)
 
   formatted =
     formatted === void 0 || formatted === null ? '' : String(formatted);
 
   formatted = formatted.split('"').join('""');
-  console.log(`"${formatted}"`)
   return `"${formatted}"`;
 }
 
@@ -297,34 +295,31 @@ function exportTable(this: any) {
   }
 }
 
-async function filter2(this: any) {
+async function queryTable(this: any) {
+  // Wait Until User Enters...
   await waitUp();
 
-  const rowsToExport = table.value?.filteredSortedRows.filter(
-    Formatters.isVisible
-  );
+  // 1 - Filter the Rows
+  const rowsToExport = table.value?.filteredSortedRows.filter(() => true);
 
-  const content = [columns!.map((col) => wrapCsvValue(col.label))]
-    .concat(
-      rowsToExport.map((row: any) =>
-        columns!
-          .map((col: any) =>
-            wrapCsvValue(
-              typeof col.field === 'function'
-                ? col.field(row)
-                : row[col.field === void 0 ? col.name : col.field],
-              col.format,
-              row
-            )
-          )
-          .join(',')
-      )
-    )
-    .join('\r\n');
+  // 2 - Define Refresh Trigger (By Pagination) and Orginial Rows Stored
+  const originalRows = rows;
+  const triggerRefresh = paginationFront.value.rowsPerPage;
 
-    console.log(content)
+  // 3 - Set the Current Rows to Filtered Value
+  rows = Formatters.setVisibility(rowsToExport);
+
+  // 4 - Trigger the Refresh
+  paginationFront.value.rowsPerPage = 100;
+  paginationFront.value.rowsPerPage = triggerRefresh;
+
+  // 5 - Restore Original Rows for Next Query
+  rows = originalRows;
+  const element = document.getElementById('rowButton');
+  console.log(element)
 }
- function waitUp() {
+
+function waitUp() {
   filter.value = changeFilter.value;
 }
 
