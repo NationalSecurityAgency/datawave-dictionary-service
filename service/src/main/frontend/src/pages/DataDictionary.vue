@@ -319,8 +319,6 @@ async function queryTable(this: any) {
 
   // 5 - Restore Original Rows for Next Query
   rows = originalRows;
-  const element = document.getElementById('rowButton');
-  console.log(element)
 }
 
 // Waits for the User to Finish Typing Query
