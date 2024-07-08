@@ -49,14 +49,14 @@
             debounce="300"
             v-model="changeFilter"
             placeholder="Search"
+            @keydown.enter.prevent="queryTable"
+            style="margin-right: 1em;"
           >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
           </q-input>
           <q-btn
                 size="sm"
                 color="blue"
+                icon="search"
                 round
                 dense
                 @click="queryTable"
@@ -79,7 +79,6 @@
           >
             <q-td style="width: 60px; min-width: 60px">
               <q-btn
-              class="rowButton"
                 size="sm"
                 color="blue"
                 round
@@ -90,7 +89,7 @@
                     Formatters.toggleVisibility(props.row);
                   }
                 "
-                :icon="props.expand ? 'remove' : 'add'"
+                :icon="props.row.isVisible.value ? 'remove' : 'add'"
                 v-if="Formatters.buttonParse(props.cols, props.row)"
               />
             </q-td>
@@ -260,7 +259,7 @@ function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
   return `"${formatted}"`;
 }
 
-// Attempts to Wrap the CSV and Download.
+// Attempts to Wrap the CSV and Download
 function exportTable(this: any) {
   const rowsToExport = table.value?.filteredSortedRows.filter(
     Formatters.isVisible
@@ -295,6 +294,7 @@ function exportTable(this: any) {
   }
 }
 
+// Runs through a Query Search Process
 async function queryTable(this: any) {
   // Wait Until User Enters...
   await waitUp();
@@ -319,6 +319,7 @@ async function queryTable(this: any) {
   console.log(element)
 }
 
+// Waits for the User to Finish Typing Query
 function waitUp() {
   filter.value = changeFilter.value;
 }

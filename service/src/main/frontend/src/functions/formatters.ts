@@ -78,7 +78,6 @@ export function setVisibility(rows: readonly any[]) {
     }
 
     const visibility = fieldVisibility.get(fieldName);
-    const buttonVis: Ref<boolean> = row['button'];
 
     row['toggleVisibility'] = () => {
       visibility!.value = !visibility?.value;
