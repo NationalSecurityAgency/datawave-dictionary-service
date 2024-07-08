@@ -15,7 +15,7 @@
 }
 
 .title {
-  font-size: large;
+  font-size:x-large;
   font-weight: bold;
 }
 
@@ -24,10 +24,19 @@
   text-align: center;
   margin-left: 10%;
   margin-right: 10%;
+  margin-top: 0.15rem;
 }
 
 .subtable {
   font-size: x-small;
   margin-bottom: 1em;
   margin-top: 1em;
+}
+
+.banner {
+  background-color: black;
+  width: 100%;
+  text-align: center;
+  font-size: smaller;
+  font-weight: bold;
 }

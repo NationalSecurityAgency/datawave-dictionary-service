@@ -1,4 +1,6 @@
 <template>
+  <div class="banner"
+    >PLACEHOLDER - BANNER</div>
   <main class="main col" style="height: 100vh">
     <div
       class="row"
@@ -111,6 +113,8 @@
       </q-table>
     </div>
   </main>
+  <div class="banner"
+    >PLACEHOLDER - BANNER</div>
 </template>
 
 <script setup lang="ts">
