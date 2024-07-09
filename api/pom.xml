@@ -18,9 +18,9 @@
     </scm>
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
-        <version.base-responses>4.0.0</version.base-responses>
+        <version.datawave.base-responses>4.0.0</version.datawave.base-responses>
+        <version.datawave.metadata-utils>4.0.0</version.datawave.metadata-utils>
         <version.guava>31.1-jre</version.guava>
-        <version.metadata-utils>4.0.0</version.metadata-utils>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -32,7 +32,7 @@
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>base-rest-responses</artifactId>
-                <version>${version.base-responses}</version>
+                <version>${version.datawave.base-responses}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>*</artifactId>
@@ -47,7 +47,7 @@
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>metadata-utils</artifactId>
-                <version>${version.metadata-utils}</version>
+                <version>${version.datawave.metadata-utils}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>log4j</artifactId>
