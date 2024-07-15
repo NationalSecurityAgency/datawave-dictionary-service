@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import com.google.common.base.Strings;
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
 import lombok.Data;
@@ -66,7 +67,10 @@ public class ModelList extends BaseResponse implements Serializable, HtmlProvide
      */
     @Override
     public String getHeadContent() {
-        return MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, dataTablesUri);
+        if (!(Strings.isNullOrEmpty(jqueryUri) || Strings.isNullOrEmpty(dataTablesUri))) {
+            return MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, dataTablesUri);
+        }
+        return "";
     }
     
     /*
