@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.google.common.base.Strings;
+
 import datawave.webservice.HtmlProvider;
 import datawave.webservice.result.BaseResponse;
 import lombok.Data;
