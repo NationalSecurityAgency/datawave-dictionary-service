@@ -15,6 +15,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -116,7 +117,10 @@ public class Model extends BaseResponse implements Serializable, HtmlProvider {
      */
     @Override
     public String getHeadContent() {
-        return MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, dataTablesUri);
+        if (!(Strings.isNullOrEmpty(jqueryUri) || Strings.isNullOrEmpty(dataTablesUri))) {
+            return MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, dataTablesUri);
+        }
+        return "";
     }
     
     /*
