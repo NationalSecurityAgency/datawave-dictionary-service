@@ -9,7 +9,7 @@ import com.codahale.metrics.annotation.Timed;
 
 @Controller
 @RequestMapping(path = "/data/v2", produces = {MediaType.TEXT_HTML_VALUE})
-public class HTMLController {
+public class HTMLControllerV2 {
     @GetMapping("/")
     @Timed(name = "dw.dictionary.data.get", absolute = true)
     public String get() {

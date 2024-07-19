@@ -68,7 +68,7 @@ module.exports = configure(function (/* ctx */) {
       // distDir
 
       extendViteConf(viteConf, { isServer, isClient }) {
-        viteConf.base = "";
+        viteConf.base = '';
       },
       // viteVuePluginOptions: {},
 
