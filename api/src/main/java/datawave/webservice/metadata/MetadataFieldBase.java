@@ -16,7 +16,7 @@ import io.protostuff.Message;
 @XmlSeeAlso(DefaultMetadataField.class)
 public abstract class MetadataFieldBase<T,D extends DescriptionBase> implements Serializable, Message<T> {
     private static final long serialVersionUID = -5902264162414621612L;
-
+    
     public abstract String getFieldName();
     
     public abstract void setFieldName(String fieldName);
