@@ -34,8 +34,8 @@ yarn-error.log*
 *.njsproj
 *.sln
 
-# .env file
-.env
+# .env file (This is optional, uncomment below)
+# .env
 
 # Exclude package config files
 /package-lock.json
