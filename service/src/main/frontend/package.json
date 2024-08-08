@@ -1,9 +1,9 @@
 {
-  "name": "frontend",
-  "version": "0.0.1",
+  "name": "frontend-datadictionary",
+  "version": "3.0.1-SNAPSHOT",
   "description": "Frontend for Data Dictionary",
   "productName": "DATAWAVE - Data Dictionary",
-  "author": "Dylan",
+  "author": "Dylan S.",
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",

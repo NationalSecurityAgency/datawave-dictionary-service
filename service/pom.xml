@@ -19,7 +19,10 @@
     </scm>
     <properties>
         <node.npmRegistryUrl>https://registry.npmjs.org/</node.npmRegistryUrl>
+        <node.downloadRoot>https://nodejs.org/dist/</node.downloadRoot>
+        <npm.downloadRoot>https://registry.npmjs.org/npm/-/</npm.downloadRoot>
         <node.version>v18.0.0</node.version>
+        <npm.version>9.2.0</npm.version>
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.accumulo>2.1.1</version.accumulo>
         <version.curator>5.2.0</version.curator>
@@ -245,7 +248,10 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
+                            <nodeDownloadRoot>${node.downloadRoot}</nodeDownloadRoot>
+                            <npmDownloadRoot>${npm.downloadRoot}</npmDownloadRoot>
                             <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                     </execution>
                     <execution>
