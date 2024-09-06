@@ -15,11 +15,15 @@ export function parseVal(colName: any, colValue: any): string {
 }
 
 // Produces the max substring for the table, ads '...' if above 34 chars.
-export function maxSubstring(str: any): any {
+export function maxSubstring(str: any, colName: any): any {
   if (str == undefined) {
     return;
-  } else if (str.length > 34) {
-    return str.substring(0, 32) + ' ...';
+  } else if ((colName === 'fieldName' || colName === 'internalFieldName') && str.length > 32) {
+    return str.substring(0, 30) + ' ...';
+  } else if ((colName === 'Types') && str.length > 14) {
+    return str.substring(0, 12) + ' ...';
+  } else if ((colName === 'Descriptions') && str.length > 24) {
+    return str.substring(0, 22) + ' ...';
   } else {
     return str;
   }

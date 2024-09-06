@@ -18,10 +18,10 @@
         <url>https://github.com/NationalSecurityAgency/datawave-dictionary-service</url>
     </scm>
     <properties>
-        <node.npmRegistryUrl>https://registry.npmjs.org/</node.npmRegistryUrl>
         <node.downloadRoot>https://nodejs.org/dist/</node.downloadRoot>
-        <npm.downloadRoot>https://registry.npmjs.org/npm/-/</npm.downloadRoot>
+        <node.npmRegistryUrl>https://registry.npmjs.org/</node.npmRegistryUrl>
         <node.version>v18.0.0</node.version>
+        <npm.downloadRoot>https://registry.npmjs.org/npm/-/</npm.downloadRoot>
         <npm.version>9.2.0</npm.version>
         <start-class>datawave.microservice.dictionary.DictionaryService</start-class>
         <version.accumulo>2.1.1</version.accumulo>

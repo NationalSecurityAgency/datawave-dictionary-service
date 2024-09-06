@@ -1,5 +1,5 @@
 <template>
-  <div class="banner"
+  <div class="banner" style="color: #ffffff;"
     >PLACEHOLDER - BANNER</div>
   <main class="main col" style="height: 100vh">
     <div
@@ -9,11 +9,16 @@
         height: 4%;
         justify-content: center;
         align-self: center;
-      "
+        font-size: 13px;"
     >
       <label class="title">Data Dictionary</label>
+      <q-img
+      :src="'icons/favicon-32x32.png'"
+      spinner-color="white"
+      style="height: 35px; max-width: 35px; margin-top: 2px;"
+    />
     </div>
-    <div class="row" style="width: 100%; height: 85%">
+    <div class="row" style="width: 100%; height: 80%">
       <p class="information">
         When a value is present in the forward index types, this means that a
         field is indexed and informs you how your query terms will be treated
@@ -33,15 +38,28 @@
         v-model:pagination="paginationFront"
         row-key="fieldName"
         dense
-        style="font-size: smaller; height: 100%; width: 100%"
+        style="font-size: smaller; height: 100%; width: 100%;"
+        class="datawave-dicitonary-sticky-sass dark"
+        :rows-per-page-options="[]"
       >
         <template v-slot:top-left>
           <q-btn
-            color="primary"
+            style="margin-right: 2px;"
+            size="12px"
+            color="red"
             icon-right="archive"
-            label="Export to csv"
+            label="Export"
             no-caps
             @click="exportTable"
+          />
+          <q-btn
+            style="margin-left: 2px;"
+            size="12px"
+            padding="5px 5px"
+            color="red"
+            :icon="isDark ? 'bi-sun-fill' : 'bi-moon-fill'"
+            no-caps
+            @click="toggleDark(); $q.dark.toggle();"
           />
         </template>
         <template v-slot:top-right>
@@ -56,8 +74,8 @@
           >
           </q-input>
           <q-btn
-                size="sm"
-                color="blue"
+                size="12px"
+                color="red"
                 icon="search"
                 round
                 dense
@@ -68,7 +86,7 @@
         <template v-slot:header="props">
           <q-tr :props="props">
             <q-th />
-            <q-th v-for="col in props.cols" :key="col.name" :props="props">
+            <q-th style="font-size: 13.7px;" v-for="col in props.cols" :key="col.name" :props="props">
               {{ col.label }}
             </q-th>
           </q-tr>
@@ -81,30 +99,38 @@
           >
             <q-td style="width: 60px; min-width: 60px">
               <q-btn
-                size="sm"
-                color="blue"
+                size="9px"
+                color="red"
                 round
                 dense
                 @click="
                   {
                     props.expand = !props.expand;
                     Formatters.toggleVisibility(props.row);
+                    console.log(props)
                   }
                 "
                 :icon="props.row.isVisible.value ? 'remove' : 'add'"
                 v-if="Formatters.buttonParse(props.cols, props.row)"
+              />
+              <q-icon
+                  style="margin-left: 4px;"
+                  size="1rem"
+                  :name="'bi-arrow-right'"
+                  color="red-5"
+                  v-if="props.row.duplicate == 1"
               />
             </q-td>
             <q-td
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
-              style="font-size: x-small"
+              style="font-size: 13px"
               :title="Formatters.parseVal(col.name, col.value)"
             >
               {{
                 Formatters.maxSubstring(
-                  Formatters.parseVal(col.name, col.value)
+                  Formatters.parseVal(col.name, col.value), col.name
                 )
               }}
             </q-td>
@@ -113,15 +139,16 @@
       </q-table>
     </div>
   </main>
-  <div class="banner"
-    >PLACEHOLDER - BANNER</div>
+  <div class="banner" style="color: #ffffff;"
+  >PLACEHOLDER - BANNER</div>
 </template>
 
 <script setup lang="ts">
-import { Ref, UnwrapRef, computed, defineComponent, ref } from 'vue';
+import { ref } from 'vue';
 import { QTable, QTableProps, exportFile, useQuasar } from 'quasar';
 import axios from 'axios';
 import * as Formatters from '../functions/formatters';
+import { useToggle, useDark } from '@vueuse/core';
 
 // Defines Rows and Columns for the Table.
 let rows: QTableProps['rows'] = [];
@@ -222,16 +249,9 @@ const loading = ref(true);
 const filter = ref('');
 const changeFilter = ref('');
 let paginationFront = ref({
-  rowsPerPage: 23,
+  rowsPerPage: 30,
   sortBy: 'fieldName',
 });
-
-// Confirms the table is full as long as the window's size changes.
-window.onresize = () => {
-  paginationFront.value.rowsPerPage = Math.floor(
-    (table.value.$el.clientHeight - 33 - 52 - 28) / 28
-  );
-};
 
 // AXIOS - Loads from REST endpoint.
 axios
@@ -239,10 +259,7 @@ axios
   .then((response) => {
     rows = response.data.MetadataFields;
     rows = Formatters.setVisibility(rows);
-    paginationFront.value.rowsPerPage = Math.floor(
-      (table.value.$el.clientHeight - 33 - 52 - 28) / 28
-    );
-
+    console.log(rows)
     loading.value = false;
   })
   .catch((reason) => {
@@ -305,6 +322,7 @@ async function queryTable(this: any) {
 
   // 1 - Filter the Rows
   const rowsToExport = table.value?.filteredSortedRows.filter(() => true);
+  console.log(rowsToExport)
 
   // 2 - Define Refresh Trigger (By Pagination) and Orginial Rows Stored
   const originalRows = rows;
@@ -326,4 +344,40 @@ function waitUp() {
   filter.value = changeFilter.value;
 }
 
+const isDark = useDark();
+const toggleDark = useToggle(isDark);
+
+if (isDark.value) {
+  $q.dark.set(true);
+} else {
+  $q.dark.set(false);
+}
+
 </script>
+
+<style lang="sass">
+.datawave-dicitonary-sticky-sass
+  /* height or max-height is important */
+  height: 310px
+
+  thead tr:first-child th
+    /* bg color is important for th; just specify one */
+    backdrop-filter: blur(2.5px)
+
+
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:first-child th
+    top: 0
+
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th
+    /* height of all previous header rows */
+    top: 48px
+
+  /* prevent scrolling behind sticky top row on focus */
+  tbody
+    /* height of all previous header rows */
+    scroll-margin-top: 48px
+</style>
