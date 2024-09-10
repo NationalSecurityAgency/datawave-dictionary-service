@@ -20,7 +20,7 @@
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
         <version.base-responses>4.0.0</version.base-responses>
         <version.guava>31.1-jre</version.guava>
-        <version.microservice.metadata-utils>4.0.6-SNAPSHOT</version.microservice.metadata-utils>
+        <version.microservice.metadata-utils>4.0.7-SNAPSHOT</version.microservice.metadata-utils>
     </properties>
     <dependencyManagement>
         <dependencies>
