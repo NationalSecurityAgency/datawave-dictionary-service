@@ -229,8 +229,7 @@ public class ModelControllerTest extends ControllerIT {
         uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
                 .path("/dictionary/model/v1/{name}")
-                .queryParam("name", MODEL_ONE.getName())
-                .build();
+                .buildAndExpand(MODEL_ONE.getName());
         // @formatter:on
         ResponseEntity<Model> modelResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, Model.class);
         assertEquals(HttpStatus.OK, modelResponse.getStatusCode());
