@@ -21,6 +21,7 @@
         <version.base-responses>4.0.0</version.base-responses>
         <version.guava>31.1-jre</version.guava>
         <version.microservice.metadata-utils>4.0.5</version.microservice.metadata-utils>
+        <version.microservice.type-utils>3.0.2-SNAPSHOT</version.microservice.type-utils>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -59,6 +60,25 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.microservice</groupId>
+                <artifactId>type-utils</artifactId>
+                <version>${version.microservice.type-utils}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>log4j</artifactId>
+                        <groupId>log4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-reload4j</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>avro</artifactId>
+                        <groupId>org.apache.avro</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -73,6 +93,10 @@
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>metadata-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>type-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

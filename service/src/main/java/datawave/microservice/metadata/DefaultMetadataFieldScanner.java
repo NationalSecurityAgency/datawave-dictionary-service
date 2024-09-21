@@ -1,6 +1,7 @@
 package datawave.microservice.metadata;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -23,6 +24,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.iterators.user.WholeRowIterator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.io.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 
 import datawave.data.ColumnFamilyConstants;
+import datawave.data.type.util.TypePrettyNameSupplier;
 import datawave.marking.MarkingFunctions;
 import datawave.microservice.Connection;
 import datawave.microservice.dictionary.config.ResponseObjectFactory;
@@ -47,16 +50,14 @@ public class DefaultMetadataFieldScanner {
     
     private final MarkingFunctions markingFunctions;
     private final ResponseObjectFactory<DefaultDescription,?,DefaultMetadataField,?,?> responseObjectFactory;
-    private final Map<String,String> normalizationMap;
     private final Connection connectionConfig;
     private final int numThreads;
     
     public DefaultMetadataFieldScanner(MarkingFunctions markingFunctions,
                     ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields> responseObjectFactory,
-                    Map<String,String> normalizationMap, Connection connectionConfig, int numThreads) {
+                    Connection connectionConfig, int numThreads) {
         this.markingFunctions = markingFunctions;
         this.responseObjectFactory = responseObjectFactory;
-        this.normalizationMap = normalizationMap;
         this.connectionConfig = connectionConfig;
         this.numThreads = numThreads;
     }
@@ -266,13 +267,38 @@ public class DefaultMetadataFieldScanner {
             currField.getDescriptions().add(description);
         }
         
-        // Set the normalized type for the current {@link DefaultMetadataField}. If no normalized version can be found for the type, the type will default to
-        // "Unknown".
+        // Ensures first letter of the type is always capitalized.
+        // Ensures redundant terminology like 'Type' is removed.
+        private String determineUnknownType(String unknown) {
+            String[] unknownType = unknown.split("\\.");
+            return StringUtils.capitalize(unknownType[unknownType.length - 1].replace("Type", ""));
+        }
+        
+        // Set the normalized type for the current {@link DefaultMetadataField}.
         private void setType() {
             int nullPos = currColumnQualifier.indexOf('\0');
             String type = currColumnQualifier.substring(nullPos + 1);
-            String normalizedType = normalizationMap.get(type);
-            currField.addType(normalizedType != null ? normalizedType : "Unknown");
+            /*
+             * Attempt to get a new instance of the class within 'type'. This will be used to determine what value(s) should be placed into the 'Types' field in
+             * the data dictionary.
+             *
+             * Use the value returned from getDataDictionaryTypeValue when: The class can be found AND it is an instance of TypePrettyNameSupplier AND
+             * getDataDictionaryTypeValue is not null.
+             *
+             * Use the DEFAULT_DATA_DICTIONARY_NAME provided in TypePrettyNameSupplier when: The class is found but getDataDictionaryTypeValue is null OR the
+             * class is found but is not an instance of TypePrettyNameSupplier.
+             *
+             * Use the value from determineUnknownType when: An exception occurs
+             */
+            try {
+                Object typeObject = Class.forName(type).getDeclaredConstructor().newInstance();
+                currField.addType(typeObject instanceof TypePrettyNameSupplier && ((TypePrettyNameSupplier) typeObject).getDataDictionaryTypeValue() != null
+                                ? ((TypePrettyNameSupplier) typeObject).getDataDictionaryTypeValue()
+                                : TypePrettyNameSupplier.DEFAULT_DATA_DICTIONARY_NAME);
+            } catch (RuntimeException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException
+                            | IllegalAccessException e) {
+                currField.addType(determineUnknownType(type));
+            }
         }
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.

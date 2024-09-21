@@ -36,7 +36,6 @@ public class DataDictionaryImpl implements DataDictionary<DefaultMetadataField,D
     private final ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields> responseObjectFactory;
     private final MetadataHelperFactory metadataHelperFactory;
     private final MetadataDescriptionsHelperFactory<DefaultDescription> metadataDescriptionsHelperFactory;
-    private Map<String,String> normalizationMap = Maps.newHashMap();
     
     public DataDictionaryImpl(MarkingFunctions markingFunctions,
                     ResponseObjectFactory<DefaultDescription,DefaultDataDictionary,DefaultMetadataField,DefaultDictionaryField,DefaultFields> responseObjectFactory,
@@ -45,16 +44,6 @@ public class DataDictionaryImpl implements DataDictionary<DefaultMetadataField,D
         this.responseObjectFactory = responseObjectFactory;
         this.metadataHelperFactory = metadataHelperFactory;
         this.metadataDescriptionsHelperFactory = metadataDescriptionsHelperFactory;
-    }
-    
-    @Override
-    public Map<String,String> getNormalizationMap() {
-        return normalizationMap;
-    }
-    
-    @Override
-    public void setNormalizationMap(Map<String,String> normalizationMap) {
-        this.normalizationMap = normalizationMap;
     }
     
     /**
@@ -76,8 +65,7 @@ public class DataDictionaryImpl implements DataDictionary<DefaultMetadataField,D
     @Override
     public Collection<DefaultMetadataField> getFields(Connection connectionConfig, Collection<String> dataTypeFilters, int numThreads) throws Exception {
         Map<String,String> aliases = getAliases(connectionConfig);
-        DefaultMetadataFieldScanner scanner = new DefaultMetadataFieldScanner(markingFunctions, responseObjectFactory, normalizationMap, connectionConfig,
-                        numThreads);
+        DefaultMetadataFieldScanner scanner = new DefaultMetadataFieldScanner(markingFunctions, responseObjectFactory, connectionConfig, numThreads);
         return scanner.getFields(aliases, dataTypeFilters);
     }
     

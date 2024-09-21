@@ -73,7 +73,6 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         this.dataDictionary = dataDictionary;
         this.responseObjectFactory = responseObjectFactory;
         this.accumuloConnectionService = accumloConnectionService;
-        dataDictionary.setNormalizationMap(dataDictionaryConfiguration.getNormalizerMap());
     }
     
     /**
