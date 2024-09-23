@@ -32,8 +32,7 @@ import lombok.Data;
 
 @Data
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(propOrder = {"fieldName", "internalFieldName", "dataType", "descriptions", "indexOnly", "forwardIndexed", "reverseIndexed", "normalized", "tokenized",
-        "types"})
+@XmlType(propOrder = {"fieldName", "internalFieldName", "dataType", "descriptions", "forwardIndexed", "reverseIndexed", "normalized", "tokenized", "types"})
 public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField,DefaultDescription> implements Serializable, Message<DefaultMetadataField> {
     private static final long serialVersionUID = 2050632989270455091L;
     
@@ -45,9 +44,6 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
     
     @XmlAttribute(required = true)
     private String dataType;
-    
-    @XmlAttribute
-    private Boolean indexOnly = false;
     
     @XmlAttribute
     private Boolean forwardIndexed = false;
@@ -71,10 +67,6 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
     
     @XmlAttribute
     private String lastUpdated;
-    
-    public Boolean isIndexOnly() {
-        return indexOnly == null ? false : indexOnly;
-    }
     
     public Boolean isForwardIndexed() {
         return forwardIndexed;
@@ -121,9 +113,9 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
         DefaultMetadataField field = (DefaultMetadataField) o;
         
         return new EqualsBuilder().append(fieldName, field.fieldName).append(internalFieldName, field.internalFieldName).append(dataType, field.dataType)
-                        .append(indexOnly, field.indexOnly).append(forwardIndexed, field.forwardIndexed).append(normalized, field.normalized)
-                        .append(reverseIndexed, field.reverseIndexed).append(tokenized, field.tokenized).append(types, field.types)
-                        .append(descriptions, field.descriptions).append(lastUpdated, field.lastUpdated).isEquals();
+                        .append(forwardIndexed, field.forwardIndexed).append(normalized, field.normalized).append(reverseIndexed, field.reverseIndexed)
+                        .append(tokenized, field.tokenized).append(types, field.types).append(descriptions, field.descriptions)
+                        .append(lastUpdated, field.lastUpdated).isEquals();
     }
     
     @SuppressWarnings("unused")
@@ -143,14 +135,13 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
             fieldMap.put("fieldName", 1);
             fieldMap.put("internalFieldName", 2);
             fieldMap.put("dataType", 3);
-            fieldMap.put("indexOnly", 4);
-            fieldMap.put("indexed", 5);
-            fieldMap.put("reverseIndexed", 6);
-            fieldMap.put("normalized", 7);
-            fieldMap.put("types", 8);
-            fieldMap.put("descriptions", 9);
-            fieldMap.put("lastUpdated", 10);
-            fieldMap.put("tokenized", 11);
+            fieldMap.put("indexed", 4);
+            fieldMap.put("reverseIndexed", 5);
+            fieldMap.put("normalized", 6);
+            fieldMap.put("types", 7);
+            fieldMap.put("descriptions", 8);
+            fieldMap.put("lastUpdated", 9);
+            fieldMap.put("tokenized", 10);
         }
         
         @Override
@@ -163,20 +154,18 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
                 case 3:
                     return "dataType";
                 case 4:
-                    return "indexOnly";
-                case 5:
                     return "indexed";
-                case 6:
+                case 5:
                     return "reverseIndexed";
-                case 7:
+                case 6:
                     return "normalized";
-                case 8:
+                case 7:
                     return "types";
-                case 9:
+                case 8:
                     return "descriptions";
-                case 10:
+                case 9:
                     return "lastUpdated";
-                case 11:
+                case 10:
                     return "tokenized";
                 default:
                     return null;
@@ -229,24 +218,21 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
                         message.dataType = input.readString();
                         break;
                     case 4:
-                        message.indexOnly = input.readBool();
-                        break;
-                    case 5:
                         message.forwardIndexed = input.readBool();
                         break;
-                    case 6:
+                    case 5:
                         message.reverseIndexed = input.readBool();
                         break;
-                    case 7:
+                    case 6:
                         message.normalized = input.readBool();
                         break;
-                    case 8:
+                    case 7:
                         if (null == message.types) {
                             message.types = new ArrayList<>();
                         }
                         message.types.add(input.readString());
                         break;
-                    case 9:
+                    case 8:
                         int size = input.readInt32();
                         message.descriptions = new HashSet<>(size);
                         for (int i = 0; i < size; i++) {
@@ -255,10 +241,10 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
                             message.descriptions.add(new DefaultDescription(input.readString(), markings));
                         }
                         break;
-                    case 10:
+                    case 9:
                         message.lastUpdated = input.readString();
                         break;
-                    case 11:
+                    case 10:
                         message.tokenized = input.readBool();
                         break;
                     default:
@@ -282,23 +268,22 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
                 output.writeString(3, message.dataType, false);
             }
             
-            output.writeBool(4, message.indexOnly, false);
-            output.writeBool(5, message.forwardIndexed, false);
-            output.writeBool(6, message.reverseIndexed, false);
-            output.writeBool(7, message.normalized, false);
+            output.writeBool(4, message.forwardIndexed, false);
+            output.writeBool(5, message.reverseIndexed, false);
+            output.writeBool(6, message.normalized, false);
             
             if (message.types != null) {
                 for (String typeClass : message.types)
-                    output.writeString(8, typeClass, true);
+                    output.writeString(7, typeClass, true);
             }
             
-            output.writeInt32(9, message.getDescriptions().size(), false);
+            output.writeInt32(8, message.getDescriptions().size(), false);
             for (DescriptionBase desc : message.getDescriptions()) {
-                output.writeString(9, desc.getDescription(), true);
-                output.writeObject(9, desc.getMarkings(), MapSchema.SCHEMA, false);
+                output.writeString(8, desc.getDescription(), true);
+                output.writeObject(8, desc.getMarkings(), MapSchema.SCHEMA, false);
             }
-            output.writeString(10, message.lastUpdated, false);
-            output.writeBool(11, message.tokenized, false);
+            output.writeString(9, message.lastUpdated, false);
+            output.writeBool(10, message.tokenized, false);
         }
         
     };
@@ -306,7 +291,7 @@ public class DefaultMetadataField extends MetadataFieldBase<DefaultMetadataField
     @Override
     public String toString() {
         return "MetadataField [fieldName=" + fieldName + ", internalFieldName=" + internalFieldName + ",dataType=" + dataType + ", descriptions= "
-                        + descriptions + ", indexOnly=" + indexOnly + ", indexed=" + forwardIndexed + ", reverseIndexed=" + reverseIndexed + ", normalized="
-                        + normalized + ", tokenized=" + tokenized + ", types=" + types + ", lastUpdated=" + lastUpdated + "]";
+                        + descriptions + ", indexed=" + forwardIndexed + ", reverseIndexed=" + reverseIndexed + ", normalized=" + normalized + ", tokenized="
+                        + tokenized + ", types=" + types + ", lastUpdated=" + lastUpdated + "]";
     }
 }

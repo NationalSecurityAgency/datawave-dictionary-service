@@ -29,10 +29,6 @@ public abstract class MetadataFieldBase<T,D extends DescriptionBase> implements 
     
     public abstract void setDataType(String dataType);
     
-    public abstract Boolean isIndexOnly();
-    
-    public abstract void setIndexOnly(Boolean indexOnly);
-    
     public abstract Boolean isForwardIndexed();
     
     public abstract void setForwardIndexed(Boolean indexed);
