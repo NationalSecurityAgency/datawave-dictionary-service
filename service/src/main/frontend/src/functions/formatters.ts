@@ -24,6 +24,8 @@ export function maxSubstring(str: any, colName: any): any {
     return str.substring(0, 12) + ' ...';
   } else if ((colName === 'Descriptions') && str.length > 24) {
     return str.substring(0, 22) + ' ...';
+  } else if ((colName === 'CopyPaste') && str.length > 42) {
+    return str.substring(0, 40) + ' ...';
   } else {
     return str;
   }
@@ -49,39 +51,45 @@ export function setVisibility(rows: readonly any[]) {
 
   for (var row of rows) {
     let maxUp: number = row.lastUpdated;
-    const fieldUp: any = row.fieldName;
+    const fieldUp: any = row.internalFieldName;
     for (const scan of rows) {
-      if (fieldUp === scan.fieldName && maxUp < scan.lastUpdated) {
+      if (fieldUp === scan.internalFieldName && maxUp < scan.lastUpdated) {
         maxUp = scan.lastUpdated;
         buttonValues.set(fieldUp, maxUp);
       }
     }
   }
 
+  // This is how a Button is Rendered
   for (var row of rows) {
+    // Checks to Render button
     if (
-      buttonValues.has(row.fieldName) &&
-      row.lastUpdated == buttonValues.get(row.fieldName)
+      buttonValues.has(row.internalFieldName) &&
+      row.lastUpdated == buttonValues.get(row.internalFieldName)
     ) {
       row['duplicate'] = 0;
       row['button'] = true;
-    } else if (
-      buttonValues.has(row.fieldName) &&
-      row.lastUpdated != buttonValues.get(row.fieldName)
+    }
+    // Checks to Render Collapseable Row - Refreshes on Search
+    else if (
+      buttonValues.has(row.internalFieldName) &&
+      row.lastUpdated != buttonValues.get(row.internalFieldName)
     ) {
       row['duplicate'] = 1;
       row['button'] = false;
-    } else {
+    }
+    // Renders a Normal Row (No Button, not Collapsable)
+    else {
       row['duplicate'] = 0;
       row['button'] = false;
     }
 
-    const fieldName = row.fieldName;
-    if (!fieldVisibility.has(fieldName)) {
-      fieldVisibility.set(fieldName, ref<boolean>(false));
+    const internalFieldName = row.internalFieldName;
+    if (!fieldVisibility.has(internalFieldName)) {
+      fieldVisibility.set(internalFieldName, ref<boolean>(false));
     }
 
-    const visibility = fieldVisibility.get(fieldName);
+    const visibility = fieldVisibility.get(internalFieldName);
 
     row['toggleVisibility'] = () => {
       visibility!.value = !visibility?.value;

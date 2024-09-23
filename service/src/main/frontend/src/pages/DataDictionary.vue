@@ -15,7 +15,7 @@
       <q-img
       :src="'icons/favicon-32x32.png'"
       spinner-color="white"
-      style="height: 35px; max-width: 35px; margin-top: 2px;"
+      style="height: 40px; max-width: 45px; margin-top: 2px; margin-left: 8px;"
     />
     </div>
     <div class="row" style="width: 100%; height: 80%">
@@ -36,7 +36,7 @@
         :columns="columns"
         :filter="filter"
         v-model:pagination="paginationFront"
-        row-key="fieldName"
+        row-key="internalFieldName"
         dense
         style="font-size: smaller; height: 100%; width: 100%;"
         class="datawave-dicitonary-sticky-sass dark"
@@ -46,7 +46,7 @@
           <q-btn
             style="margin-right: 2px;"
             size="12px"
-            color="red"
+            color="cyan-8"
             icon-right="archive"
             label="Export"
             no-caps
@@ -56,7 +56,7 @@
             style="margin-left: 2px;"
             size="12px"
             padding="5px 5px"
-            color="red"
+            color="cyan-8"
             :icon="isDark ? 'bi-sun-fill' : 'bi-moon-fill'"
             no-caps
             @click="toggleDark(); $q.dark.toggle();"
@@ -75,7 +75,7 @@
           </q-input>
           <q-btn
                 size="12px"
-                color="red"
+                color="cyan-8"
                 icon="search"
                 round
                 dense
@@ -100,14 +100,14 @@
             <q-td style="width: 60px; min-width: 60px">
               <q-btn
                 size="9px"
-                color="red"
+                color="cyan-8"
                 round
                 dense
                 @click="
                   {
                     props.expand = !props.expand;
                     Formatters.toggleVisibility(props.row);
-                    console.log(props)
+                    console.log('clicked', props)
                   }
                 "
                 :icon="props.row.isVisible.value ? 'remove' : 'add'"
@@ -117,7 +117,7 @@
                   style="margin-left: 4px;"
                   size="1rem"
                   :name="'bi-arrow-right'"
-                  color="red-5"
+                  color="cyan-8"
                   v-if="props.row.duplicate == 1"
               />
             </q-td>
@@ -125,14 +125,17 @@
               v-for="col in props.cols"
               :key="col.name"
               :props="props"
-              style="font-size: 13px"
+              style="font-size: 13px;"
               :title="Formatters.parseVal(col.name, col.value)"
+              @click="copyLabel(col.value)"
             >
-              {{
+              <label style="cursor: pointer;">
+                {{
                 Formatters.maxSubstring(
                   Formatters.parseVal(col.name, col.value), col.name
                 )
               }}
+              </label>
             </q-td>
           </q-tr>
         </template>
@@ -145,7 +148,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { QTable, QTableProps, exportFile, useQuasar } from 'quasar';
+import { QTable, QTableProps, exportFile, useQuasar, Notify } from 'quasar';
 import axios from 'axios';
 import * as Formatters from '../functions/formatters';
 import { useToggle, useDark } from '@vueuse/core';
@@ -158,7 +161,7 @@ const columns: QTableProps['columns'] = [
     name: 'fieldName',
     field: 'fieldName',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 275px; min-width: 275px',
   },
   {
@@ -166,7 +169,7 @@ const columns: QTableProps['columns'] = [
     name: 'internalFieldName',
     field: 'internalFieldName',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 275px; min-width: 275px',
   },
   {
@@ -174,7 +177,7 @@ const columns: QTableProps['columns'] = [
     name: 'dataType',
     field: 'dataType',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -182,7 +185,7 @@ const columns: QTableProps['columns'] = [
     name: 'indexOnly',
     field: 'indexOnly',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -190,7 +193,7 @@ const columns: QTableProps['columns'] = [
     name: 'forwardIndexed',
     field: 'forwardIndexed',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -198,7 +201,7 @@ const columns: QTableProps['columns'] = [
     name: 'reverseIndexed',
     field: 'reverseIndexed',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -206,7 +209,7 @@ const columns: QTableProps['columns'] = [
     name: 'normalized',
     field: 'normalized',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -214,7 +217,7 @@ const columns: QTableProps['columns'] = [
     name: 'Types',
     field: 'Types',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -222,7 +225,7 @@ const columns: QTableProps['columns'] = [
     name: 'tokenized',
     field: 'tokenized',
     align: 'left',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 100px; min-width: 100px',
   },
   {
@@ -230,7 +233,7 @@ const columns: QTableProps['columns'] = [
     name: 'Descriptions',
     field: 'Descriptions',
     align: 'center',
-    sortable: true,
+    sortable: false,
     style: 'max-width: 200px; min-width: 200px',
   },
   {
@@ -238,8 +241,8 @@ const columns: QTableProps['columns'] = [
     name: 'lastUpdated',
     field: 'lastUpdated',
     align: 'left',
-    sortable: true,
-    style: 'max-width: 75px; min-width: 75px',
+    sortable: false,
+    style: 'max-width: 125px; min-width: 125px',
   },
 ];
 
@@ -248,6 +251,7 @@ const table = ref();
 const loading = ref(true);
 const filter = ref('');
 const changeFilter = ref('');
+const ENDPOINT = 'https://localhost:8643/dictionary/data/v2/';
 let paginationFront = ref({
   rowsPerPage: 30,
   sortBy: 'fieldName',
@@ -255,15 +259,29 @@ let paginationFront = ref({
 
 // AXIOS - Loads from REST endpoint.
 axios
-  .get(process.env.ENDPOINT!)
+  .get(ENDPOINT!)
   .then((response) => {
-    rows = response.data.MetadataFields;
+    // Mini Filter to sort collapsable Rows
+    rows = response.data.MetadataFields.sort((a: any, b: any) => {
+      // Create a combined key for both fieldname and internalFieldName
+      const keyA = `${a.fieldname}_${a.internalFieldName}`;
+      const keyB = `${b.fieldname}_${b.internalFieldName}`;
+
+      // First compare the combined key alphabetically
+      if (keyA < keyB) {
+        return -1;
+      } else if (keyA > keyB) {
+        return 1;
+      } else {
+        // If the combined key is the same, compare lastUpdated in descending order
+        return b.lastUpdated - a.lastUpdated;
+      }
+    });
     rows = Formatters.setVisibility(rows);
-    console.log(rows)
     loading.value = false;
   })
   .catch((reason) => {
-    console.log('Something went wrong? ' + reason);
+    console.log('Error fetching and formatting rows. ' + reason);
   });
 
 // Used to to export Quasar Data to a CSV and referenced in wrapCsvValue and exportTable.
@@ -322,7 +340,6 @@ async function queryTable(this: any) {
 
   // 1 - Filter the Rows
   const rowsToExport = table.value?.filteredSortedRows.filter(() => true);
-  console.log(rowsToExport)
 
   // 2 - Define Refresh Trigger (By Pagination) and Orginial Rows Stored
   const originalRows = rows;
@@ -353,6 +370,18 @@ if (isDark.value) {
   $q.dark.set(false);
 }
 
+async function copyLabel(colValue: any) {
+  await navigator.clipboard.writeText(colValue);
+  Notify.create({
+    type: 'info',
+    message: Formatters.maxSubstring(
+                  Formatters.parseVal('CopyPaste', colValue), 'CopyPaste'
+                ) + ' Copied to Clipboard.',
+    color: 'cyan-8',
+    icon: 'bi-clipboard-fill'
+  });
+}
+
 </script>
 
 <style lang="sass">
@@ -363,7 +392,6 @@ if (isDark.value) {
   thead tr:first-child th
     /* bg color is important for th; just specify one */
     backdrop-filter: blur(2.5px)
-
 
   thead tr th
     position: sticky
