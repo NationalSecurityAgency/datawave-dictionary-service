@@ -290,4 +290,13 @@ public class DataDictionaryControllerLogic<DESC extends DescriptionBase<DESC>,DI
         
         return new VoidResponse();
     }
+    
+    /**
+     * Sets the Banner for the Data Dictionary.
+     * 
+     * @return the default banner for Data Dictionary
+     */
+    public DataDictionaryProperties.Banner retrieveBanner() {
+        return dataDictionaryConfiguration.getBanner();
+    }
 }

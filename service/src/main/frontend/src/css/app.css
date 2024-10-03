@@ -27,18 +27,15 @@
   margin-top: 0.35rem;
 }
 
+.icon {
+  height: 45px;
+  max-width: 65px;
+}
+
 .subtable {
   font-size: x-small;
   margin-bottom: 1em;
   margin-top: 1em;
-}
-
-.banner {
-  background-color: black;
-  width: 100%;
-  text-align: center;
-  font-size: smaller;
-  font-weight: bold;
 }
 
 ::-webkit-scrollbar {
@@ -66,4 +63,33 @@
     background: #c1c1c1;
 }
 
+.datawave-dictionary-sticky-sass {
+  /* height or max-height is important */
+  height: 310px;
+}
 
+.datawave-dictionary-sticky-sass thead tr:first-child th {
+  /* bg color is important for th; just specify one */
+  backdrop-filter: blur(2.5px);
+}
+
+.datawave-dictionary-sticky-sass thead tr th {
+  position: sticky;
+  z-index: 1;
+}
+
+.datawave-dictionary-sticky-sass thead tr:first-child th {
+  top: 0;
+}
+
+/* this is when the loading indicator appears */
+.datawave-dictionary-sticky-sass.q-table--loading thead tr:last-child th {
+  /* height of all previous header rows */
+  top: 48px;
+}
+
+/* prevent scrolling behind sticky top row on focus */
+.datawave-dictionary-sticky-sass tbody {
+  /* height of all previous header rows */
+  scroll-margin-top: 48px;
+}

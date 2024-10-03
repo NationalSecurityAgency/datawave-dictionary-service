@@ -1,6 +1,10 @@
 <template>
-  <div class="banner" style="color: #ffffff;"
-    >PLACEHOLDER - BANNER</div>
+  <div v-if="banner?.enabled" :style="banner?.styleTop">
+      {{ banner?.messageTop }}
+  </div>
+  <div v-if="banner?.enabled" :style="banner?.styleBottom" style="margin-bottom: 1vh;">
+      {{ banner?.messageBottom }}
+  </div>
   <main class="main col" style="height: 100vh">
     <div
       class="row"
@@ -9,13 +13,13 @@
         height: 4%;
         justify-content: center;
         align-self: center;
-        font-size: 13px;"
+        margin-bottom:5px;"
     >
       <label class="title">Data Dictionary</label>
       <q-img
+      class="icon"
       :src="'icons/favicon-32x32.png'"
       spinner-color="white"
-      style="height: 40px; max-width: 45px; margin-top: 2px; margin-left: 8px;"
     />
     </div>
     <div class="row" style="width: 100%; height: 80%">
@@ -142,16 +146,21 @@
       </q-table>
     </div>
   </main>
-  <div class="banner" style="color: #ffffff;"
-  >PLACEHOLDER - BANNER</div>
+  <div v-if="banner?.enabled" :style="banner?.styleTop" style="margin-top: 1vh;">
+      {{ banner?.messageTop }}
+  </div>
+  <div v-if="banner?.enabled" :style="banner?.styleBottom">
+      {{ banner?.messageBottom }}
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { QTable, QTableProps, exportFile, useQuasar, Notify } from 'quasar';
-import axios from 'axios';
-import * as Formatters from '../functions/formatters';
+import { onMounted, ref } from 'vue';
+import { QTable, QTableProps, exportFile, useQuasar, Notify, AppVisibility } from 'quasar';
 import { useToggle, useDark } from '@vueuse/core';
+import { api } from '../boot/axios';
+import * as Formatters from '../functions/formatters';
+import { Banner } from '../functions/components';
 
 // Defines Rows and Columns for the Table.
 let rows: QTableProps['rows'] = [];
@@ -247,19 +256,29 @@ const columns: QTableProps['columns'] = [
 ];
 
 // Defines the Table References, loading for axios, search filter, and pagination to sort.
+const $q = useQuasar();
 const table = ref();
 const loading = ref(true);
 const filter = ref('');
 const changeFilter = ref('');
-const ENDPOINT = 'https://localhost:8643/dictionary/data/v2/';
+const banner = ref<Banner>();
 let paginationFront = ref({
   rowsPerPage: 30,
   sortBy: 'fieldName',
 });
 
-// AXIOS - Loads from REST endpoint.
-axios
-  .get(ENDPOINT!)
+onMounted(() => {
+  api
+  .get('data/v2/banner/', undefined)
+  .then((response) => {
+    banner.value = response.data as Banner;
+  })
+  .catch((reason) => {
+    console.log('Could not fetch banner: ' + reason);
+  });
+
+  api
+  .get('data/v2/')
   .then((response) => {
     // Mini Filter to sort collapsable Rows
     rows = response.data.MetadataFields.sort((a: any, b: any) => {
@@ -283,9 +302,7 @@ axios
   .catch((reason) => {
     console.log('Error fetching and formatting rows. ' + reason);
   });
-
-// Used to to export Quasar Data to a CSV and referenced in wrapCsvValue and exportTable.
-const $q = useQuasar();
+});
 
 // Called by exportTable to format the CSV
 function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
@@ -361,15 +378,16 @@ function waitUp() {
   filter.value = changeFilter.value;
 }
 
+// Sets the Dark Mode Toggle for the User
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
-
 if (isDark.value) {
   $q.dark.set(true);
 } else {
   $q.dark.set(false);
 }
 
+// Copies the Label to Clipboard
 async function copyLabel(colValue: any) {
   await navigator.clipboard.writeText(colValue);
   Notify.create({
@@ -383,29 +401,3 @@ async function copyLabel(colValue: any) {
 }
 
 </script>
-
-<style lang="sass">
-.datawave-dicitonary-sticky-sass
-  /* height or max-height is important */
-  height: 310px
-
-  thead tr:first-child th
-    /* bg color is important for th; just specify one */
-    backdrop-filter: blur(2.5px)
-
-  thead tr th
-    position: sticky
-    z-index: 1
-  thead tr:first-child th
-    top: 0
-
-  /* this is when the loading indicator appears */
-  &.q-table--loading thead tr:last-child th
-    /* height of all previous header rows */
-    top: 48px
-
-  /* prevent scrolling behind sticky top row on focus */
-  tbody
-    /* height of all previous header rows */
-    scroll-margin-top: 48px
-</style>

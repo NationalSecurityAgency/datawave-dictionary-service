@@ -104,6 +104,12 @@ public class DataDictionaryControllerV2<DESC extends DescriptionBase<DESC>,DICT 
         return (FIELDS) dataDictionaryControllerLogic.fieldNameDescription(fieldName, datatype, modelName, modelTable, currentUser);
     }
     
+    @GetMapping(value = "/banner", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Timed(name = "dw.dictionary.data.banner", absolute = true)
+    public DataDictionaryProperties.Banner banner() {
+        return dataDictionaryControllerLogic.retrieveBanner();
+    }
+    
     @Secured({"Administrator", "JBossAdministrator"})
     @DeleteMapping("/Descriptions/{datatype}/{fieldName}")
     @Timed(name = "dw.dictionary.data.deleteDescription", absolute = true)
