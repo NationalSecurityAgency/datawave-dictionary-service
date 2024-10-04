@@ -54,7 +54,7 @@
             icon-right="archive"
             label="Export"
             no-caps
-            @click="exportTable"
+            @click="exportTable()"
           />
           <q-btn
             style="margin-left: 2px;"
@@ -131,7 +131,7 @@
               :props="props"
               style="font-size: 13px;"
               :title="Formatters.parseVal(col.name, col.value)"
-              @click="copyLabel(col.value)"
+              @click="Feature.copyLabel(col.value)"
             >
               <label style="cursor: pointer;">
                 {{
@@ -156,104 +156,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { QTable, QTableProps, exportFile, useQuasar, Notify, AppVisibility } from 'quasar';
+import { QTable, QTableProps, exportFile, useQuasar, Notify } from 'quasar';
 import { useToggle, useDark } from '@vueuse/core';
 import { api } from '../boot/axios';
+import { Banner, columns } from '../functions/components';
 import * as Formatters from '../functions/formatters';
-import { Banner } from '../functions/components';
-
-// Defines Rows and Columns for the Table.
-let rows: QTableProps['rows'] = [];
-const columns: QTableProps['columns'] = [
-  {
-    label: 'Field Name',
-    name: 'fieldName',
-    field: 'fieldName',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 275px; min-width: 275px',
-  },
-  {
-    label: 'Internal FieldName',
-    name: 'internalFieldName',
-    field: 'internalFieldName',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 275px; min-width: 275px',
-  },
-  {
-    label: 'Data Type',
-    name: 'dataType',
-    field: 'dataType',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Index Only',
-    name: 'indexOnly',
-    field: 'indexOnly',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Forward Index',
-    name: 'forwardIndexed',
-    field: 'forwardIndexed',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Reverse Index',
-    name: 'reverseIndexed',
-    field: 'reverseIndexed',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Normalized',
-    name: 'normalized',
-    field: 'normalized',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Types',
-    name: 'Types',
-    field: 'Types',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Tokenized',
-    name: 'tokenized',
-    field: 'tokenized',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 100px; min-width: 100px',
-  },
-  {
-    label: 'Description',
-    name: 'Descriptions',
-    field: 'Descriptions',
-    align: 'center',
-    sortable: false,
-    style: 'max-width: 200px; min-width: 200px',
-  },
-  {
-    label: 'Last Updated',
-    name: 'lastUpdated',
-    field: 'lastUpdated',
-    align: 'left',
-    sortable: false,
-    style: 'max-width: 125px; min-width: 125px',
-  },
-];
+import * as Wrapper from '../functions/csvWrapper';
+import * as Feature from '../functions/features';
 
 // Defines the Table References, loading for axios, search filter, and pagination to sort.
 const $q = useQuasar();
@@ -262,14 +171,16 @@ const loading = ref(true);
 const filter = ref('');
 const changeFilter = ref('');
 const banner = ref<Banner>();
+let rows: QTableProps['rows'] = [];
 let paginationFront = ref({
   rowsPerPage: 30,
   sortBy: 'fieldName',
 });
 
+// API - Defines all the Nececssary API calls for the user, and filters.
 onMounted(() => {
   api
-  .get('data/v2/banner/', undefined)
+  .get('banner/', undefined)
   .then((response) => {
     banner.value = response.data as Banner;
   })
@@ -278,7 +189,7 @@ onMounted(() => {
   });
 
   api
-  .get('data/v2/')
+  .get('')
   .then((response) => {
     // Mini Filter to sort collapsable Rows
     rows = response.data.MetadataFields.sort((a: any, b: any) => {
@@ -300,33 +211,21 @@ onMounted(() => {
     loading.value = false;
   })
   .catch((reason) => {
-    console.log('Error fetching and formatting rows. ' + reason);
+    console.log('Error fetching and formatting rows: ' + reason);
   });
 });
 
-// Called by exportTable to format the CSV
-function wrapCsvValue(val?: any, formatFn?: any, row?: any) {
-  let formatted = formatFn !== void 0 ? formatFn(val, row) : val;
-
-  formatted =
-    formatted === void 0 || formatted === null ? '' : String(formatted);
-
-  formatted = formatted.split('"').join('""');
-  return `"${formatted}"`;
-}
-
-// Attempts to Wrap the CSV and Download
+// Export - Attempts to Wrap the CSV and Download.
 function exportTable(this: any) {
   const rowsToExport = table.value?.filteredSortedRows.filter(
     Formatters.isVisible
   );
-
-  const content = [columns!.map((col) => wrapCsvValue(col.label))]
+  const content = [columns!.map((col) => Wrapper.wrapCsvValue(col.label))]
     .concat(
       rowsToExport.map((row: any) =>
         columns!
           .map((col: any) =>
-            wrapCsvValue(
+            Wrapper.wrapCsvValue(
               typeof col.field === 'function'
                 ? col.field(row)
                 : row[col.field === void 0 ? col.name : col.field],
@@ -340,7 +239,6 @@ function exportTable(this: any) {
     .join('\r\n');
 
   const status = exportFile('table-export.csv', content, 'text/csv');
-
   if (status !== true) {
     $q.notify({
       message: 'Browser denied file download...',
@@ -350,7 +248,7 @@ function exportTable(this: any) {
   }
 }
 
-// Runs through a Query Search Process
+// Query - Runs through a Search Process as it waits for the user.
 async function queryTable(this: any) {
   // Wait Until User Enters...
   await waitUp();
@@ -373,31 +271,18 @@ async function queryTable(this: any) {
   rows = originalRows;
 }
 
-// Waits for the User to Finish Typing Query
+// Query 2 - Awaits for the user to change or add something.
 function waitUp() {
   filter.value = changeFilter.value;
 }
 
-// Sets the Dark Mode Toggle for the User
+// Customization - Sets the Dark Mode Toggle for the User.
 const isDark = useDark();
 const toggleDark = useToggle(isDark);
 if (isDark.value) {
   $q.dark.set(true);
 } else {
   $q.dark.set(false);
-}
-
-// Copies the Label to Clipboard
-async function copyLabel(colValue: any) {
-  await navigator.clipboard.writeText(colValue);
-  Notify.create({
-    type: 'info',
-    message: Formatters.maxSubstring(
-                  Formatters.parseVal('CopyPaste', colValue), 'CopyPaste'
-                ) + ' Copied to Clipboard.',
-    color: 'cyan-8',
-    icon: 'bi-clipboard-fill'
-  });
 }
 
 </script>

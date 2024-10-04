@@ -17,6 +17,7 @@
 .title {
   font-size:x-large;
   font-weight: bold;
+  margin-top: 0.75vh;
 }
 
 .information {
@@ -24,12 +25,13 @@
   text-align: center;
   margin-left: 10%;
   margin-right: 10%;
-  margin-top: 0.35rem;
+  margin-top: 1vh;
 }
 
 .icon {
-  height: 45px;
-  max-width: 65px;
+  height: 47px;
+  max-width: 60px;
+  margin-top: 0.5vh;
 }
 
 .subtable {
