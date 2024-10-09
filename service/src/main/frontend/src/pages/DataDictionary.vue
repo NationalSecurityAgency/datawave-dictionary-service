@@ -2,7 +2,7 @@
   <div v-if="banner?.enabled" :style="banner?.styleTop">
       {{ banner?.messageTop }}
   </div>
-  <div v-if="banner?.enabled" :style="banner?.styleBottom" style="margin-bottom: 1vh;">
+  <div v-if="banner?.enabled" :style="banner?.styleBottom" style="margin-bottom: 0.50vh;">
       {{ banner?.messageBottom }}
   </div>
   <main class="main col" style="height: 100vh">
@@ -43,7 +43,7 @@
         row-key="internalFieldName"
         dense
         style="font-size: smaller; height: 100%; width: 100%;"
-        class="datawave-dicitonary-sticky-sass dark"
+        class="datawave-dictionary-sticky-sass dark"
         :rows-per-page-options="[]"
       >
         <template v-slot:top-left>
@@ -111,7 +111,6 @@
                   {
                     props.expand = !props.expand;
                     Formatters.toggleVisibility(props.row);
-                    console.log('clicked', props)
                   }
                 "
                 :icon="props.row.isVisible.value ? 'remove' : 'add'"
@@ -146,7 +145,7 @@
       </q-table>
     </div>
   </main>
-  <div v-if="banner?.enabled" :style="banner?.styleTop" style="margin-top: 1vh;">
+  <div v-if="banner?.enabled" :style="banner?.styleTop" style="margin-top: 0.50vh;">
       {{ banner?.messageTop }}
   </div>
   <div v-if="banner?.enabled" :style="banner?.styleBottom">
@@ -173,7 +172,7 @@ const changeFilter = ref('');
 const banner = ref<Banner>();
 let rows: QTableProps['rows'] = [];
 let paginationFront = ref({
-  rowsPerPage: 30,
+  rowsPerPage: 200,
   sortBy: 'fieldName',
 });
 
