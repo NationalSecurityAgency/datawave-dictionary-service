@@ -1,32 +1,15 @@
 package datawave.microservice.dictionary;
 
-import static datawave.microservice.http.converter.protostuff.ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.MediaType;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
-import com.codahale.metrics.annotation.Timed;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -43,19 +26,8 @@ import datawave.webservice.dictionary.data.DictionaryFieldBase;
 import datawave.webservice.dictionary.data.FieldsBase;
 import datawave.webservice.metadata.MetadataFieldBase;
 import datawave.webservice.result.VoidResponse;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Data Dictionary Controller /v1", description = "DataWave Dictionary Operations",
-                externalDocs = @ExternalDocumentation(description = "Dictionary Service Documentation",
-                                url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
-@RestController
-@RequestMapping(path = "/data/v1",
-                produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, PROTOSTUFF_VALUE,
-                        MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
-@EnableConfigurationProperties(DataDictionaryProperties.class)
-public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT extends DataDictionaryBase<DICT,META>,META extends MetadataFieldBase<META,DESC>,FIELD extends DictionaryFieldBase<FIELD,DESC>,FIELDS extends FieldsBase<FIELDS,FIELD,DESC>> {
-    
+public class DataDictionaryControllerLogic<DESC extends DescriptionBase<DESC>,DICT extends DataDictionaryBase<DICT,META>,META extends MetadataFieldBase<META,DESC>,FIELD extends DictionaryFieldBase<FIELD,DESC>,FIELDS extends FieldsBase<FIELDS,FIELD,DESC>> {
     private final DataDictionaryProperties dataDictionaryConfiguration;
     private final DataDictionary<META,DESC,FIELD> dataDictionary;
     private final ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory;
@@ -67,7 +39,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         }
     };
     
-    public DataDictionaryController(DataDictionaryProperties dataDictionaryConfiguration, DataDictionary<META,DESC,FIELD> dataDictionary,
+    public DataDictionaryControllerLogic(DataDictionaryProperties dataDictionaryConfiguration, DataDictionary<META,DESC,FIELD> dataDictionary,
                     ResponseObjectFactory<DESC,DICT,META,FIELD,FIELDS> responseObjectFactory, AccumuloConnectionService accumloConnectionService) {
         this.dataDictionaryConfiguration = dataDictionaryConfiguration;
         this.dataDictionary = dataDictionary;
@@ -95,12 +67,8 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem fetching the entries
      */
-    @GetMapping("/")
-    @Timed(name = "dw.dictionary.data.get", absolute = true)
-    public DataDictionaryBase<DICT,META> get(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTableName,
-                    @RequestParam(required = false) String metadataTableName, @RequestParam(name = "auths", required = false) String queryAuthorizations,
-                    @RequestParam(defaultValue = "") String dataTypeFilters, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
-        
+    public DataDictionaryBase<DICT,META> get(String modelName, String modelTableName, String metadataTableName, String queryAuthorizations,
+                    String dataTypeFilters, DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(metadataTableName, modelTableName, modelName, currentUser);
         // If the user provides authorizations, intersect it with their actual authorizations
         connection.setAuths(accumuloConnectionService.getDowngradedAuthorizations(queryAuthorizations, currentUser));
@@ -112,6 +80,7 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         dataDictionary.setFields(fields);
         // Ensure that empty internal field names will be set to the field name instead.
         dataDictionary.transformFields(TRANSFORM_EMPTY_INTERNAL_FIELD_NAMES);
+        
         return dataDictionary;
     }
     
@@ -130,17 +99,16 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem uploading the descriptions
      */
-    @PostMapping(path = "/Descriptions", consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    @Timed(name = "dw.dictionary.data.uploadDescriptions", absolute = true)
-    public VoidResponse uploadDescriptions(@RequestBody FIELDS fields, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public VoidResponse uploadDescriptions(FIELDS fields, String modelName, String modelTable, DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         List<FIELD> list = fields.getFields();
         for (FIELD desc : list) {
             dataDictionary.setDescription(connection, desc);
         }
+        
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
+        
         return new VoidResponse();
     }
     
@@ -165,12 +133,8 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem updating the description
      */
-    @Secured({"Administrator", "JBossAdministrator"})
-    @PutMapping("/Descriptions/{datatype}/{fieldName}/{description}")
-    @Timed(name = "dw.dictionary.data.setDescriptionPut", absolute = true)
-    public VoidResponse setDescriptionPut(@PathVariable String fieldName, @PathVariable String datatype, @PathVariable String description,
-                    @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
-                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public VoidResponse setDescriptionPut(String fieldName, String datatype, String description, String modelName, String modelTable, String columnVisibility,
+                    DatawaveUserDetails currentUser) throws Exception {
         return setDescriptionPost(fieldName, datatype, description, modelName, modelTable, columnVisibility, currentUser);
     }
     
@@ -195,12 +159,8 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem updating the dictionary item description
      */
-    @Secured({"Administrator", "JBossAdministrator"})
-    @PostMapping("/Descriptions")
-    @Timed(name = "dw.dictionary.data.setDescriptionPost", absolute = true)
-    public VoidResponse setDescriptionPost(@RequestParam String fieldName, @RequestParam String datatype, @RequestParam String description,
-                    @RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
-                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public VoidResponse setDescriptionPost(String fieldName, String datatype, String description, String modelName, String modelTable, String columnVisibility,
+                    DatawaveUserDetails currentUser) throws Exception {
         DESC desc = this.responseObjectFactory.getDescription();
         Map<String,String> markings = Maps.newHashMap();
         markings.put("columnVisibility", columnVisibility);
@@ -209,8 +169,10 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         dataDictionary.setDescription(connection, fieldName, datatype, desc);
+        
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
+        
         return new VoidResponse();
     }
     
@@ -227,14 +189,12 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem retrieving the descriptions from Accumulo
      */
-    @GetMapping("/Descriptions")
-    @Timed(name = "dw.dictionary.data.allDescriptions", absolute = true)
-    public FIELDS allDescriptions(@RequestParam(required = false) String modelName, @RequestParam(required = false) String modelTable,
-                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public FIELDS allDescriptions(String modelName, String modelTable, DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
-        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection);
+        Multimap<Map.Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection);
         FIELDS response = this.responseObjectFactory.getFields();
         response.setDescriptions(descriptions);
+        
         return response;
     }
     
@@ -253,14 +213,12 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem retrieving the descriptions from Accumulo
      */
-    @GetMapping("/Descriptions/{datatype}")
-    @Timed(name = "dw.dictionary.data.datatypeDescriptions", absolute = true)
-    public FIELDS datatypeDescriptions(@PathVariable("datatype") String datatype, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public FIELDS datatypeDescriptions(String datatype, String modelName, String modelTable, DatawaveUserDetails currentUser) throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
-        Multimap<Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection, datatype);
+        Multimap<Map.Entry<String,String>,DESC> descriptions = dataDictionary.getDescriptions(connection, datatype);
         FIELDS response = this.responseObjectFactory.getFields();
         response.setDescriptions(descriptions);
+        
         return response;
     }
     
@@ -281,20 +239,19 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem retrieving the descriptions from Accumulo
      */
-    @GetMapping("/Descriptions/{datatype}/{fieldName}")
-    @Timed(name = "dw.dictionary.data.fieldNameDescription", absolute = true)
-    public FIELDS fieldNameDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public FIELDS fieldNameDescription(String fieldName, String datatype, String modelName, String modelTable, DatawaveUserDetails currentUser)
+                    throws Exception {
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
         Set<DESC> descriptions = dataDictionary.getDescriptions(connection, fieldName, datatype);
         FIELDS response = responseObjectFactory.getFields();
         if (!descriptions.isEmpty()) {
-            Multimap<Entry<String,String>,DESC> mmap = HashMultimap.create();
+            Multimap<Map.Entry<String,String>,DESC> mmap = HashMultimap.create();
             for (DESC desc : descriptions) {
                 mmap.put(Maps.immutableEntry(fieldName, datatype), desc);
             }
             response.setDescriptions(mmap);
         }
+        
         return response;
     }
     
@@ -317,12 +274,8 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
      * @throws Exception
      *             if there is any problem removing the description from Accumulo
      */
-    @Secured({"Administrator", "JBossAdministrator"})
-    @DeleteMapping("/Descriptions/{datatype}/{fieldName}")
-    @Timed(name = "dw.dictionary.data.deleteDescription", absolute = true)
-    public VoidResponse deleteDescription(@PathVariable String fieldName, @PathVariable String datatype, @RequestParam(required = false) String modelName,
-                    @RequestParam(required = false) String modelTable, @RequestParam String columnVisibility,
-                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws Exception {
+    public VoidResponse deleteDescription(String fieldName, String datatype, String modelName, String modelTable, String columnVisibility,
+                    DatawaveUserDetails currentUser) throws Exception {
         Map<String,String> markings = Maps.newHashMap();
         markings.put("columnVisibility", columnVisibility);
         DESC desc = this.responseObjectFactory.getDescription();
@@ -330,11 +283,20 @@ public class DataDictionaryController<DESC extends DescriptionBase<DESC>,DICT ex
         desc.setMarkings(markings);
         
         Connection connection = accumuloConnectionService.getConnection(modelTable, modelName, currentUser);
-        
         dataDictionary.deleteDescription(connection, fieldName, datatype, desc);
+        
         // TODO: reload model table cache?
         // cache.reloadCache(modelTable);
+        
         return new VoidResponse();
     }
     
+    /**
+     * Sets the Banner for the Data Dictionary.
+     * 
+     * @return the default banner for Data Dictionary
+     */
+    public DataDictionaryProperties.Banner retrieveBanner() {
+        return dataDictionaryConfiguration.getBanner();
+    }
 }

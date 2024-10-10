@@ -1,5 +1,6 @@
 target/
 logs/
+src/main/resources/static
 
 .idea/
 *.iml
