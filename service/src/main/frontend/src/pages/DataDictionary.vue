@@ -177,9 +177,17 @@ let paginationFront = ref({
 });
 
 // API - Defines all the Nececssary API calls for the user, and filters.
+// Note that to run the endpoint in DEV mode, you must build the project at least once first.
 onMounted(() => {
+  let endpointData = 'banner/';
+  let bannerData = '';
+  if (process.env.DEV) {
+    endpointData = 'data/v2/'
+    bannerData = 'data/v2/banner/'
+  }
+
   api
-  .get('banner/', undefined)
+  .get(bannerData, undefined)
   .then((response) => {
     banner.value = response.data as Banner;
   })
@@ -188,7 +196,7 @@ onMounted(() => {
   });
 
   api
-  .get('')
+  .get(endpointData)
   .then((response) => {
     // Mini Filter to sort collapsable Rows
     rows = response.data.MetadataFields.sort((a: any, b: any) => {
@@ -227,7 +235,7 @@ function exportTable(this: any) {
             Wrapper.wrapCsvValue(
               typeof col.field === 'function'
                 ? col.field(row)
-                : row[col.field === void 0 ? col.name : col.field],
+                : row[col.field === undefined ? col.name : col.field],
               col.format,
               row
             )
