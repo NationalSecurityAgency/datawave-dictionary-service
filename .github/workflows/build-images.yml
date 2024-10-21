@@ -1,0 +1,15 @@
+name: Build and Push Image
+
+on:
+    push:
+      paths-ignore: ['*.md', 'CODEOWNERS', 'LICENSE']
+      tags:
+        - "**"
+      branches:
+        - 'integration'
+        - 'release/version*'
+        - 'docker-images'
+    workflow_dispatch:
+jobs:
+  call-reusable-workflow:
+    uses: nationalsecurityagency/datawave/.github/workflows/microservice-build-image.yaml@integration
