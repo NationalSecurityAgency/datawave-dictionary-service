@@ -49,7 +49,7 @@ export function setVisibility(rows: readonly any[]) {
   >();
   const buttonValues: Map<string, number> = new Map<string, number>();
 
-  for (var row of rows) {
+  for (const row of rows) {
     let maxUp: number = row.lastUpdated;
     const fieldUp: any = row.internalFieldName;
     for (const scan of rows) {
@@ -61,7 +61,7 @@ export function setVisibility(rows: readonly any[]) {
   }
 
   // This is how a Button is Rendered
-  for (var row of rows) {
+  for (const row of rows) {
     // Checks to Render button
     if (
       buttonValues.has(row.internalFieldName) &&
