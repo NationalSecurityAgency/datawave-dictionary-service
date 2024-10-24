@@ -14,7 +14,7 @@ export function parseVal(colName: any, colValue: any): string {
   }
 }
 
-// Produces the max substring for the table, ads '...' if above 34 chars.
+// Produces the max substring for the table, adds '...' if above 34 chars.
 export function maxSubstring(str: any, colName: any): any {
   if (str == undefined) {
     return;
