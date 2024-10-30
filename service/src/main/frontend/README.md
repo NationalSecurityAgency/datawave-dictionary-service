@@ -31,7 +31,7 @@ This section provides the installation details and outlines the steps to run Dat
     # Spin up all the containers for the microservice after full datawave build:
 
     cd /datawave/docker
-    docker compose up -d
+    docker compose --profile dictionary up -d
     ```
 
 3. Now if you go to https://localhost:8643/dictionary/data/v2/#/ you should be able to see the Data Dictionary Version 2 and if you go to https://localhost:8643/dictionary/data/v1/ you will be able to see the predecessor. If you can't reach it due to client certificate errors please download the [p12 certificate](https://github.com/NationalSecurityAgency/datawave-spring-boot-starter/raw/refs/heads/main/src/main/resources/testUser.p12). Once downloaded, on your browser (this is assuming you are using Chrome but should be similar with other browsers): go to _Privacy and Secrurity_, then select _Security_, then scroll down to _Manage Certificates_, under the _Your Certificates_ tab, click import and select the p12 file you downloaded. The password should be "ChangeIt", and now you are paired with the authorization service. It is highly recommended you change this certificate for yourself, more information to do this can be found at this [README](https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/main/README.md#getting-started) for the Datawave External Services.
