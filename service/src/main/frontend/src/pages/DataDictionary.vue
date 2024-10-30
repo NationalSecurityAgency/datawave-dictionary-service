@@ -179,8 +179,8 @@ let paginationFront = ref({
 // API - Defines all the Nececssary API calls for the user, and filters.
 // Note that to run the endpoint in DEV mode, you must build the project at least once first.
 onMounted(() => {
-  let endpointData = 'banner/';
-  let bannerData = '';
+  let endpointData = '';
+  let bannerData = 'banner';
   if (process.env.DEV) {
     endpointData = 'data/v2/'
     bannerData = 'data/v2/banner/'
