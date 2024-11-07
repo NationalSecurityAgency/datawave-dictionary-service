@@ -51,12 +51,12 @@ export function setVisibility(rows: readonly any[]) {
   const buttonValues: Map<string, number> = new Map<string, number>();
 
   for (const row of rows) {
-    let maxUp: number = row.lastUpdated;
-    const fieldUp: any = row.internalFieldName;
+    let rowMostRecentUpdated: number = row.lastUpdated;
+    const currentRowInternalFieldName: any = row.internalFieldName;
     for (const scan of rows) {
-      if (fieldUp === scan.internalFieldName && maxUp < scan.lastUpdated) {
-        maxUp = scan.lastUpdated;
-        buttonValues.set(fieldUp, maxUp);
+      if (currentRowInternalFieldName === scan.internalFieldName && rowMostRecentUpdated < scan.lastUpdated) {
+        rowMostRecentUpdated = scan.lastUpdated;
+        buttonValues.set(currentRowInternalFieldName, rowMostRecentUpdated);
       }
     }
   }
