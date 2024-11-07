@@ -71,7 +71,7 @@ export function setVisibility(rows: readonly any[]) {
       row['duplicate'] = 0;
       row['button'] = true;
     }
-    // Checks to Render Collapseable Row - Refreshes on Search
+    // Checks to Render Collapsible Row - Refreshes on Search
     else if (
       buttonValues.has(row.internalFieldName) &&
       row.lastUpdated != buttonValues.get(row.internalFieldName)
@@ -79,7 +79,7 @@ export function setVisibility(rows: readonly any[]) {
       row['duplicate'] = 1;
       row['button'] = false;
     }
-    // Renders a Normal Row (No Button, not Collapsable)
+    // Renders a Normal Row (No Button, not Collapsible)
     else {
       row['duplicate'] = 0;
       row['button'] = false;
