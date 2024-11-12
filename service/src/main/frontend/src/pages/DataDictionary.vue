@@ -171,7 +171,7 @@ const filter = ref('');
 const changeFilter = ref('');
 const banner = ref<Banner>();
 let rows: QTableProps['rows'] = [];
-let paginationFront = ref({
+const paginationFront = ref({
   rowsPerPage: 200,
   sortBy: 'fieldName',
 });
@@ -192,7 +192,7 @@ onMounted(() => {
     banner.value = response.data as Banner;
   })
   .catch((reason) => {
-    console.log('Could not fetch banner: ' + reason);
+    console.error('Could not fetch banner: ' + reason);
   });
 
   api
