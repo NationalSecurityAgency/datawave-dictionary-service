@@ -16,6 +16,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
                                 url = "https://github.com/NationalSecurityAgency/datawave-dictionary-service"))
 @Slf4j
 @RestController
-@RequestMapping(path = "/model",
+@RequestMapping(path = "/model/v1",
                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE,
                         ProtostuffHttpMessageConverter.PROTOSTUFF_VALUE, MediaType.TEXT_HTML_VALUE, "text/x-yaml", "application/x-yaml"})
 @Secured({"AuthorizedUser", "AuthorizedQueryServer", "InternalUser", "Administrator", "JBossAdministrator"})
@@ -128,7 +129,7 @@ public class ModelController {
     @Operation(summary = "Delete a model with the supplied name.")
     @DeleteMapping("/{name}")
     @Secured({"Administrator", "JBossAdministrator"})
-    public VoidResponse deleteModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
+    public VoidResponse deleteModel(@PathVariable String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         VoidResponse response = new VoidResponse();
         ModelList models = listModelNames(modelTableName, currentUser);
@@ -187,7 +188,7 @@ public class ModelController {
      * @HTTP 500 internal server error
      */
     @GetMapping("/{name}")
-    public Model getModel(@RequestParam String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
+    public Model getModel(@PathVariable String name, @RequestParam(defaultValue = DEFAULT_MODEL_TABLE_NAME) String modelTableName,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         Model response = new Model(jqueryUri, dataTablesUri);
         List<Key> keys;

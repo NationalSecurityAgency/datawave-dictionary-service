@@ -114,7 +114,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/list")
+                .path("/dictionary/model/v1/list")
                 .build();
          // @formatter:on
         
@@ -130,7 +130,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/list")
+                .path("/dictionary/model/v1/list")
                 .build();
         // @formatter:on
         
@@ -142,7 +142,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/import")
+                .path("/dictionary/model/v1/import")
                 .build();
         // @formatter:on
         
@@ -157,7 +157,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/list")
+                .path("/dictionary/model/v1/list")
                 .build();
         // @formatter:on
         
@@ -172,7 +172,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/list")
+                .path("/dictionary/model/v1/list")
                 .build();
         // @formatter:on
         
@@ -185,7 +185,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/clone")
+                .path("/dictionary/model/v1/clone")
                 .queryParam("name", MODEL_ONE.getName())
                 .queryParam("newName", newName)
                 .build();
@@ -199,7 +199,7 @@ public class ModelControllerTest extends ControllerIT {
         assertEquals(HttpStatus.OK, imprtResponse.getStatusCode());
         
         // There should now be 2 models....
-        uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/dictionary/model/list").build();
+        uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/dictionary/model/v1/list").build();
         // @formatter:on
         
         ResponseEntity<ModelList> modelListResponse2 = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
@@ -216,7 +216,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/list")
+                .path("/dictionary/model/v1/list")
                 .build();
         // @formatter:on
         
@@ -228,9 +228,8 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/{name}")
-                .queryParam("name", MODEL_ONE.getName())
-                .build();
+                .path("/dictionary/model/v1/{name}")
+                .buildAndExpand(MODEL_ONE.getName());
         // @formatter:on
         ResponseEntity<Model> modelResponse = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, Model.class);
         assertEquals(HttpStatus.OK, modelResponse.getStatusCode());
@@ -243,7 +242,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         UriComponents uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/list")
+                .path("/dictionary/model/v1/list")
                 .build();
         // @formatter:on
         
@@ -255,7 +254,7 @@ public class ModelControllerTest extends ControllerIT {
         // @formatter:off
         uri = UriComponentsBuilder.newInstance()
                 .scheme("https").host("localhost").port(webServicePort)
-                .path("/dictionary/model/delete")
+                .path("/dictionary/model/v1/delete")
                 .build();
         // @formatter:on
         HttpHeaders additionalHeaders = new HttpHeaders();
@@ -265,7 +264,7 @@ public class ModelControllerTest extends ControllerIT {
         assertEquals(HttpStatus.OK, imprtResponse.getStatusCode());
         
         // Verify that it was deleted
-        uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/dictionary/model/list").build();
+        uri = UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/dictionary/model/v1/list").build();
         // @formatter:on
         
         ResponseEntity<ModelList> modelListResponse2 = jwtRestTemplate.exchange(adminUser, HttpMethod.GET, uri, ModelList.class);
