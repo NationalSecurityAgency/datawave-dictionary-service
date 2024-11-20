@@ -20,6 +20,7 @@
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
         <version.datawave.base-rest-responses>4.0.0</version.datawave.base-rest-responses>
         <version.datawave.metadata-utils>4.0.5</version.datawave.metadata-utils>
+        <version.datawave.type-utils>3.0.4</version.datawave.type-utils>
         <version.guava>31.1-jre</version.guava>
     </properties>
     <dependencyManagement>
@@ -59,6 +60,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.microservice</groupId>
+                <artifactId>type-utils</artifactId>
+                <version>${version.datawave.type-utils}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -73,6 +79,10 @@
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>metadata-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>type-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

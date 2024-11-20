@@ -14,10 +14,6 @@ import datawave.webservice.metadata.MetadataFieldBase;
 
 public interface DataDictionary<META extends MetadataFieldBase<META,DESC>,DESC extends DescriptionBase<DESC>,FIELD extends DictionaryFieldBase<FIELD,DESC>> {
     
-    Map<String,String> getNormalizationMap();
-    
-    void setNormalizationMap(Map<String,String> normalizationMap);
-    
     Collection<META> getFields(Connection connectionConfig, Collection<String> dataTypeFilters, int numThreads) throws Exception;
     
     void setDescription(Connection connectionConfig, FIELD description) throws Exception;
