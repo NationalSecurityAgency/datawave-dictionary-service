@@ -23,7 +23,7 @@
         <version.datawave.metadata-utils>4.0.5</version.datawave.metadata-utils>
         <version.guava>31.1-jre</version.guava>
         <version.jakarta.xml.bind-api>2.3.3</version.jakarta.xml.bind-api>
-        <version.microservice.metadata-utils>4.0.5</version.microservice.metadata-utils>
+        <version.datawave.metadata-utils>4.0.5</version.datawave.metadata-utils>
         <version.protostuff>1.6.2</version.protostuff>
     </properties>
     <dependencyManagement>
