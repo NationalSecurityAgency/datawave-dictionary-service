@@ -33,6 +33,7 @@
         <version.guava>31.1-jre</version.guava>
         <version.hadoop>3.3.5</version.hadoop>
         <version.in-memory-accumulo>4.0.0</version.in-memory-accumulo>
+        <version.protobuf>3.16.3</version.protobuf>
         <version.swagger>2.2.0</version.swagger>
         <version.webjars.datatables>1.11.4</version.webjars.datatables>
         <version.webjars.jquery>3.6.0</version.webjars.jquery>
@@ -188,6 +189,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${version.guava}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${version.protobuf}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
