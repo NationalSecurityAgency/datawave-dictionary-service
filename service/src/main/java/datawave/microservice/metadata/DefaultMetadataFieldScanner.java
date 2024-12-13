@@ -267,13 +267,6 @@ public class DefaultMetadataFieldScanner {
             currField.getDescriptions().add(description);
         }
         
-        // Ensures first letter of the type is always capitalized.
-        // Ensures redundant terminology like 'Type' is removed.
-        private String determineUnknownType(String unknown) {
-            String[] unknownType = unknown.split("\\.");
-            return StringUtils.capitalize(unknownType[unknownType.length - 1].replace("Type", ""));
-        }
-        
         // Set the normalized type for the current {@link DefaultMetadataField}.
         private void setType() {
             int nullPos = currColumnQualifier.indexOf('\0');
@@ -297,7 +290,7 @@ public class DefaultMetadataFieldScanner {
                                 : TypePrettyNameSupplier.DEFAULT_DATA_DICTIONARY_NAME);
             } catch (RuntimeException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException
                             | IllegalAccessException e) {
-                currField.addType(determineUnknownType(type));
+                currField.addType("Unknown");
             }
         }
         
