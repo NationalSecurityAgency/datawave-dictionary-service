@@ -281,7 +281,7 @@ public class DefaultMetadataFieldScanner {
              * Use the DEFAULT_DATA_DICTIONARY_NAME provided in TypePrettyNameSupplier when: The class is found but getDataDictionaryTypeValue is null OR the
              * class is found but is not an instance of TypePrettyNameSupplier.
              *
-             * Use the value from determineUnknownType when: An exception occurs
+             * Use 'Unknown' when: An exception occurs
              */
             try {
                 Object typeObject = Class.forName(type).getDeclaredConstructor().newInstance();
