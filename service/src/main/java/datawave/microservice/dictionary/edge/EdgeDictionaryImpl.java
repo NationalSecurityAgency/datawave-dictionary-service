@@ -30,9 +30,13 @@ public class EdgeDictionaryImpl implements EdgeDictionary<DefaultEdgeDictionary,
     private static final Logger log = LoggerFactory.getLogger(EdgeDictionaryImpl.class);
     
     private final MetadataHelperFactory metadataHelperFactory;
+    private final String jqueryUri;
+    private final String dataTablesUri;
     
-    public EdgeDictionaryImpl(MetadataHelperFactory metadataHelperFactory) {
+    public EdgeDictionaryImpl(MetadataHelperFactory metadataHelperFactory, String jqueryUri, String dataTablesUri) {
         this.metadataHelperFactory = metadataHelperFactory;
+        this.jqueryUri = jqueryUri;
+        this.dataTablesUri = dataTablesUri;
     }
     
     @Override
@@ -117,6 +121,6 @@ public class EdgeDictionaryImpl implements EdgeDictionary<DefaultEdgeDictionary,
             meta.setEventFields(eFields);
             metadata.add(meta);
         }
-        return new DefaultEdgeDictionary(metadata);
+        return new DefaultEdgeDictionary(metadata, this.jqueryUri, this.dataTablesUri);
     }
 }
