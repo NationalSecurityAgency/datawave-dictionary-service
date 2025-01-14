@@ -196,12 +196,11 @@ public class DefaultMetadataFieldScanner {
                     if (currField.getFieldName() == null) {
                         setFieldNameAndAlias();
                     }
-                    
-                    // Determine the lastUpdated value for index-only fields without including timestamps from description rows.
-                    if (currField.isIndexOnly() && currField.getLastUpdated() == null && !isColumnFamly(ColumnFamilyConstants.COLF_DESC)) {
-                        setLastUpdated();
-                    }
                 }
+            }
+            // Determine the lastUpdated value for index-only fields without including timestamps from description rows.
+            if (currField.isIndexOnly() && !isColumnFamly(ColumnFamilyConstants.COLF_DESC)) {
+                setLastUpdated();
             }
         }
         
