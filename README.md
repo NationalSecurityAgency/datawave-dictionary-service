@@ -3,8 +3,9 @@
 [![Apache License][li]][ll] ![Build Status](https://github.com/NationalSecurityAgency/datawave-dictionary-service/workflows/Tests/badge.svg)
 
 The Dictionary service provides access to the data dictionary and edge
-dictionary. These services provide metadata about fields that are stored
-in Accumulo.
+dictionary which provide metadata about fields that are stored
+in Accumulo. The Dictionary service also supports manipulation of models which are 
+contained in the data dictionary table.
 
 ### Root Context
 
@@ -14,37 +15,58 @@ in Accumulo.
 
 ### Data Dictionary
 
-The root context for all data dictionary operations is
-*https://host:port/dictionary/data/v1/*
+The root context for all data dictionary operations is:
+* V1: *https://host:port/dictionary/data/v1/*
+* V2: *https://host:port/dictionary/data/v2/*
 
-| Method | Operation     | Description                                       | Request Body    |
-|:---    |:---           |:---                                               |:---             |
-| `GET`  | /             | Retrieves the data dictionary                     | N/A             |
-| `GET`  | /Descriptions | Retrieves all descriptions from the dictionary    | N/A             |
-| `GET`  | /Descriptions/{datatype} | Retrieves all descriptions for a data type from the dictionary | N/A |
-| `GET`  | /Descriptions/{datatype}/{fieldname} | Retrieves from the dictionary the description for a field of a data type | N/A |
-| `POST` | /Descriptions | Uploads a set of descriptions into the dictionary | [DefaultFields] |
-| `PUT`  | /Descriptions/{datatype}/{fieldName}/{description} | Sets the description for a field in a datatype | N/A |
-| `POST` | /Descriptions | Sets the description for a field in a datatype    | N/A             |
-| `DELETE`| /Descriptions/{datatype}/{fieldname} | Removes the description from a field of a data type | N/A |
+| Method   | Operation                                          | Description                                                                                               | Request Body     | Version |
+|:---------|:---------------------------------------------------|:----------------------------------------------------------------------------------------------------------|:-----------------|:--------|
+| `GET`    | /                                                  | Retrieves the data dictionary                                                                             | N/A              | V1, V2  |
+| `GET`    | /Descriptions                                      | Retrieves all descriptions from the dictionary                                                            | N/A              | V1, V2  |
+| `POST`   | /Descriptions                                      | Uploads a set of descriptions into the dictionary                                                         | [DefaultFields]  | V1, V2  |
+| `POST`   | /Descriptions                                      | Sets the description for a field in a datatype                                                            | N/A              | V1, V2  |
+| `GET`    | /Descriptions/{datatype}                           | Retrieves all descriptions for a data type from the dictionary                                            | N/A              | V1, V2  |
+| `GET`    | /Descriptions/{datatype}/{fieldname}               | Retrieves from the dictionary the description for a field of a data type                                  | N/A              | V1, V2  |
+| `DELETE` | /Descriptions/{datatype}/{fieldname}               | <strong>(Administrator credentials required)</strong> Removes the description from a field of a data type | N/A              | V1, V2  |
+| `PUT`    | /Descriptions/{datatype}/{fieldName}/{description} | <strong>(Administrator credentials required)</strong> Sets the description for a field in a datatype      | N/A              | V1, V2  |
+| `POST`   | /Descriptions                                      | <strong>(Administrator credentials required)</strong> Sets the description for a field in a datatype      | N/A              | V1, V2  |
 
-* See [DataDictionaryOperations] class for further details
+* See [DataDictionaryControllerV1] and [DataDictionaryControllerV2] for further details
 
 ### Edge Dictionary
 
-The root context for all edge dictionary operations is
-*https://host:port/dictionary/edge/v1/*
+The root context for all edge dictionary operations is:
+* *https://host:port/dictionary/edge/v1/*
 
 | Method | Operation | Description                   | Request Body |
-|:---    |:---       |:---                           |:---          |
-| `GET`  | /         | Retrieves the edge dictionery | N/A          |
+|:---    |:---       |:------------------------------|:---          |
+| `GET`  | /         | Retrieves the edge dictionary | N/A          |
 
-* See [EdgeDictionaryOperations] class for further details
+* See [EdgeDictionaryController] for further details
 
+### Models
+The root context for all model operations is:
+* *https://host:port/dictionary/model/v1/*
+
+| Method | Operation | Description                                                                                             | Request Body |
+|:-------|:----------|:--------------------------------------------------------------------------------------------------------|:-------------|
+| `GET`  | /list     | Retrieves the names of the models                                                                       | N/A          |
+| `GET`  | /{name}   | <strong>(Administrator credentials required)</strong> Delete a model with the supplied name             | N/A          |
+| `GET`  | /clone    | <strong>(Administrator credentials required)</strong> Copy a model                                      | N/A          |
+| `GET`  | /{name}   | Retrieve the model and all of its mappings.                                                             | N/A          |
+| `GET`  | /insert   | <strong>(Administrator credentials required)</strong> Insert a new field mapping into an existing model | [Model]      |
+| `GET`  | /import   | <strong>(Administrator credentials required)</strong> Insert a new field mapping into an existing model | [Model]      |
+| `GET`  | /delete   | <strong>(Administrator credentials required)</strong> Delete field mappings from an existing model      | [Model]      |
+* See [ModelController] for further details
 ---
 
 ### Getting Started
 
+#### Using DATAWAVE Docker Compose 
+
+* You can go [here] for more information related to building and starting the dictionary service (as well as other services).
+
+#### Using an Alternate Way
 1. First, refer to [services/README](https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/master/README.md#getting-started) for launching the
    config, authorization, and audit services.
 
@@ -69,11 +91,15 @@ The root context for all edge dictionary operations is
    See [sample_configuration/dictionary-dev.yml][dictionary-dev-yml] and configure as desired
 
 
-[DataDictionaryOperations]:service/src/main/java/datawave/microservice/dictionary/DataDictionaryOperations.java
-[EdgeDictionaryOperations]:service/src/main/java/datawave/microservice/dictionary/EdgeDictionaryOperations.java
-[DefaultFields]:api/src/main/java/datawave/webservice/results/datadictionary/DefaultFields.java
+[DataDictionaryControllerV1]:service/src/main/java/datawave/microservice/dictionary/DataDictionaryControllerV1.java
+[DataDictionaryControllerV2]:service/src/main/java/datawave/microservice/dictionary/DataDictionaryControllerV2.java
+[EdgeDictionaryController]:service/src/main/java/datawave/microservice/dictionary/EdgeDictionaryController.java
+[ModelController]:service/src/main/java/datawave/microservice/model/ModelController.java
+[DefaultFields]:api/src/main/java/datawave/webservice/dictionary/data/DefaultFields.java
+[Model]:api/src/main/java/datawave/webservice/model/Model.java
 [testUser]:https://github.com/NationalSecurityAgency/datawave-spring-boot-starter/blob/master/src/main/resources/testUser.p12
 [dictionary-dev-yml]:https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/master/sample_configuration/dictionary-dev.yml.example
-
+[here]: https://github.com/NationalSecurityAgency/datawave/blob/integration/docker/README.md#datawave-docker-compose
+[auth-mock-yml]: https://github.com/NationalSecurityAgency/datawave/blob/integration/docker/config/authorization-mock.yml
 [li]: http://img.shields.io/badge/license-ASL-blue.svg
 [ll]: https://www.apache.org/licenses/LICENSE-2.0
