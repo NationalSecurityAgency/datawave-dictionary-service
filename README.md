@@ -24,12 +24,11 @@ The root context for all data dictionary operations is:
 | `GET`    | /                                                  | Retrieves the data dictionary                                                                             | N/A              | V1, V2  |
 | `GET`    | /Descriptions                                      | Retrieves all descriptions from the dictionary                                                            | N/A              | V1, V2  |
 | `POST`   | /Descriptions                                      | Uploads a set of descriptions into the dictionary                                                         | [DefaultFields]  | V1, V2  |
-| `POST`   | /Descriptions                                      | Sets the description for a field in a datatype                                                            | N/A              | V1, V2  |
+| `POST`   | /Descriptions                                      | <strong>(Administrator credentials required)</strong> Sets the description for a field in a datatype      | N/A              | V1, V2  |
 | `GET`    | /Descriptions/{datatype}                           | Retrieves all descriptions for a data type from the dictionary                                            | N/A              | V1, V2  |
 | `GET`    | /Descriptions/{datatype}/{fieldname}               | Retrieves from the dictionary the description for a field of a data type                                  | N/A              | V1, V2  |
 | `DELETE` | /Descriptions/{datatype}/{fieldname}               | <strong>(Administrator credentials required)</strong> Removes the description from a field of a data type | N/A              | V1, V2  |
 | `PUT`    | /Descriptions/{datatype}/{fieldName}/{description} | <strong>(Administrator credentials required)</strong> Sets the description for a field in a datatype      | N/A              | V1, V2  |
-| `POST`   | /Descriptions                                      | <strong>(Administrator credentials required)</strong> Sets the description for a field in a datatype      | N/A              | V1, V2  |
 
 * See [DataDictionaryControllerV1] and [DataDictionaryControllerV2] for further details
 
