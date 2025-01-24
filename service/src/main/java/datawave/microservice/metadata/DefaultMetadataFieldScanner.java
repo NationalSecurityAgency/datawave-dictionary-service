@@ -276,15 +276,14 @@ public class DefaultMetadataFieldScanner {
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
         private void setLastUpdated() {
+            String formattedCurrentKeyTimeStamp = Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                            .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT));
             if (currField.getLastUpdated() != null) {
-                if (Long.parseLong(currField.getLastUpdated()) < Long.parseLong(Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault())
-                                .toLocalDateTime().format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)))) {
-                    currField.setLastUpdated(Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime()
-                                    .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)));
+                if (Long.parseLong(currField.getLastUpdated()) < Long.parseLong(formattedCurrentKeyTimeStamp)) {
+                    currField.setLastUpdated(formattedCurrentKeyTimeStamp);
                 }
             } else {
-                currField.setLastUpdated(Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime()
-                                .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)));
+                currField.setLastUpdated(formattedCurrentKeyTimeStamp);
             }
         }
     }
