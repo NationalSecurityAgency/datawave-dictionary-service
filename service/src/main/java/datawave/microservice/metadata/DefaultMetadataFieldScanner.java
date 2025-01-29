@@ -196,9 +196,8 @@ public class DefaultMetadataFieldScanner {
                     if (currField.getFieldName() == null) {
                         setFieldNameAndAlias();
                     }
-                    
                     // Determine the lastUpdated value for index-only fields without including timestamps from description rows.
-                    if (currField.isIndexOnly() && currField.getLastUpdated() == null && !isColumnFamly(ColumnFamilyConstants.COLF_DESC)) {
+                    if (currField.isIndexOnly() && !isColumnFamly(ColumnFamilyConstants.COLF_DESC)) {
                         setLastUpdated();
                     }
                 }
@@ -277,8 +276,15 @@ public class DefaultMetadataFieldScanner {
         
         // Set the last updated date for the current {@link DefaultMetadataField} based on the timestamp of the current entry.
         private void setLastUpdated() {
-            currField.setLastUpdated(Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime()
-                            .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT)));
+            String formattedCurrentKeyTimeStamp = Instant.ofEpochMilli(currKey.getTimestamp()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                            .format(DateTimeFormatter.ofPattern(TIMESTAMP_FORMAT));
+            if (currField.getLastUpdated() != null) {
+                if (Long.parseLong(currField.getLastUpdated()) < Long.parseLong(formattedCurrentKeyTimeStamp)) {
+                    currField.setLastUpdated(formattedCurrentKeyTimeStamp);
+                }
+            } else {
+                currField.setLastUpdated(formattedCurrentKeyTimeStamp);
+            }
         }
     }
 }
