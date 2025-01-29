@@ -62,7 +62,7 @@ public class DictionaryServiceConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public EdgeDictionary datawaveEdgeDictionary(MetadataHelperFactory metadataHelperFactory) {
-        return new EdgeDictionaryImpl(metadataHelperFactory);
+        return new EdgeDictionaryImpl(metadataHelperFactory, "/dictionary/webjars/jquery/", "/dictionary/webjars/datatables/js/");
     }
     
     @Bean

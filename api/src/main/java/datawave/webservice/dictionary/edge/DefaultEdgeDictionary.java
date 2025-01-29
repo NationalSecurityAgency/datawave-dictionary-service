@@ -1,6 +1,7 @@
 package datawave.webservice.dictionary.edge;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +33,13 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
                 implements TotalResultsAware, Message<DefaultEdgeDictionary>, HtmlProvider {
     
     private static final long serialVersionUID = 1L;
+    private final String jqueryUri;
+    private final String dataTablesUri;
     private static final String TITLE = "Edge Dictionary", SEP = ", ";
+    private static final String DATA_TABLES_TEMPLATE = "<script type=''text/javascript'' src=''{0}jquery.min.js''></script>\n"
+                    + "<script type=''text/javascript'' src=''{1}jquery.dataTables.min.js''></script>\n" + "<script type=''text/javascript''>\n"
+                    + "$(document).ready(function() '{' $(''#myTable'').dataTable('{'\"bPaginate\": false, \"aaSorting\": [[3, \"asc\"]], \"bStateSave\": true'}') '}')\n"
+                    + "</script>\n";
     
     @XmlElementWrapper(name = "EdgeMetadata")
     @XmlElement(name = "Metadata")
@@ -41,9 +48,12 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
     @XmlElement(name = "TotalResults")
     private Long totalResults = null;
     
-    public DefaultEdgeDictionary() {}
+    public DefaultEdgeDictionary() {
+        this.jqueryUri = "/dictionary/webjars/jquery/";
+        this.dataTablesUri = "/dictionary/webjars/datatables/js/";
+    }
     
-    public DefaultEdgeDictionary(Collection<DefaultMetadata> fields) {
+    public DefaultEdgeDictionary(Collection<DefaultMetadata> fields, String jqueryUri, String dataTablesUri) {
         if (fields == null) {
             this.metadataList = null;
             setTotalResults(0);
@@ -52,6 +62,8 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
             setTotalResults(this.metadataList.size());
             this.setHasResults(true);
         }
+        this.jqueryUri = jqueryUri;
+        this.dataTablesUri = dataTablesUri;
     }
     
     @Override
@@ -177,7 +189,7 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
     
     @Override
     public String getHeadContent() {
-        return "";
+        return MessageFormat.format(DATA_TABLES_TEMPLATE, jqueryUri, dataTablesUri);
     }
     
     public String getPageHeader() {
@@ -187,28 +199,19 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
     @Override
     public String getMainContent() {
         StringBuilder builder = new StringBuilder(2048);
-        builder.append("<div><ul>").append("<li class=\"left\">Edge Type: Defined either by Datawave Configuration files or Edge enrichment field.</li>")
-                        .append("<li class=\"left\">Edge Relationship: Defined by Datawave Configuration files</li>")
-                        .append("<li class=\"left\">Edge Attribute1 Source: Defined by Datawave Configuration files and optional attributes Attribute2 and Attribute3</li>")
-                        .append("<li class=\"left\">Fields: List of Field Name pairs used to generate this edge type.</li>")
-                        .append("<li class=\"left\">Fields Format:<pre>[Source Field, Target Field | Enrichment Field=Enrichment Field Value]</pre></li>")
-                        .append("<li class=\"left\">Date: start date of edge type creation, format: yyyyMMdd</li>").append("</ul></div>");
         
-        builder.append("<table id=\"myTable\" class=\"creds\">\n")
-                        .append("<thead><tr><th>Edge Type</th><th>Edge Relationship</th><th>Edge Attribute1 Source</th>")
-                        .append("<th>Fields</th><th>Date</th></tr></thead>");
+        builder.append("<div>\n");
+        builder.append("<div id=\"myTable_wrapper\" class=\"dataTables_wrapper no-footer\">\n");
+        builder.append("<table id=\"myTable\" class=\"dataTable no-footer\" role=\"grid\" aria-describedby=\"myTable_info\">\n")
+                        .append("<thead><tr><th title=\"Defined either by Datawave Configuration files or Edge enrichment field.\">Edge Type  &#9432;</th>")
+                        .append("<th title=\"Defined by Datawave Configuration files.\">Edge Relationship  &#9432;</th>")
+                        .append("<th title=\"Defined by Datawave Configuration files and optional attributes Attribute2 and Attribute3.\">Edge Attribute1 Source  &#9432;</th>")
+                        .append("<th title=\"List of Field Name pairs used to generate this edge type. Format: [Source Field, Target Field | Enrichment Field=Enrichment Field Value]\">Fields  &#9432;</th>")
+                        .append("<th title=\"Start date of edge type creation. Format: yyyyMMdd\">Date  &#9432;</th>").append("</tr></thead>");
         
         builder.append("<tbody>");
         int x = 0;
         for (MetadataBase<DefaultMetadata> metadata : this.getMetadataList()) {
-            // highlight alternating rows
-            if (x % 2 == 0) {
-                builder.append("<tr class=\"highlight\">");
-            } else {
-                builder.append("<tr>");
-            }
-            x++;
-            
             String type = metadata.getEdgeType();
             String relationship = metadata.getEdgeRelationship();
             String collect = metadata.getEdgeAttribute1Source();
@@ -231,6 +234,9 @@ public class DefaultEdgeDictionary extends EdgeDictionaryBase<DefaultEdgeDiction
         builder.append("</tbody>");
         
         builder.append("</table>\n");
+        builder.append("  <div class=\"dataTables_info\" id=\"myTable_info\" role=\"status\" aria-live=\"polite\"></div>\n");
+        builder.append("</div>\n");
+        builder.append("</div>");
         
         return builder.toString();
     }
