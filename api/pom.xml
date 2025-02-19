@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-parent</artifactId>
-        <version>4.0.1-depfix</version>
+        <version>4.0.0</version>
         <relativePath>../../../microservice-parent/pom.xml</relativePath>
     </parent>
     <artifactId>dictionary-api</artifactId>
-    <version>4.0.5-depfix</version>
+    <version>4.0.5-SNAPHSOT</version>
     <url>https://code.nsa.gov/datawave-dictionary-service</url>
     <scm>
         <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-dictionary-service.git</connection>
@@ -19,8 +19,8 @@
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
         <version.commons-lang3>3.12.0</version.commons-lang3>
-        <version.datawave.base-rest-responses>4.0.2-depfix</version.datawave.base-rest-responses>
-        <version.datawave.metadata-utils>4.0.9-depfix</version.datawave.metadata-utils>
+        <version.datawave.base-rest-responses>4.0.0</version.datawave.base-rest-responses>
+        <version.datawave.metadata-utils>4.0.5</version.datawave.metadata-utils>
         <version.guava>31.1-jre</version.guava>
         <version.jakarta.xml.bind-api>2.3.3</version.jakarta.xml.bind-api>
         <version.protostuff>1.6.2</version.protostuff>
